@@ -6,783 +6,730 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Exam Annotator</title>
+<title>ExamDraw</title>
 <style>
-  /* ===== RESET & BASE ===== */
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  
-  :root {
-    --bg: #0f1117;
-    --surface: #1a1d27;
-    --surface2: #22263a;
-    --accent: #4f8ef7;
-    --accent2: #7c3aed;
-    --red: #ef4444;
-    --blue: #3b82f6;
-    --black: #1a1a1a;
-    --green: #22c55e;
-    --text: #e8eaf0;
-    --muted: #6b7280;
-    --border: rgba(255,255,255,0.08);
-    --shadow: 0 8px 32px rgba(0,0,0,0.5);
-    --toolbar-h: 64px;
-    --radius: 14px;
-    --font: 'Segoe UI', system-ui, sans-serif;
-  }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;
+  --accent:#4f8ef7;--accent2:#7c3aed;
+  --red:#ef4444;--blue:#3b82f6;--green:#22c55e;
+  --text:#e8eaf0;--muted:#6b7280;--border:rgba(255,255,255,0.08);
+  --toolbar-h:68px;--font:'Segoe UI',system-ui,sans-serif;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
+  color:var(--text);font-family:var(--font);touch-action:none;
+  user-select:none;-webkit-user-select:none;}
 
-  html, body {
-    width: 100%; height: 100%;
-    overflow: hidden;
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--font);
-    touch-action: none;
-    user-select: none;
-    -webkit-user-select: none;
-  }
+/* ROTATE OVERLAY */
+#rotate-overlay{display:none;position:fixed;inset:0;z-index:9999;
+  background:linear-gradient(135deg,#0f1117,#1a1d27);
+  flex-direction:column;align-items:center;justify-content:center;
+  gap:24px;text-align:center;padding:40px;}
+.ri{font-size:72px;animation:rh 2s ease-in-out infinite;}
+@keyframes rh{0%,100%{transform:rotate(0)}40%,60%{transform:rotate(-90deg)}}
+#rotate-overlay h2{font-size:22px;font-weight:700}
+#rotate-overlay p{font-size:14px;color:var(--muted);line-height:1.6}
 
-  /* ===== ROTATE OVERLAY ===== */
-  #rotate-overlay {
-    display: none;
-    position: fixed; inset: 0; z-index: 9999;
-    background: linear-gradient(135deg, #0f1117 0%, #1a1d27 100%);
-    flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 24px;
-    text-align: center;
-    padding: 40px;
-  }
-  #rotate-overlay .rotate-icon {
-    font-size: 72px;
-    animation: rotateHint 2s ease-in-out infinite;
-  }
-  @keyframes rotateHint {
-    0%,100% { transform: rotate(0deg); }
-    40% { transform: rotate(-90deg); }
-    60% { transform: rotate(-90deg); }
-  }
-  #rotate-overlay h2 { font-size: 22px; font-weight: 700; color: var(--text); }
-  #rotate-overlay p { font-size: 14px; color: var(--muted); line-height: 1.6; }
+/* UPLOAD */
+#upload-screen{position:fixed;inset:0;z-index:100;
+  background:linear-gradient(135deg,#0f1117 0%,#1a1d27 60%,#0d0f1a 100%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:28px;padding:24px;}
+.upload-logo{font-size:44px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  font-weight:900;letter-spacing:-2px;}
+.upload-title{font-size:24px;font-weight:800;text-align:center}
+.upload-sub{font-size:14px;color:var(--muted);text-align:center;line-height:1.6}
+.upload-zone{width:100%;max-width:400px;border:2px dashed rgba(79,142,247,0.4);
+  border-radius:20px;padding:36px 24px;display:flex;flex-direction:column;
+  align-items:center;gap:14px;cursor:pointer;background:rgba(79,142,247,0.04);
+  transition:all .2s;position:relative;}
+.upload-zone:hover,.upload-zone.drag-over{border-color:var(--accent);background:rgba(79,142,247,0.1)}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-icon{font-size:44px}
+.uzt{font-size:15px;font-weight:600}
+.uzh{font-size:12px;color:var(--muted)}
+.upload-btn{width:100%;max-width:400px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border:none;border-radius:14px;color:#fff;font-size:16px;font-weight:700;
+  padding:16px;cursor:pointer;transition:opacity .2s;}
+.upload-btn:hover{opacity:.9}
 
-  /* ===== UPLOAD SCREEN ===== */
-  #upload-screen {
-    position: fixed; inset: 0; z-index: 100;
-    background: linear-gradient(135deg, #0f1117 0%, #1a1d27 60%, #0d0f1a 100%);
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 32px; padding: 24px;
-  }
-  .upload-logo {
-    font-size: 48px;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    font-weight: 900;
-    letter-spacing: -2px;
-  }
-  .upload-title { font-size: 26px; font-weight: 800; text-align: center; }
-  .upload-sub { font-size: 14px; color: var(--muted); text-align: center; line-height: 1.6; }
-  
-  .upload-zone {
-    width: 100%; max-width: 400px;
-    border: 2px dashed rgba(79,142,247,0.4);
-    border-radius: 20px;
-    padding: 40px 24px;
-    display: flex; flex-direction: column;
-    align-items: center; gap: 16px;
-    cursor: pointer;
-    background: rgba(79,142,247,0.04);
-    transition: all 0.2s;
-    position: relative;
-  }
-  .upload-zone:hover, .upload-zone.drag-over {
-    border-color: var(--accent);
-    background: rgba(79,142,247,0.1);
-  }
-  .upload-zone input[type=file] {
-    position: absolute; inset: 0; opacity: 0;
-    cursor: pointer; width: 100%; height: 100%;
-  }
-  .upload-icon { font-size: 48px; }
-  .upload-zone-text { font-size: 15px; font-weight: 600; color: var(--text); }
-  .upload-zone-hint { font-size: 12px; color: var(--muted); }
-  
-  .upload-btn {
-    width: 100%; max-width: 400px;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    border: none; border-radius: 14px;
-    color: white; font-size: 16px; font-weight: 700;
-    padding: 16px; cursor: pointer;
-    transition: opacity 0.2s;
-  }
-  .upload-btn:hover { opacity: 0.9; }
+/* APP */
+#app{display:none;position:fixed;inset:0;flex-direction:column;background:var(--bg)}
+#app.active{display:flex}
 
-  /* ===== MAIN APP ===== */
-  #app {
-    display: none;
-    position: fixed; inset: 0;
-    flex-direction: column;
-    background: var(--bg);
-  }
-  #app.active { display: flex; }
+/* TOOLBAR */
+#toolbar{position:fixed;bottom:0;left:0;right:0;height:var(--toolbar-h);
+  background:rgba(22,25,36,0.97);backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);
+  display:flex;align-items:center;padding:0 6px;gap:2px;z-index:500;
+  overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+#toolbar::-webkit-scrollbar{display:none}
+.tb-group{display:flex;align-items:center;gap:2px;flex-shrink:0}
+.tb-div{width:1px;height:34px;background:var(--border);margin:0 5px;flex-shrink:0}
+.tb-btn{width:52px;height:52px;border-radius:12px;border:none;background:transparent;
+  color:var(--muted);display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:2px;cursor:pointer;transition:all .15s;
+  flex-shrink:0;font-size:19px;}
+.tb-btn .lbl{font-size:9px;font-weight:600;letter-spacing:.3px;color:inherit}
+.tb-btn:active{transform:scale(.92)}
+.tb-btn.active{background:rgba(79,142,247,0.2);color:var(--accent);
+  box-shadow:0 0 0 1.5px rgba(79,142,247,0.4);}
+.tb-btn.scroll-mode{background:rgba(124,58,237,0.2);color:#a78bfa;
+  box-shadow:0 0 0 1.5px rgba(124,58,237,0.5);}
+.tb-btn.danger{color:var(--red)}
+.tb-btn.danger:hover{background:rgba(239,68,68,0.1)}
+.tb-btn.success{color:var(--green)}
+.tb-btn.success:hover{background:rgba(34,197,94,0.1)}
 
-  /* ===== TOOLBAR ===== */
-  #toolbar {
-    position: fixed; bottom: 0; left: 0; right: 0;
-    height: var(--toolbar-h);
-    background: rgba(26, 29, 39, 0.96);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-top: 1px solid var(--border);
-    display: flex; align-items: center;
-    padding: 0 8px; gap: 4px;
-    z-index: 500;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-  #toolbar::-webkit-scrollbar { display: none; }
+/* Color buttons */
+.color-btn{width:30px;height:30px;border-radius:50%;border:3px solid transparent;
+  cursor:pointer;flex-shrink:0;transition:all .15s;}
+.color-btn.active{border-color:#fff;transform:scale(1.2)}
+.color-btn.red{background:#ef4444}
+.color-btn.blue{background:#3b82f6}
+.color-btn.black{background:#111;border-color:#444}
+.color-btn.black.active{border-color:#fff}
+.color-btn.green{background:#22c55e}
 
-  .tb-group {
-    display: flex; align-items: center; gap: 3px;
-    flex-shrink: 0;
-  }
-  .tb-divider {
-    width: 1px; height: 32px;
-    background: var(--border);
-    margin: 0 4px; flex-shrink: 0;
-  }
+/* Size slider */
+.size-wrap{display:flex;align-items:center;gap:6px;flex-shrink:0;padding:0 4px}
+.size-wrap label{font-size:9px;color:var(--muted);font-weight:600}
+#sizeSlider{-webkit-appearance:none;width:56px;height:4px;border-radius:2px;
+  background:var(--surface2);outline:none;}
+#sizeSlider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;
+  border-radius:50%;background:var(--accent);cursor:pointer;}
 
-  .tb-btn {
-    width: 48px; height: 48px;
-    border-radius: 12px;
-    border: none; background: transparent;
-    color: var(--muted);
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 2px; cursor: pointer;
-    transition: all 0.15s;
-    flex-shrink: 0;
-    font-size: 20px;
-    position: relative;
-  }
-  .tb-btn span.label {
-    font-size: 9px; font-weight: 600;
-    letter-spacing: 0.3px; color: inherit;
-  }
-  .tb-btn:hover { background: rgba(255,255,255,0.06); }
-  .tb-btn.active {
-    background: rgba(79,142,247,0.2);
-    color: var(--accent);
-    box-shadow: 0 0 0 1px rgba(79,142,247,0.3);
-  }
-  .tb-btn.danger { color: var(--red); }
-  .tb-btn.danger:hover { background: rgba(239,68,68,0.1); }
-  .tb-btn.success { color: var(--green); }
-  .tb-btn.success:hover { background: rgba(34,197,94,0.1); }
+/* Zoom strip */
+.zoom-wrap{display:flex;align-items:center;gap:3px;flex-shrink:0}
+.zoom-btn{width:36px;height:36px;border-radius:10px;border:1px solid var(--border);
+  background:var(--surface2);color:var(--text);font-size:18px;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:all .15s;}
+.zoom-btn:active{transform:scale(.9)}
+.zoom-btn.fit-btn{font-size:11px;width:40px}
+#zoom-label{font-size:11px;font-weight:700;color:var(--accent);
+  min-width:38px;text-align:center;flex-shrink:0}
 
-  /* Color buttons */
-  .color-btn {
-    width: 32px; height: 32px;
-    border-radius: 50%;
-    border: 3px solid transparent;
-    cursor: pointer; flex-shrink: 0;
-    transition: all 0.15s;
-  }
-  .color-btn.active { border-color: white; transform: scale(1.15); }
-  .color-btn.red { background: #ef4444; }
-  .color-btn.blue { background: #3b82f6; }
-  .color-btn.black { background: #1a1a1a; border: 3px solid #444; }
-  .color-btn.black.active { border-color: white; }
-  .color-btn.green { background: #22c55e; }
+/* CANVAS AREA */
+#canvas-area{position:fixed;top:0;left:0;right:0;bottom:var(--toolbar-h);
+  overflow:hidden;background:#1c1c2a;touch-action:none;}
+#canvas-area::before{content:'';position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px);
+  background-size:32px 32px;pointer-events:none}
 
-  /* Size slider */
-  .size-wrap {
-    display: flex; align-items: center; gap: 6px;
-    flex-shrink: 0; padding: 0 4px;
-  }
-  .size-wrap label { font-size: 9px; color: var(--muted); font-weight: 600; }
-  #sizeSlider {
-    -webkit-appearance: none;
-    width: 60px; height: 4px;
-    border-radius: 2px;
-    background: var(--surface2);
-    outline: none;
-  }
-  #sizeSlider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 14px; height: 14px;
-    border-radius: 50%;
-    background: var(--accent);
-    cursor: pointer;
-  }
+#transform-wrapper{position:absolute;top:0;left:0;transform-origin:0 0}
+#bg-canvas{display:block}
+#draw-canvas{position:absolute;top:0;left:0;display:block;pointer-events:none}
+#circle-canvas{position:absolute;top:0;left:0;display:block;pointer-events:none}
+#hit-canvas{position:absolute;top:0;left:0;display:block;opacity:0;cursor:crosshair}
 
-  /* ===== CANVAS AREA ===== */
-  #canvas-area {
-    position: fixed;
-    top: 0; left: 0;
-    right: 0;
-    bottom: var(--toolbar-h);
-    overflow: hidden;
-    background: #2a2a35;
-    touch-action: none;
-  }
+/* HOME BTN */
+#home-btn{position:fixed;top:10px;right:10px;width:36px;height:36px;
+  border-radius:10px;background:rgba(26,29,39,.9);border:1px solid var(--border);
+  color:var(--muted);font-size:16px;display:flex;align-items:center;
+  justify-content:center;cursor:pointer;z-index:400;transition:all .15s;}
+#home-btn:hover{color:var(--text)}
 
-  #transform-wrapper {
-    position: absolute;
-    top: 0; left: 0;
-    transform-origin: 0 0;
-    /* transform set by JS */
-  }
+/* PDF NAV */
+#pdf-nav{display:none;position:fixed;top:10px;left:50%;
+  transform:translateX(-50%);background:rgba(26,29,39,.92);
+  border:1px solid var(--border);border-radius:10px;
+  padding:6px 12px;align-items:center;gap:10px;z-index:400;}
+#pdf-nav.visible{display:flex}
+#pdf-nav button{background:none;border:none;color:var(--text);font-size:16px;
+  cursor:pointer;padding:2px 6px;border-radius:6px;transition:background .15s}
+#pdf-nav button:hover{background:var(--surface2)}
+#pdf-nav button:disabled{color:var(--muted);cursor:default}
+#pdf-nav span{font-size:13px;color:var(--muted);min-width:60px;text-align:center}
 
-  #bg-canvas {
-    display: block;
-    /* size set by JS */
-  }
+/* LOADING */
+#loading{display:none;position:fixed;inset:0;z-index:200;
+  background:rgba(15,17,23,.85);backdrop-filter:blur(8px);
+  align-items:center;justify-content:center;flex-direction:column;gap:16px}
+#loading.show{display:flex}
+.spinner{width:44px;height:44px;border:3px solid rgba(79,142,247,.2);
+  border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#loading p{font-size:14px;color:var(--muted)}
 
-  #draw-canvas {
-    position: absolute;
-    top: 0; left: 0;
-    display: block;
-    cursor: crosshair;
-    /* size = bg-canvas */
-  }
+/* TOAST */
+#toast{position:fixed;bottom:calc(var(--toolbar-h) + 12px);left:50%;
+  transform:translateX(-50%) translateY(16px);
+  background:rgba(26,29,39,.97);border:1px solid var(--border);
+  border-radius:10px;padding:10px 20px;font-size:13px;font-weight:600;
+  color:var(--text);opacity:0;transition:all .3s;z-index:600;white-space:nowrap}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-  /* ===== LOADING ===== */
-  #loading {
-    display: none;
-    position: fixed; inset: 0; z-index: 200;
-    background: rgba(15,17,23,0.85);
-    backdrop-filter: blur(8px);
-    align-items: center; justify-content: center;
-    flex-direction: column; gap: 16px;
-  }
-  #loading.show { display: flex; }
-  .spinner {
-    width: 44px; height: 44px;
-    border: 3px solid rgba(79,142,247,0.2);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  #loading p { font-size: 14px; color: var(--muted); }
-
-  /* ===== TOAST ===== */
-  #toast {
-    position: fixed; bottom: 80px; left: 50%;
-    transform: translateX(-50%) translateY(20px);
-    background: rgba(26,29,39,0.95);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 10px 20px;
-    font-size: 13px; font-weight: 600;
-    color: var(--text);
-    opacity: 0;
-    transition: all 0.3s;
-    z-index: 600;
-    white-space: nowrap;
-  }
-  #toast.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-
-  /* ===== SIZE INDICATOR ===== */
-  #size-indicator {
-    position: fixed;
-    bottom: calc(var(--toolbar-h) + 12px);
-    right: 12px;
-    background: rgba(26,29,39,0.9);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 4px 10px;
-    font-size: 11px;
-    color: var(--muted);
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.3s;
-    z-index: 400;
-  }
-  #size-indicator.show { opacity: 1; }
-
-  /* ===== HOME BTN ===== */
-  #home-btn {
-    position: fixed;
-    top: 10px; right: 10px;
-    width: 36px; height: 36px;
-    border-radius: 10px;
-    background: rgba(26,29,39,0.9);
-    border: 1px solid var(--border);
-    color: var(--muted);
-    font-size: 16px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; z-index: 400;
-    transition: all 0.15s;
-  }
-  #home-btn:hover { color: var(--text); background: var(--surface2); }
-
-  /* ===== PDF NAVIGATION ===== */
-  #pdf-nav {
-    display: none;
-    position: fixed;
-    top: 10px; left: 50%;
-    transform: translateX(-50%);
-    background: rgba(26,29,39,0.9);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 6px 12px;
-    display: none; align-items: center; gap: 10px;
-    z-index: 400;
-  }
-  #pdf-nav.visible { display: flex; }
-  #pdf-nav button {
-    background: none; border: none;
-    color: var(--text); font-size: 16px;
-    cursor: pointer; padding: 2px 6px;
-    border-radius: 6px; transition: background 0.15s;
-  }
-  #pdf-nav button:hover { background: var(--surface2); }
-  #pdf-nav button:disabled { color: var(--muted); cursor: default; }
-  #pdf-nav span { font-size: 13px; color: var(--muted); min-width: 60px; text-align: center; }
-
+/* MODE HINT banner */
+#mode-hint{position:fixed;top:10px;left:50%;transform:translateX(-50%);
+  border-radius:8px;padding:7px 16px;font-size:12px;font-weight:600;
+  z-index:410;pointer-events:none;
+  opacity:0;transition:opacity .3s;white-space:nowrap}
+#mode-hint.show{opacity:1}
+#mode-hint.move{background:rgba(79,142,247,.15);border:1px solid rgba(79,142,247,.35);color:var(--accent)}
+#mode-hint.scroll{background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.35);color:#a78bfa}
+#mode-hint.resize{background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.35);color:#4ade80}
 </style>
 </head>
 <body>
 
-<!-- ROTATE OVERLAY -->
+<!-- ROTATE -->
 <div id="rotate-overlay">
-  <div class="rotate-icon">📱</div>
+  <div class="ri">📱</div>
   <h2>Xoay ngang màn hình</h2>
   <p>Ứng dụng hoạt động tốt nhất ở chế độ ngang.<br>Vui lòng xoay điện thoại của bạn.</p>
 </div>
 
-<!-- UPLOAD SCREEN -->
+<!-- UPLOAD -->
 <div id="upload-screen">
   <div class="upload-logo">✏️ ExamDraw</div>
   <div>
     <div class="upload-title">Làm bài thi trực tiếp</div>
-    <div class="upload-sub">Upload đề thi và bắt đầu làm bài ngay<br>Hỗ trợ ảnh JPG, PNG và PDF</div>
+    <div class="upload-sub">Upload đề thi, vẽ và khoanh đáp án ngay<br>Hỗ trợ JPG, PNG và PDF</div>
   </div>
-  
   <div class="upload-zone" id="upload-zone">
-    <input type="file" id="file-input" accept="image/*,.pdf" />
+    <input type="file" id="file-input" accept="image/*,.pdf"/>
     <div class="upload-icon">📄</div>
-    <div class="upload-zone-text">Chọn file đề thi</div>
-    <div class="upload-zone-hint">JPG, PNG, PDF • Kéo thả vào đây</div>
+    <div class="uzt">Chọn file đề thi</div>
+    <div class="uzh">JPG, PNG, PDF • Kéo thả vào đây</div>
   </div>
-
-  <button class="upload-btn" onclick="document.getElementById('file-input').click()">
-    📂 Chọn đề thi
-  </button>
+  <button class="upload-btn" onclick="document.getElementById('file-input').click()">📂 Chọn đề thi</button>
 </div>
 
 <!-- LOADING -->
-<div id="loading">
-  <div class="spinner"></div>
-  <p>Đang tải đề thi...</p>
-</div>
+<div id="loading"><div class="spinner"></div><p>Đang tải đề thi...</p></div>
 
-<!-- MAIN APP -->
+<!-- APP -->
 <div id="app">
-  <!-- Home button -->
-  <button id="home-btn" onclick="goHome()" title="Tải đề mới">🏠</button>
-
-  <!-- PDF Navigation -->
+  <button id="home-btn" onclick="goHome()">🏠</button>
   <div id="pdf-nav">
     <button id="pdf-prev" onclick="changePage(-1)">◀</button>
     <span id="pdf-page-info">1 / 1</span>
     <button id="pdf-next" onclick="changePage(1)">▶</button>
   </div>
+  <div id="mode-hint"></div>
 
-  <!-- Canvas Area -->
   <div id="canvas-area">
     <div id="transform-wrapper">
       <canvas id="bg-canvas"></canvas>
       <canvas id="draw-canvas"></canvas>
+      <canvas id="circle-canvas"></canvas>
+      <canvas id="hit-canvas"></canvas>
     </div>
   </div>
 
-  <!-- Toolbar -->
   <div id="toolbar">
-    <!-- Tools -->
     <div class="tb-group">
-      <button class="tb-btn active" id="btn-pen" onclick="setTool('pen')" title="Bút vẽ">
-        ✏️<span class="label">Bút</span>
+      <button class="tb-btn active" id="btn-pen" onclick="togglePen()">
+        ✏️<span class="lbl">Bút</span>
       </button>
-      <button class="tb-btn" id="btn-circle" onclick="setTool('circle')" title="Khoanh tròn">
-        ⭕<span class="label">Tròn</span>
+      <button class="tb-btn" id="btn-circle" onclick="setTool('circle')">
+        ⭕<span class="lbl">Tròn</span>
       </button>
-      <button class="tb-btn" id="btn-eraser" onclick="setTool('eraser')" title="Tẩy">
-        🧹<span class="label">Tẩy</span>
+      <button class="tb-btn" id="btn-move" onclick="setTool('move')">
+        ✋<span class="lbl">Dịch chuyển</span>
+      </button>
+      <button class="tb-btn" id="btn-eraser" onclick="setTool('eraser')">
+        🧹<span class="lbl">Tẩy</span>
       </button>
     </div>
-
-    <div class="tb-divider"></div>
-
-    <!-- Colors -->
+    <div class="tb-div"></div>
     <div class="tb-group">
-      <div class="color-btn red active" id="color-red" onclick="setColor('#ef4444', this)" title="Đỏ"></div>
-      <div class="color-btn blue" id="color-blue" onclick="setColor('#3b82f6', this)" title="Xanh"></div>
-      <div class="color-btn black" id="color-black" onclick="setColor('#1a1a1a', this)" title="Đen"></div>
-      <div class="color-btn green" id="color-green" onclick="setColor('#22c55e', this)" title="Xanh lá"></div>
+      <div class="color-btn red active" onclick="setColor('#ef4444',this)" title="Đỏ"></div>
+      <div class="color-btn blue" onclick="setColor('#3b82f6',this)" title="Xanh"></div>
+      <div class="color-btn black" onclick="setColor('#111',this)" title="Đen"></div>
+      <div class="color-btn green" onclick="setColor('#22c55e',this)" title="Xanh lá"></div>
     </div>
-
-    <div class="tb-divider"></div>
-
-    <!-- Size -->
+    <div class="tb-div"></div>
     <div class="size-wrap">
       <label>NÉT</label>
       <input type="range" id="sizeSlider" min="1" max="20" value="3" oninput="setSize(this.value)">
     </div>
-
-    <div class="tb-divider"></div>
-
-    <!-- History -->
-    <div class="tb-group">
-      <button class="tb-btn" id="btn-undo" onclick="undo()" title="Hoàn tác">
-        ↩️<span class="label">Undo</span>
-      </button>
-      <button class="tb-btn" id="btn-redo" onclick="redo()" title="Làm lại">
-        ↪️<span class="label">Redo</span>
-      </button>
+    <div class="tb-div"></div>
+    <div class="zoom-wrap">
+      <button class="zoom-btn" onclick="zoomStep(-1)" title="Thu nhỏ">−</button>
+      <span id="zoom-label">100%</span>
+      <button class="zoom-btn" onclick="zoomStep(1)" title="Phóng to">+</button>
+      <button class="zoom-btn fit-btn" onclick="fitCanvasToArea()" title="Vừa màn hình">Fit</button>
     </div>
-
-    <div class="tb-divider"></div>
-
-    <!-- Actions -->
+    <div class="tb-div"></div>
     <div class="tb-group">
-      <button class="tb-btn danger" onclick="clearCanvas()" title="Xóa hết">
-        🗑️<span class="label">Xóa</span>
-      </button>
-      <button class="tb-btn success" onclick="saveImage()" title="Lưu ảnh">
-        💾<span class="label">Lưu</span>
-      </button>
+      <button class="tb-btn" id="btn-undo" onclick="undo()">↩️<span class="lbl">Undo</span></button>
+      <button class="tb-btn" id="btn-redo" onclick="redo()">↪️<span class="lbl">Redo</span></button>
+    </div>
+    <div class="tb-div"></div>
+    <div class="tb-group">
+      <button class="tb-btn danger" onclick="clearCanvas()">🗑️<span class="lbl">Xóa</span></button>
+      <button class="tb-btn success" onclick="saveImage()">💾<span class="lbl">Lưu</span></button>
     </div>
   </div>
 </div>
 
-<!-- Toast -->
 <div id="toast"></div>
-<!-- Size indicator -->
-<div id="size-indicator" id="size-indicator"></div>
 
-<!-- PDF.js CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-
 <script>
-// =============================================
-// GLOBAL STATE
-// =============================================
-const state = {
-  tool: 'pen',        // pen | circle | eraser
+// ═══════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════
+const S = {
+  tool: 'pen',        // 'pen' | 'circle' | 'move' | 'eraser' | 'scroll'
+  prevTool: 'pen',    // tool before entering scroll mode
   color: '#ef4444',
   size: 3,
+
   isDrawing: false,
   lastX: 0, lastY: 0,
-  // Circle tool
+
   circleStart: null,
-  circlePreview: null,
-  // Zoom & Pan
-  scale: 1,
-  panX: 0, panY: 0,
-  // Touch
+
+  circles: [],
+  nextId: 1,
+  selectedId: null,
+
+  // Move mode
+  draggingId: null,
+  dragOffsetX: 0,
+  dragOffsetY: 0,
+
+  // *** Resize mode (new) ***
+  resizingId: null,      // which circle is being resized
+  resizeHandle: null,    // 'tl'|'tr'|'bl'|'br'|'l'|'r'|'t'|'b'
+  resizeStartX: 0,
+  resizeStartY: 0,
+  resizeOrigCircle: null, // snapshot of circle before resize
+
+  // Scroll/pan (for 'scroll' tool and pinch)
+  isPanning: false,
+  panStartX: 0, panStartY: 0,
+  panStartPanX: 0, panStartPanY: 0,
+
+  scale: 1, panX: 0, panY: 0,
+
   lastTouchDist: 0,
   lastTouchMid: null,
-  isPanning: false,
-  // History
+  isPinching: false,
+
   history: [],
-  historyIndex: -1,
-  maxHistory: Infinity,
-  // PDF
+  histIdx: -1,
+
+  canvasW: 0,
+  canvasH: 0,
+
   pdfDoc: null,
   currentPage: 1,
   totalPages: 1,
-  // Canvas dimensions (logical)
-  canvasW: 0,
-  canvasH: 0,
 };
 
-// =============================================
-// DOM ELEMENTS
-// =============================================
-const bgCanvas    = document.getElementById('bg-canvas');
-const drawCanvas  = document.getElementById('draw-canvas');
-const bgCtx       = bgCanvas.getContext('2d');
-const drawCtx     = drawCanvas.getContext('2d');
-const wrapper     = document.getElementById('transform-wrapper');
-const canvasArea  = document.getElementById('canvas-area');
-const app         = document.getElementById('app');
-const uploadScreen= document.getElementById('upload-screen');
-const loading     = document.getElementById('loading');
-const pdfNav      = document.getElementById('pdf-nav');
-const sizeSlider  = document.getElementById('sizeSlider');
+// ═══════════════════════════════════════════════════
+// DOM REFS
+// ═══════════════════════════════════════════════════
+const bgCanvas     = document.getElementById('bg-canvas');
+const drawCanvas   = document.getElementById('draw-canvas');
+const circleCanvas = document.getElementById('circle-canvas');
+const hitCanvas    = document.getElementById('hit-canvas');
+const bgCtx        = bgCanvas.getContext('2d');
+const drawCtx      = drawCanvas.getContext('2d');
+const circleCtx    = circleCanvas.getContext('2d');
+const wrapper      = document.getElementById('transform-wrapper');
+const canvasArea   = document.getElementById('canvas-area');
+const app          = document.getElementById('app');
+const uploadScreen = document.getElementById('upload-screen');
+const loading      = document.getElementById('loading');
+const pdfNav       = document.getElementById('pdf-nav');
+const modeHint     = document.getElementById('mode-hint');
 
-// =============================================
-// ORIENTATION & FULLSCREEN
-// =============================================
+// ═══════════════════════════════════════════════════
+// ORIENTATION / FULLSCREEN
+// ═══════════════════════════════════════════════════
 function checkOrientation() {
   const overlay = document.getElementById('rotate-overlay');
   const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
   if (!isMobile) { overlay.style.display = 'none'; return; }
-  
   const isLandscape = window.innerWidth > window.innerHeight;
   overlay.style.display = isLandscape ? 'none' : 'flex';
 }
-
-// Try lock landscape
 function tryLockLandscape() {
-  if (screen.orientation && screen.orientation.lock) {
+  if (screen.orientation && screen.orientation.lock)
     screen.orientation.lock('landscape').catch(() => {});
-  }
 }
-
-window.addEventListener('orientationchange', () => {
-  setTimeout(() => { checkOrientation(); fitCanvasToArea(); }, 300);
-});
-window.addEventListener('resize', () => {
-  setTimeout(() => { checkOrientation(); fitCanvasToArea(); }, 100);
-});
-
-// Request fullscreen on first interaction
 function requestFullscreen() {
   const el = document.documentElement;
   if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
   else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
 }
+window.addEventListener('orientationchange', () =>
+  setTimeout(() => { checkOrientation(); fitCanvasToArea(); }, 300));
+window.addEventListener('resize', () =>
+  setTimeout(() => { checkOrientation(); fitCanvasToArea(); }, 100));
 
-// =============================================
+// ═══════════════════════════════════════════════════
 // FILE UPLOAD
-// =============================================
-const fileInput = document.getElementById('file-input');
+// ═══════════════════════════════════════════════════
+const fileInput  = document.getElementById('file-input');
 const uploadZone = document.getElementById('upload-zone');
 
-// Drag & drop
 uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
 uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
 uploadZone.addEventListener('drop', e => {
-  e.preventDefault();
-  uploadZone.classList.remove('drag-over');
-  const file = e.dataTransfer.files[0];
-  if (file) handleFile(file);
+  e.preventDefault(); uploadZone.classList.remove('drag-over');
+  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
 });
-
-fileInput.addEventListener('change', e => {
-  const file = e.target.files[0];
-  if (file) handleFile(file);
-});
+fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
 
 async function handleFile(file) {
   loading.classList.add('show');
   try {
-    if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+    if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf'))
       await loadPDF(file);
-    } else if (file.type.startsWith('image/')) {
+    else if (file.type.startsWith('image/'))
       await loadImage(file);
-    } else {
-      showToast('⚠️ Chỉ hỗ trợ JPG, PNG, PDF');
-      loading.classList.remove('show');
-      return;
-    }
-    // Switch to app
+    else { showToast('⚠️ Chỉ hỗ trợ JPG, PNG, PDF'); loading.classList.remove('show'); return; }
+
     uploadScreen.style.display = 'none';
     app.classList.add('active');
-    tryLockLandscape();
-    requestFullscreen();
-    checkOrientation();
-    // Reset history
-    state.history = [];
-    state.historyIndex = -1;
-    saveHistoryState();
-    // Save to localStorage
-    saveToStorage();
-  } catch(err) {
-    showToast('❌ Lỗi tải file: ' + err.message);
-  }
+    tryLockLandscape(); requestFullscreen(); checkOrientation();
+
+    S.circles = []; S.selectedId = null;
+    S.history = []; S.histIdx = -1;
+    saveHistory();
+  } catch (err) { showToast('❌ Lỗi: ' + err.message); }
   loading.classList.remove('show');
 }
 
-// =============================================
-// LOAD IMAGE
-// =============================================
+// ═══════════════════════════════════════════════════
+// LOAD IMAGE / PDF
+// ═══════════════════════════════════════════════════
 async function loadImage(file) {
-  return new Promise((resolve, reject) => {
+  return new Promise((res, rej) => {
     const url = URL.createObjectURL(file);
     const img = new Image();
     img.onload = () => {
-      state.pdfDoc = null;
-      pdfNav.classList.remove('visible');
+      S.pdfDoc = null; pdfNav.classList.remove('visible');
       setupCanvases(img.width, img.height);
       bgCtx.drawImage(img, 0, 0);
-      clearDrawCanvas();
+      clearPenCanvas(); clearCircleCanvas();
       fitCanvasToArea();
-      URL.revokeObjectURL(url);
-      resolve();
+      URL.revokeObjectURL(url); res();
     };
-    img.onerror = reject;
-    img.src = url;
+    img.onerror = rej; img.src = url;
   });
 }
-
-// =============================================
-// LOAD PDF
-// =============================================
 async function loadPDF(file) {
   pdfjsLib.GlobalWorkerOptions.workerSrc =
     'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-  
-  const arrayBuffer = await file.arrayBuffer();
-  state.pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-  state.totalPages = state.pdfDoc.numPages;
-  state.currentPage = 1;
-  
+  const ab = await file.arrayBuffer();
+  S.pdfDoc = await pdfjsLib.getDocument({ data: ab }).promise;
+  S.totalPages = S.pdfDoc.numPages; S.currentPage = 1;
   pdfNav.classList.add('visible');
-  await renderPDFPage(state.currentPage);
-  updatePDFNav();
+  await renderPDFPage(1); updatePDFNav();
 }
-
-async function renderPDFPage(pageNum) {
-  if (!state.pdfDoc) return;
-  const page = await state.pdfDoc.getPage(pageNum);
-  const viewport = page.getViewport({ scale: 2.0 }); // High resolution
-  
-  setupCanvases(viewport.width, viewport.height);
-  clearDrawCanvas();
-  
-  await page.render({ canvasContext: bgCtx, viewport }).promise;
+async function renderPDFPage(n) {
+  const page = await S.pdfDoc.getPage(n);
+  const vp = page.getViewport({ scale: 2.0 });
+  setupCanvases(vp.width, vp.height);
+  clearPenCanvas(); clearCircleCanvas();
+  await page.render({ canvasContext: bgCtx, viewport: vp }).promise;
   fitCanvasToArea();
 }
-
 async function changePage(delta) {
-  const newPage = state.currentPage + delta;
-  if (newPage < 1 || newPage > state.totalPages) return;
+  const np = S.currentPage + delta;
+  if (np < 1 || np > S.totalPages) return;
   loading.classList.add('show');
-  state.currentPage = newPage;
-  
-  // Save current annotations
-  const key = `page_${state.currentPage - delta}`;
-  const dataURL = drawCanvas.toDataURL();
-  localStorage.setItem(key, dataURL);
-  
-  await renderPDFPage(state.currentPage);
-  
-  // Load saved annotations if any
-  const saved = localStorage.getItem(`page_${state.currentPage}`);
-  if (saved) {
-    const img = new Image();
-    img.onload = () => drawCtx.drawImage(img, 0, 0);
-    img.src = saved;
-  }
-  
-  state.history = [];
-  state.historyIndex = -1;
-  saveHistoryState();
-  updatePDFNav();
+  S.currentPage = np;
+  await renderPDFPage(np);
+  S.circles = []; S.history = []; S.histIdx = -1;
+  saveHistory(); updatePDFNav();
   loading.classList.remove('show');
 }
-
 function updatePDFNav() {
-  document.getElementById('pdf-page-info').textContent =
-    `${state.currentPage} / ${state.totalPages}`;
-  document.getElementById('pdf-prev').disabled = state.currentPage <= 1;
-  document.getElementById('pdf-next').disabled = state.currentPage >= state.totalPages;
+  document.getElementById('pdf-page-info').textContent = `${S.currentPage} / ${S.totalPages}`;
+  document.getElementById('pdf-prev').disabled = S.currentPage <= 1;
+  document.getElementById('pdf-next').disabled = S.currentPage >= S.totalPages;
 }
 
-// =============================================
-// CANVAS SETUP & FIT
-// =============================================
+// ═══════════════════════════════════════════════════
+// CANVAS SETUP & TRANSFORM
+// ═══════════════════════════════════════════════════
 function setupCanvases(w, h) {
-  state.canvasW = w;
-  state.canvasH = h;
-  bgCanvas.width  = w; bgCanvas.height  = h;
-  drawCanvas.width = w; drawCanvas.height = h;
+  S.canvasW = w; S.canvasH = h;
+  [bgCanvas, drawCanvas, circleCanvas, hitCanvas].forEach(c => {
+    c.width = w; c.height = h;
+  });
   wrapper.style.width  = w + 'px';
   wrapper.style.height = h + 'px';
 }
-
 function fitCanvasToArea() {
-  const areaW = canvasArea.clientWidth;
-  const areaH = canvasArea.clientHeight;
-  if (!state.canvasW || !state.canvasH) return;
-  
-  const scaleW = areaW / state.canvasW;
-  const scaleH = areaH / state.canvasH;
-  const fitScale = Math.min(scaleW, scaleH);
-  
-  state.scale = fitScale;
-  state.panX = (areaW - state.canvasW * fitScale) / 2;
-  state.panY = (areaH - state.canvasH * fitScale) / 2;
-  
+  if (!S.canvasW || !S.canvasH) return;
+  const aw = canvasArea.clientWidth, ah = canvasArea.clientHeight;
+  S.scale = Math.min(aw / S.canvasW, ah / S.canvasH);
+  S.panX  = (aw - S.canvasW * S.scale) / 2;
+  S.panY  = (ah - S.canvasH * S.scale) / 2;
+  applyTransform();
+}
+function applyTransform() {
+  wrapper.style.transform = `translate(${S.panX}px,${S.panY}px) scale(${S.scale})`;
+  document.getElementById('zoom-label').textContent = Math.round(S.scale * 100) + '%';
+}
+function zoomStep(dir) {
+  const step = 0.2;
+  const aw = canvasArea.clientWidth, ah = canvasArea.clientHeight;
+  const cx = aw / 2, cy = ah / 2;
+  const newScale = Math.max(0.15, Math.min(8, S.scale + dir * step));
+  S.panX = cx - (cx - S.panX) * (newScale / S.scale);
+  S.panY = cy - (cy - S.panY) * (newScale / S.scale);
+  S.scale = newScale;
   applyTransform();
 }
 
-function applyTransform() {
-  wrapper.style.transform =
-    `translate(${state.panX}px, ${state.panY}px) scale(${state.scale})`;
+// ═══════════════════════════════════════════════════
+// TOOL & STYLE
+// ═══════════════════════════════════════════════════
+
+// Toggle pen: if already in pen mode → enter scroll mode. If in scroll → back to pen.
+function togglePen() {
+  if (S.tool === 'pen') {
+    // Enter scroll mode
+    S.prevTool = 'pen';
+    S.tool = 'scroll';
+    S.selectedId = null;
+    renderCircles();
+    document.querySelectorAll('.tb-btn[id^="btn-"]').forEach(b => {
+      b.classList.remove('active');
+      b.classList.remove('scroll-mode');
+    });
+    const btn = document.getElementById('btn-pen');
+    btn.classList.add('scroll-mode');
+    btn.querySelector('.lbl').textContent = 'Cuộn';
+    hitCanvas.style.cursor = 'grab';
+    showHint('scroll', '🖐 Chế độ cuộn — kéo để di chuyển, pinch để zoom');
+  } else if (S.tool === 'scroll') {
+    // Back to pen
+    S.tool = 'pen';
+    S.selectedId = null;
+    renderCircles();
+    document.querySelectorAll('.tb-btn[id^="btn-"]').forEach(b => {
+      b.classList.remove('active');
+      b.classList.remove('scroll-mode');
+    });
+    const btn = document.getElementById('btn-pen');
+    btn.classList.add('active');
+    btn.querySelector('.lbl').textContent = 'Bút';
+    hitCanvas.style.cursor = 'crosshair';
+    hideHint();
+  } else {
+    setTool('pen');
+  }
 }
 
-// =============================================
-// TOOL MANAGEMENT
-// =============================================
 function setTool(tool) {
-  state.tool = tool;
-  // Update active buttons
-  document.querySelectorAll('.tb-btn[id^="btn-"]').forEach(b => b.classList.remove('active'));
+  S.tool = tool;
+  S.selectedId = null;
+  S.resizingId = null;
+  renderCircles();
+
+  document.querySelectorAll('.tb-btn[id^="btn-"]').forEach(b => {
+    b.classList.remove('active');
+    b.classList.remove('scroll-mode');
+  });
+  // Reset pen label
+  const penBtn = document.getElementById('btn-pen');
+  if (penBtn) penBtn.querySelector('.lbl').textContent = 'Bút';
+
   const btn = document.getElementById('btn-' + tool);
   if (btn) btn.classList.add('active');
-  
-  drawCanvas.style.cursor = tool === 'eraser' ? 'cell' : 'crosshair';
+
+  if (tool === 'move') {
+    hitCanvas.style.cursor = 'grab';
+    showHint('move', '✋ Nhấn vào vòng tròn để chọn & kéo resize handles');
+    clearTimeout(window._mht);
+    window._mht = setTimeout(() => hideHint(), 3500);
+  } else if (tool === 'eraser') {
+    hitCanvas.style.cursor = 'cell';
+    hideHint();
+  } else {
+    hitCanvas.style.cursor = 'crosshair';
+    hideHint();
+  }
+}
+
+function showHint(type, msg) {
+  modeHint.textContent = msg;
+  modeHint.className = '';
+  modeHint.classList.add('show', type);
+}
+function hideHint() {
+  modeHint.classList.remove('show');
 }
 
 function setColor(hex, el) {
-  state.color = hex;
+  S.color = hex;
   document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
 }
+function setSize(val) { S.size = parseInt(val); }
 
-function setSize(val) {
-  state.size = parseInt(val);
-  // Show indicator
-  const ind = document.getElementById('size-indicator');
-  ind.textContent = `Nét: ${val}px`;
-  ind.classList.add('show');
-  clearTimeout(window._sizeTimer);
-  window._sizeTimer = setTimeout(() => ind.classList.remove('show'), 1500);
-}
-
-// =============================================
-// COORDINATE CONVERSION
-// =============================================
-// Convert screen coords to canvas logical coords
-function screenToCanvas(sx, sy) {
-  const rect = canvasArea.getBoundingClientRect();
+// ═══════════════════════════════════════════════════
+// COORDINATE: screen → canvas logical
+// ═══════════════════════════════════════════════════
+function toCanvas(sx, sy) {
+  const r = canvasArea.getBoundingClientRect();
   return {
-    x: (sx - rect.left - state.panX) / state.scale,
-    y: (sy - rect.top  - state.panY) / state.scale,
+    x: (sx - r.left - S.panX) / S.scale,
+    y: (sy - r.top  - S.panY) / S.scale,
   };
 }
 
-// =============================================
-// DRAWING — MOUSE EVENTS
-// =============================================
-drawCanvas.addEventListener('mousedown', e => {
-  if (e.button !== 0) return;
-  e.preventDefault();
-  const pos = screenToCanvas(e.clientX, e.clientY);
-  startDraw(pos.x, pos.y);
-});
-drawCanvas.addEventListener('mousemove', e => {
-  e.preventDefault();
-  if (!state.isDrawing) return;
-  const pos = screenToCanvas(e.clientX, e.clientY);
-  continueDraw(pos.x, pos.y);
-});
-drawCanvas.addEventListener('mouseup',   e => { if (state.isDrawing) endDraw(); });
-drawCanvas.addEventListener('mouseleave',e => { if (state.isDrawing) endDraw(); });
+// ═══════════════════════════════════════════════════
+// HIT TESTS
+// ═══════════════════════════════════════════════════
+function hitCircle(x, y) {
+  const hitPx = Math.max(14 / S.scale, 8);
+  for (let i = S.circles.length - 1; i >= 0; i--) {
+    const c = S.circles[i];
+    if (c.rx < 1 || c.ry < 1) continue;
+    const nx = (x - c.cx) / c.rx;
+    const ny = (y - c.cy) / c.ry;
+    const d  = Math.sqrt(nx * nx + ny * ny);
+    const tol = hitPx / Math.min(c.rx, c.ry);
+    if (Math.abs(d - 1) < tol) return c;
+    if (c.rx < 40 && c.ry < 40 && d < 1.1 + tol) return c;
+  }
+  return null;
+}
 
-// =============================================
-// DRAWING — TOUCH EVENTS
-// =============================================
+// Returns resize handle name if (x,y) is near one of the 8 handles
+// of the selected circle, else null
+function hitResizeHandle(x, y, c) {
+  if (!c) return null;
+  const handleR = Math.max(12 / S.scale, 6);
+  const handles = getHandlePositions(c);
+  for (const [name, hx, hy] of handles) {
+    const dx = x - hx, dy = y - hy;
+    if (Math.sqrt(dx*dx + dy*dy) < handleR) return name;
+  }
+  return null;
+}
+
+// 8 resize handle positions for a circle
+function getHandlePositions(c) {
+  return [
+    ['tl', c.cx - c.rx, c.cy - c.ry],
+    ['t',  c.cx,         c.cy - c.ry],
+    ['tr', c.cx + c.rx, c.cy - c.ry],
+    ['r',  c.cx + c.rx, c.cy        ],
+    ['br', c.cx + c.rx, c.cy + c.ry],
+    ['b',  c.cx,         c.cy + c.ry],
+    ['bl', c.cx - c.rx, c.cy + c.ry],
+    ['l',  c.cx - c.rx, c.cy        ],
+  ];
+}
+
+// ═══════════════════════════════════════════════════
+// RENDER CIRCLES (with resize handles when selected)
+// ═══════════════════════════════════════════════════
+function renderCircles() {
+  circleCtx.clearRect(0, 0, circleCanvas.width, circleCanvas.height);
+  for (const c of S.circles) {
+    const selected = c.id === S.selectedId;
+    const rx = Math.max(1, c.rx), ry = Math.max(1, c.ry);
+
+    // Selection dashed ring
+    if (selected) {
+      circleCtx.beginPath();
+      circleCtx.ellipse(c.cx, c.cy, rx + 6/S.scale, ry + 6/S.scale, 0, 0, Math.PI*2);
+      circleCtx.strokeStyle = 'rgba(255,255,255,0.4)';
+      circleCtx.lineWidth   = 1.5 / S.scale;
+      circleCtx.setLineDash([6/S.scale, 3/S.scale]);
+      circleCtx.stroke();
+      circleCtx.setLineDash([]);
+    }
+
+    // The circle
+    circleCtx.beginPath();
+    circleCtx.ellipse(c.cx, c.cy, rx, ry, 0, 0, Math.PI*2);
+    circleCtx.strokeStyle = c.color;
+    circleCtx.lineWidth   = c.size;
+    circleCtx.lineCap     = 'round';
+    circleCtx.stroke();
+
+    // Resize handles when selected (in move tool)
+    if (selected && S.tool === 'move') {
+      const handles = getHandlePositions(c);
+      const hr = Math.max(7 / S.scale, 4);
+      for (const [name, hx, hy] of handles) {
+        // outer circle (white border)
+        circleCtx.beginPath();
+        circleCtx.arc(hx, hy, hr, 0, Math.PI*2);
+        circleCtx.fillStyle = '#4f8ef7';
+        circleCtx.fill();
+        circleCtx.strokeStyle = '#fff';
+        circleCtx.lineWidth = 1.5 / S.scale;
+        circleCtx.stroke();
+
+        // tiny icon for corners vs edges
+        circleCtx.fillStyle = '#fff';
+        circleCtx.font = `bold ${Math.max(6/S.scale,5)}px sans-serif`;
+        circleCtx.textAlign = 'center';
+        circleCtx.textBaseline = 'middle';
+        const icons = {tl:'↖',tr:'↗',bl:'↙',br:'↘',t:'↕',b:'↕',l:'↔',r:'↔'};
+        circleCtx.fillText(icons[name] || '·', hx, hy);
+      }
+
+      // Move handle at centre
+      const mhr = Math.max(9/S.scale, 5);
+      circleCtx.beginPath();
+      circleCtx.arc(c.cx, c.cy, mhr, 0, Math.PI*2);
+      circleCtx.fillStyle = 'rgba(79,142,247,0.85)';
+      circleCtx.fill();
+      circleCtx.strokeStyle = '#fff';
+      circleCtx.lineWidth = 1.5/S.scale;
+      circleCtx.stroke();
+      circleCtx.fillStyle = '#fff';
+      circleCtx.font = `bold ${Math.max(8/S.scale,6)}px sans-serif`;
+      circleCtx.textAlign = 'center';
+      circleCtx.textBaseline = 'middle';
+      circleCtx.fillText('✥', c.cx, c.cy);
+    }
+  }
+}
+
+function renderCirclePreview(x1, y1, x2, y2) {
+  renderCircles();
+  const cx = (x1+x2)/2, cy = (y1+y2)/2;
+  const rx = Math.abs(x2-x1)/2, ry = Math.abs(y2-y1)/2;
+  if (rx < 1 && ry < 1) return;
+  circleCtx.beginPath();
+  circleCtx.ellipse(cx, cy, Math.max(1,rx), Math.max(1,ry), 0, 0, Math.PI*2);
+  circleCtx.strokeStyle = S.color;
+  circleCtx.lineWidth   = S.size;
+  circleCtx.lineCap     = 'round';
+  circleCtx.stroke();
+}
+
+// ═══════════════════════════════════════════════════
+// MOUSE EVENTS
+// ═══════════════════════════════════════════════════
+hitCanvas.addEventListener('mousedown', e => {
+  if (e.button !== 0) return; e.preventDefault();
+  const p = toCanvas(e.clientX, e.clientY);
+  onDown(p.x, p.y, e.clientX, e.clientY);
+});
+hitCanvas.addEventListener('mousemove', e => {
+  e.preventDefault();
+  const p = toCanvas(e.clientX, e.clientY);
+  onMove(p.x, p.y, e.clientX, e.clientY);
+});
+hitCanvas.addEventListener('mouseup',    () => onUp());
+hitCanvas.addEventListener('mouseleave', () => onUp());
+
+// ═══════════════════════════════════════════════════
+// TOUCH EVENTS
+// ═══════════════════════════════════════════════════
 canvasArea.addEventListener('touchstart',  onTouchStart,  { passive: false });
 canvasArea.addEventListener('touchmove',   onTouchMove,   { passive: false });
 canvasArea.addEventListener('touchend',    onTouchEnd,    { passive: false });
@@ -790,309 +737,366 @@ canvasArea.addEventListener('touchcancel', onTouchEnd,    { passive: false });
 
 function onTouchStart(e) {
   e.preventDefault();
-  const touches = e.touches;
-
-  if (touches.length === 1) {
-    // Single finger: draw
-    state.isPanning = false;
-    const t = touches[0];
-    const pos = screenToCanvas(t.clientX, t.clientY);
-    startDraw(pos.x, pos.y);
-  } else if (touches.length === 2) {
-    // Two fingers: zoom/pan
-    if (state.isDrawing) endDraw();
-    state.isPanning = true;
-    state.lastTouchDist = getTouchDist(touches);
-    state.lastTouchMid  = getTouchMid(touches);
+  if (e.touches.length === 1) {
+    S.isPinching = false;
+    const t = e.touches[0];
+    const p = toCanvas(t.clientX, t.clientY);
+    onDown(p.x, p.y, t.clientX, t.clientY);
+  } else if (e.touches.length === 2) {
+    onUp();
+    S.isPinching = true;
+    S.lastTouchDist = getTouchDist(e.touches);
+    S.lastTouchMid  = getTouchMid(e.touches);
   }
 }
-
 function onTouchMove(e) {
   e.preventDefault();
-  const touches = e.touches;
-
-  if (touches.length === 1 && !state.isPanning) {
-    if (!state.isDrawing) return;
-    const t = touches[0];
-    const pos = screenToCanvas(t.clientX, t.clientY);
-    continueDraw(pos.x, pos.y);
-  } else if (touches.length === 2) {
-    const dist = getTouchDist(touches);
-    const mid  = getTouchMid(touches);
-    const rect = canvasArea.getBoundingClientRect();
-
-    // Zoom
-    const zoomFactor = dist / state.lastTouchDist;
-    const newScale = Math.max(0.3, Math.min(5, state.scale * zoomFactor));
-
-    // Point under mid should remain fixed
-    const midInArea = { x: mid.x - rect.left, y: mid.y - rect.top };
-    const cx = (midInArea.x - state.panX) / state.scale;
-    const cy = (midInArea.y - state.panY) / state.scale;
-
-    // Pan (finger drag)
-    const dx = mid.x - state.lastTouchMid.x;
-    const dy = mid.y - state.lastTouchMid.y;
-
-    state.scale = newScale;
-    state.panX = midInArea.x - cx * newScale + dx * 0;
-    state.panY = midInArea.y - cy * newScale + dy * 0;
-
-    // Also allow panning while pinching
-    state.panX += mid.x - state.lastTouchMid.x;
-    state.panY += mid.y - state.lastTouchMid.y;
-
-    state.lastTouchDist = dist;
-    state.lastTouchMid  = mid;
+  if (e.touches.length === 1 && !S.isPinching) {
+    const t = e.touches[0];
+    const p = toCanvas(t.clientX, t.clientY);
+    onMove(p.x, p.y, t.clientX, t.clientY);
+  } else if (e.touches.length === 2) {
+    const dist  = getTouchDist(e.touches);
+    const mid   = getTouchMid(e.touches);
+    const rect  = canvasArea.getBoundingClientRect();
+    const ns    = Math.max(0.15, Math.min(8, S.scale * (dist / S.lastTouchDist)));
+    const mx    = mid.x - rect.left;
+    const my    = mid.y - rect.top;
+    const cx    = (mx - S.panX) / S.scale;
+    const cy    = (my - S.panY) / S.scale;
+    S.panX = mx - cx * ns + (mid.x - S.lastTouchMid.x);
+    S.panY = my - cy * ns + (mid.y - S.lastTouchMid.y);
+    S.scale = ns;
+    S.lastTouchDist = dist;
+    S.lastTouchMid  = mid;
     applyTransform();
   }
 }
-
 function onTouchEnd(e) {
   e.preventDefault();
-  if (e.touches.length === 0) {
-    if (state.isDrawing) endDraw();
-    state.isPanning = false;
-  } else if (e.touches.length === 1) {
-    state.isPanning = false;
-    // Resume drawing with remaining finger
+  if (e.touches.length === 0) { onUp(); S.isPinching = false; }
+  else if (e.touches.length === 1) {
+    S.isPinching = false;
     const t = e.touches[0];
-    const pos = screenToCanvas(t.clientX, t.clientY);
-    startDraw(pos.x, pos.y);
+    const p = toCanvas(t.clientX, t.clientY);
+    onDown(p.x, p.y, t.clientX, t.clientY);
   }
 }
-
-function getTouchDist(touches) {
-  const dx = touches[0].clientX - touches[1].clientX;
-  const dy = touches[0].clientY - touches[1].clientY;
-  return Math.sqrt(dx*dx + dy*dy);
+function getTouchDist(ts) {
+  const dx=ts[0].clientX-ts[1].clientX, dy=ts[0].clientY-ts[1].clientY;
+  return Math.sqrt(dx*dx+dy*dy);
 }
-function getTouchMid(touches) {
-  return {
-    x: (touches[0].clientX + touches[1].clientX) / 2,
-    y: (touches[0].clientY + touches[1].clientY) / 2,
-  };
+function getTouchMid(ts) {
+  return { x:(ts[0].clientX+ts[1].clientX)/2, y:(ts[0].clientY+ts[1].clientY)/2 };
 }
 
-// =============================================
-// CORE DRAW LOGIC
-// =============================================
-// Store circle snapshot for preview
-let _circleSnapshot = null;
+// ═══════════════════════════════════════════════════
+// UNIFIED POINTER LOGIC
+// screenX/screenY = raw screen coords for panning
+// ═══════════════════════════════════════════════════
+function onDown(x, y, screenX, screenY) {
+  S.lastX = x; S.lastY = y;
 
-function startDraw(x, y) {
-  state.isDrawing = true;
-  state.lastX = x;
-  state.lastY = y;
+  // ── SCROLL MODE: pan the canvas ──
+  if (S.tool === 'scroll') {
+    S.isPanning = true;
+    S.panStartX = screenX;
+    S.panStartY = screenY;
+    S.panStartPanX = S.panX;
+    S.panStartPanY = S.panY;
+    hitCanvas.style.cursor = 'grabbing';
+    return;
+  }
 
-  if (state.tool === 'circle') {
-    state.circleStart = { x, y };
-    _circleSnapshot = drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height);
-  } else {
-    // Pen / Eraser: start a dot
-    drawCtx.beginPath();
-    drawCtx.arc(x, y, state.size / 2, 0, Math.PI * 2);
-    if (state.tool === 'eraser') {
-      drawCtx.globalCompositeOperation = 'destination-out';
-      drawCtx.fillStyle = 'rgba(0,0,0,1)';
-    } else {
-      drawCtx.globalCompositeOperation = 'source-over';
-      drawCtx.fillStyle = state.color;
+  // ── MOVE TOOL ──
+  if (S.tool === 'move') {
+    const selCircle = S.circles.find(c => c.id === S.selectedId);
+
+    // Check resize handles first (only if a circle is selected)
+    if (selCircle) {
+      const handle = hitResizeHandle(x, y, selCircle);
+      if (handle) {
+        S.resizingId = selCircle.id;
+        S.resizeHandle = handle;
+        S.resizeStartX = x;
+        S.resizeStartY = y;
+        S.resizeOrigCircle = { ...selCircle };
+        hitCanvas.style.cursor = 'nwse-resize';
+        return;
+      }
+      // Check centre move handle
+      const dx = x - selCircle.cx, dy = y - selCircle.cy;
+      const mr = Math.max(12/S.scale, 6);
+      if (Math.sqrt(dx*dx+dy*dy) < mr) {
+        S.draggingId  = selCircle.id;
+        S.dragOffsetX = dx;
+        S.dragOffsetY = dy;
+        hitCanvas.style.cursor = 'grabbing';
+        return;
+      }
     }
-    drawCtx.fill();
+
+    // Hit-test circle outline to select it
+    const hit = hitCircle(x, y);
+    if (hit) {
+      S.selectedId = hit.id;
+      // Immediately start dragging it
+      S.draggingId  = hit.id;
+      S.dragOffsetX = x - hit.cx;
+      S.dragOffsetY = y - hit.cy;
+      hitCanvas.style.cursor = 'grabbing';
+    } else {
+      // Deselect
+      S.selectedId = null;
+      S.draggingId = null;
+    }
+    renderCircles();
+    return;
   }
+
+  S.isDrawing = true;
+
+  if (S.tool === 'circle') {
+    S.circleStart = { x, y };
+    return;
+  }
+
+  // pen / eraser — dot at start
+  applyPenStyle();
+  drawCtx.beginPath();
+  drawCtx.arc(x, y, S.size / 2, 0, Math.PI * 2);
+  drawCtx.fill();
 }
 
-function continueDraw(x, y) {
-  if (!state.isDrawing) return;
+function onMove(x, y, screenX, screenY) {
+  // Scroll / pan
+  if (S.tool === 'scroll') {
+    if (!S.isPanning) return;
+    S.panX = S.panStartPanX + (screenX - S.panStartX);
+    S.panY = S.panStartPanY + (screenY - S.panStartY);
+    applyTransform();
+    return;
+  }
 
-  if (state.tool === 'circle') {
-    // Restore snapshot then draw preview
-    drawCtx.putImageData(_circleSnapshot, 0, 0);
-    drawCircle(state.circleStart.x, state.circleStart.y, x, y, false);
+  // Resize
+  if (S.tool === 'move' && S.resizingId !== null) {
+    const c = S.circles.find(c => c.id === S.resizingId);
+    const orig = S.resizeOrigCircle;
+    if (!c || !orig) return;
+    const dx = x - S.resizeStartX;
+    const dy = y - S.resizeStartY;
+    const h = S.resizeHandle;
 
+    // Compute new bounding box edges
+    let left   = orig.cx - orig.rx;
+    let right  = orig.cx + orig.rx;
+    let top    = orig.cy - orig.ry;
+    let bottom = orig.cy + orig.ry;
+
+    if (h.includes('l')) left   = Math.min(left + dx, right - 4);
+    if (h.includes('r')) right  = Math.max(right + dx, left + 4);
+    if (h.includes('t')) top    = Math.min(top + dy, bottom - 4);
+    if (h.includes('b')) bottom = Math.max(bottom + dy, top + 4);
+
+    c.cx = (left + right) / 2;
+    c.cy = (top + bottom) / 2;
+    c.rx = (right - left) / 2;
+    c.ry = (bottom - top) / 2;
+    renderCircles();
+    return;
+  }
+
+  // Move drag
+  if (S.tool === 'move') {
+    if (S.draggingId !== null) {
+      const c = S.circles.find(c => c.id === S.draggingId);
+      if (c) { c.cx = x - S.dragOffsetX; c.cy = y - S.dragOffsetY; }
+      renderCircles();
+    }
+    S.lastX = x; S.lastY = y;
+    return;
+  }
+
+  if (!S.isDrawing) return;
+
+  if (S.tool === 'circle') {
+    renderCirclePreview(S.circleStart.x, S.circleStart.y, x, y);
   } else {
-    // Pen / Eraser: smooth line
+    applyPenStyle();
     drawCtx.beginPath();
-    drawCtx.moveTo(state.lastX, state.lastY);
+    drawCtx.moveTo(S.lastX, S.lastY);
     drawCtx.lineTo(x, y);
-    drawCtx.lineWidth   = state.size;
-    drawCtx.lineCap     = 'round';
-    drawCtx.lineJoin    = 'round';
-
-    if (state.tool === 'eraser') {
-      drawCtx.globalCompositeOperation = 'destination-out';
-      drawCtx.strokeStyle = 'rgba(0,0,0,1)';
-    } else {
-      drawCtx.globalCompositeOperation = 'source-over';
-      drawCtx.strokeStyle = state.color;
-    }
     drawCtx.stroke();
   }
-
-  state.lastX = x;
-  state.lastY = y;
+  S.lastX = x; S.lastY = y;
 }
 
-function endDraw() {
-  if (!state.isDrawing) return;
-  state.isDrawing = false;
-  drawCtx.globalCompositeOperation = 'source-over';
-
-  if (state.tool === 'circle' && state.circleStart) {
-    drawCircle(state.circleStart.x, state.circleStart.y, state.lastX, state.lastY, true);
-    state.circleStart = null;
-    _circleSnapshot = null;
+function onUp() {
+  // Scroll
+  if (S.tool === 'scroll') {
+    S.isPanning = false;
+    hitCanvas.style.cursor = 'grab';
+    return;
   }
 
-  saveHistoryState();
-}
+  // Resize end
+  if (S.tool === 'move' && S.resizingId !== null) {
+    S.resizingId = null;
+    S.resizeHandle = null;
+    S.resizeOrigCircle = null;
+    hitCanvas.style.cursor = 'grab';
+    saveHistory();
+    return;
+  }
 
-// Draw circle from (x1,y1) to (x2,y2)
-function drawCircle(x1, y1, x2, y2, save) {
-  const cx = (x1 + x2) / 2;
-  const cy = (y1 + y2) / 2;
-  const rx = Math.abs(x2 - x1) / 2;
-  const ry = Math.abs(y2 - y1) / 2;
+  // Move end
+  if (S.tool === 'move') {
+    if (S.draggingId !== null) {
+      S.draggingId = null;
+      hitCanvas.style.cursor = 'grab';
+      saveHistory();
+    }
+    return;
+  }
 
-  drawCtx.beginPath();
-  drawCtx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
-  drawCtx.strokeStyle = state.color;
-  drawCtx.lineWidth   = state.size;
-  drawCtx.lineCap     = 'round';
+  if (!S.isDrawing) return;
+  S.isDrawing = false;
   drawCtx.globalCompositeOperation = 'source-over';
-  drawCtx.stroke();
+
+  if (S.tool === 'circle' && S.circleStart) {
+    const x1=S.circleStart.x, y1=S.circleStart.y, x2=S.lastX, y2=S.lastY;
+    const rx=Math.abs(x2-x1)/2, ry=Math.abs(y2-y1)/2;
+    if (rx > 3 || ry > 3) {
+      S.circles.push({
+        id: S.nextId++,
+        cx: (x1+x2)/2, cy: (y1+y2)/2,
+        rx, ry,
+        color: S.color,
+        size:  S.size,
+      });
+    }
+    S.circleStart = null;
+    renderCircles();
+    saveHistory();
+  } else if (S.tool !== 'circle') {
+    saveHistory();
+  }
 }
 
-// =============================================
-// HISTORY (UNDO/REDO)
-// =============================================
-function saveHistoryState() {
-  // Trim redo branch
-  state.history = state.history.slice(0, state.historyIndex + 1);
-  const data = drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height);
-  state.history.push(data);
-
-  // No limit — keep all history
-  state.historyIndex = state.history.length - 1;
-  updateHistoryButtons();
+function applyPenStyle() {
+  drawCtx.lineWidth  = S.size;
+  drawCtx.lineCap    = 'round';
+  drawCtx.lineJoin   = 'round';
+  if (S.tool === 'eraser') {
+    drawCtx.globalCompositeOperation = 'destination-out';
+    drawCtx.strokeStyle = 'rgba(0,0,0,1)';
+    drawCtx.fillStyle   = 'rgba(0,0,0,1)';
+  } else {
+    drawCtx.globalCompositeOperation = 'source-over';
+    drawCtx.strokeStyle = S.color;
+    drawCtx.fillStyle   = S.color;
+  }
 }
 
+// ═══════════════════════════════════════════════════
+// HISTORY
+// ═══════════════════════════════════════════════════
+function saveHistory() {
+  S.history = S.history.slice(0, S.histIdx + 1);
+  S.history.push({
+    penSnap: drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height),
+    circles: JSON.parse(JSON.stringify(S.circles)),
+  });
+  S.histIdx = S.history.length - 1;
+  updateHistoryBtns();
+}
 function undo() {
-  if (state.historyIndex <= 0) { showToast('⚠️ Không còn gì để Undo'); return; }
-  state.historyIndex--;
-  drawCtx.putImageData(state.history[state.historyIndex], 0, 0);
-  updateHistoryButtons();
+  if (S.histIdx <= 0) { showToast('⚠️ Không còn gì để Undo'); return; }
+  S.histIdx--;
+  restore(S.history[S.histIdx]);
 }
-
 function redo() {
-  if (state.historyIndex >= state.history.length - 1) { showToast('⚠️ Không còn gì để Redo'); return; }
-  state.historyIndex++;
-  drawCtx.putImageData(state.history[state.historyIndex], 0, 0);
-  updateHistoryButtons();
+  if (S.histIdx >= S.history.length - 1) { showToast('⚠️ Không còn gì để Redo'); return; }
+  S.histIdx++;
+  restore(S.history[S.histIdx]);
+}
+function restore(h) {
+  drawCtx.putImageData(h.penSnap, 0, 0);
+  S.circles = JSON.parse(JSON.stringify(h.circles));
+  S.selectedId = null;
+  renderCircles();
+  updateHistoryBtns();
+}
+function updateHistoryBtns() {
+  document.getElementById('btn-undo').style.opacity = S.histIdx > 0 ? '1' : '0.35';
+  document.getElementById('btn-redo').style.opacity = S.histIdx < S.history.length-1 ? '1' : '0.35';
 }
 
-function updateHistoryButtons() {
-  document.getElementById('btn-undo').style.opacity = state.historyIndex > 0 ? '1' : '0.4';
-  document.getElementById('btn-redo').style.opacity =
-    state.historyIndex < state.history.length - 1 ? '1' : '0.4';
-}
-
-// =============================================
-// CLEAR
-// =============================================
+// ═══════════════════════════════════════════════════
+// CLEAR / SAVE / HOME
+// ═══════════════════════════════════════════════════
 function clearCanvas() {
-  if (!confirm('Xóa toàn bộ nét vẽ?')) return;
-  clearDrawCanvas();
-  saveHistoryState();
-  showToast('🗑️ Đã xóa toàn bộ');
+  if (!confirm('Xóa toàn bộ nét vẽ và vòng tròn?')) return;
+  clearPenCanvas(); clearCircleCanvas();
+  S.circles = []; S.selectedId = null;
+  saveHistory(); showToast('🗑️ Đã xóa toàn bộ');
 }
-function clearDrawCanvas() {
-  drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
-}
+function clearPenCanvas()    { drawCtx.clearRect(0,0,drawCanvas.width,drawCanvas.height); }
+function clearCircleCanvas() { circleCtx.clearRect(0,0,circleCanvas.width,circleCanvas.height); }
 
-// =============================================
-// SAVE IMAGE
-// =============================================
 function saveImage() {
-  const merged = document.createElement('canvas');
-  merged.width  = state.canvasW;
-  merged.height = state.canvasH;
-  const mCtx = merged.getContext('2d');
-  mCtx.drawImage(bgCanvas, 0, 0);
-  mCtx.drawImage(drawCanvas, 0, 0);
+  const prevSel = S.selectedId;
+  S.selectedId = null;
+  renderCircles();
+
+  const out = document.createElement('canvas');
+  out.width = S.canvasW; out.height = S.canvasH;
+  const ctx = out.getContext('2d');
+  ctx.drawImage(bgCanvas, 0, 0);
+  ctx.drawImage(drawCanvas, 0, 0);
+  ctx.drawImage(circleCanvas, 0, 0);
 
   const link = document.createElement('a');
   link.download = `exam_${Date.now()}.png`;
-  link.href = merged.toDataURL('image/png');
+  link.href = out.toDataURL('image/png');
   link.click();
+
+  S.selectedId = prevSel;
+  renderCircles();
   showToast('💾 Đã lưu ảnh!');
 }
 
-// =============================================
-// LOCALSTORAGE
-// =============================================
-function saveToStorage() {
-  try {
-    // Save current draw canvas periodically
-    const data = {
-      canvasW: state.canvasW,
-      canvasH: state.canvasH,
-      drawData: drawCanvas.toDataURL(),
-    };
-    localStorage.setItem('examdraw_state', JSON.stringify(data));
-  } catch(e) {}
-}
-
-// Auto-save every 30s
-setInterval(() => {
-  if (app.classList.contains('active')) saveToStorage();
-}, 30000);
-
-// =============================================
-// GO HOME
-// =============================================
 function goHome() {
   if (!confirm('Tải đề mới? Bài làm chưa lưu sẽ mất.')) return;
-  // Reset
-  state.pdfDoc = null;
-  pdfNav.classList.remove('visible');
-  clearDrawCanvas();
-  state.history = [];
-  state.historyIndex = -1;
+  S.pdfDoc = null; pdfNav.classList.remove('visible');
+  clearPenCanvas(); clearCircleCanvas();
   bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+  S.circles = []; S.history = []; S.histIdx = -1;
   fileInput.value = '';
   app.classList.remove('active');
   uploadScreen.style.display = 'flex';
 }
 
-// =============================================
+// ═══════════════════════════════════════════════════
 // TOAST
-// =============================================
+// ═══════════════════════════════════════════════════
 function showToast(msg) {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  clearTimeout(window._toastTimer);
-  window._toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(window._tt);
+  window._tt = setTimeout(() => t.classList.remove('show'), 2200);
 }
 
-// =============================================
+// ═══════════════════════════════════════════════════
 // INIT
-// =============================================
+// ═══════════════════════════════════════════════════
 checkOrientation();
-updateHistoryButtons();
-sizeSlider.value = state.size;
-
-// Prevent context menu on long press
+updateHistoryBtns();
+document.getElementById('sizeSlider').value = S.size;
 document.addEventListener('contextmenu', e => e.preventDefault());
-
-// Handle window scroll prevention
 document.addEventListener('touchmove', e => {
-  if (e.target === drawCanvas || e.target === canvasArea) e.preventDefault();
+  if (canvasArea.contains(e.target)) e.preventDefault();
 }, { passive: false });
-
 </script>
 </body>
 </html>
-
