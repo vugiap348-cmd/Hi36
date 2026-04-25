@@ -12,7 +12,7 @@
 :root{
   --bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;
   --accent:#4f8ef7;--accent2:#7c3aed;
-  --red:#ef4444;--blue:#3b82f6;--green:#22c55e;
+  --red:#ef4444;--blue:#3b82f6;--green:#22c55e;--orange:#f59e0b;
   --text:#e8eaf0;--muted:#6b7280;--border:rgba(255,255,255,0.08);
   --toolbar-h:68px;--font:'Segoe UI',system-ui,sans-serif;
 }
@@ -34,7 +34,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
 #upload-screen{position:fixed;inset:0;z-index:100;
   background:linear-gradient(135deg,#0f1117 0%,#1a1d27 60%,#0d0f1a 100%);
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:28px;padding:24px;}
+  gap:20px;padding:24px;overflow-y:auto;}
 .upload-logo{font-size:44px;background:linear-gradient(135deg,var(--accent),var(--accent2));
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;
   font-weight:900;letter-spacing:-2px;}
@@ -54,6 +54,22 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
   border:none;border-radius:14px;color:#fff;font-size:16px;font-weight:700;
   padding:16px;cursor:pointer;transition:opacity .2s;}
 .upload-btn:hover{opacity:.9}
+
+/* Image preview strip on upload screen */
+#preview-strip{display:none;width:100%;max-width:400px;flex-direction:column;gap:10px;}
+#preview-strip.has-files{display:flex}
+.preview-header{font-size:13px;font-weight:700;color:var(--accent);display:flex;align-items:center;justify-content:space-between}
+.preview-list{display:flex;gap:8px;overflow-x:auto;padding:4px 0;scrollbar-width:none}
+.preview-list::-webkit-scrollbar{display:none}
+.preview-thumb{position:relative;flex-shrink:0;width:64px;height:64px;border-radius:10px;overflow:hidden;border:2px solid var(--border);}
+.preview-thumb img{width:100%;height:100%;object-fit:cover}
+.preview-thumb .pn{position:absolute;bottom:2px;right:3px;font-size:9px;font-weight:700;background:rgba(0,0,0,.7);color:#fff;padding:1px 4px;border-radius:4px}
+.preview-thumb .px-btn{position:absolute;top:2px;right:2px;width:16px;height:16px;border-radius:50%;background:var(--red);border:none;color:#fff;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
+.start-btn{width:100%;max-width:400px;
+  background:linear-gradient(135deg,var(--green),#16a34a);
+  border:none;border-radius:14px;color:#fff;font-size:16px;font-weight:700;
+  padding:16px;cursor:pointer;transition:opacity .2s;}
+.start-btn:hover{opacity:.9}
 
 /* APP */
 #app{display:none;position:fixed;inset:0;flex-direction:column;background:var(--bg)}
@@ -82,6 +98,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
 .tb-btn.danger:hover{background:rgba(239,68,68,0.1)}
 .tb-btn.success{color:var(--green)}
 .tb-btn.success:hover{background:rgba(34,197,94,0.1)}
+.tb-btn.duplicate{color:var(--orange)}
+.tb-btn.duplicate:hover{background:rgba(245,158,11,0.15)}
+.tb-btn.duplicate.hidden{display:none}
+.tb-btn.del-circle{color:var(--red)}
+.tb-btn.del-circle:hover{background:rgba(239,68,68,0.15)}
+.tb-btn.del-circle.hidden{display:none}
 
 /* Color buttons */
 .color-btn{width:30px;height:30px;border-radius:50%;border:3px solid transparent;
@@ -134,17 +156,19 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
   justify-content:center;cursor:pointer;z-index:400;transition:all .15s;}
 #home-btn:hover{color:var(--text)}
 
-/* PDF NAV */
-#pdf-nav{display:none;position:fixed;top:10px;left:50%;
-  transform:translateX(-50%);background:rgba(26,29,39,.92);
-  border:1px solid var(--border);border-radius:10px;
-  padding:6px 12px;align-items:center;gap:10px;z-index:400;}
-#pdf-nav.visible{display:flex}
-#pdf-nav button{background:none;border:none;color:var(--text);font-size:16px;
-  cursor:pointer;padding:2px 6px;border-radius:6px;transition:background .15s}
-#pdf-nav button:hover{background:var(--surface2)}
-#pdf-nav button:disabled{color:var(--muted);cursor:default}
-#pdf-nav span{font-size:13px;color:var(--muted);min-width:60px;text-align:center}
+/* PAGE NAV — supports both PDF and multi-image */
+#page-nav{display:none;position:fixed;top:10px;left:50%;
+  transform:translateX(-50%);background:rgba(26,29,39,.95);
+  border:1px solid var(--border);border-radius:12px;
+  padding:6px 14px;align-items:center;gap:10px;z-index:400;
+  box-shadow:0 4px 20px rgba(0,0,0,.4);}
+#page-nav.visible{display:flex}
+#page-nav button{background:none;border:none;color:var(--text);font-size:18px;
+  cursor:pointer;padding:2px 8px;border-radius:6px;transition:background .15s;font-weight:700}
+#page-nav button:hover{background:var(--surface2)}
+#page-nav button:disabled{color:var(--muted);cursor:default}
+#page-nav span{font-size:13px;color:var(--muted);min-width:60px;text-align:center}
+#page-nav .nav-label{font-size:10px;color:var(--accent);font-weight:700;letter-spacing:.5px}
 
 /* LOADING */
 #loading{display:none;position:fixed;inset:0;z-index:200;
@@ -165,7 +189,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* MODE HINT banner */
-#mode-hint{position:fixed;top:10px;left:50%;transform:translateX(-50%);
+#mode-hint{position:fixed;top:52px;left:50%;transform:translateX(-50%);
   border-radius:8px;padding:7px 16px;font-size:12px;font-weight:600;
   z-index:410;pointer-events:none;
   opacity:0;transition:opacity .3s;white-space:nowrap}
@@ -173,6 +197,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
 #mode-hint.move{background:rgba(79,142,247,.15);border:1px solid rgba(79,142,247,.35);color:var(--accent)}
 #mode-hint.scroll{background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.35);color:#a78bfa}
 #mode-hint.resize{background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.35);color:#4ade80}
+#mode-hint.duplicate{background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.35);color:#fbbf24}
 </style>
 </head>
 <body>
@@ -189,28 +214,43 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
   <div class="upload-logo">✏️ ExamDraw</div>
   <div>
     <div class="upload-title">Làm bài thi trực tiếp</div>
-    <div class="upload-sub">Upload đề thi, vẽ và khoanh đáp án ngay<br>Hỗ trợ JPG, PNG và PDF</div>
+    <div class="upload-sub">Upload đề thi, vẽ và khoanh đáp án ngay<br>Hỗ trợ JPG, PNG (nhiều ảnh) và PDF</div>
   </div>
   <div class="upload-zone" id="upload-zone">
-    <input type="file" id="file-input" accept="image/*,.pdf"/>
+    <input type="file" id="file-input" accept="image/*,.pdf" multiple/>
     <div class="upload-icon">📄</div>
     <div class="uzt">Chọn file đề thi</div>
-    <div class="uzh">JPG, PNG, PDF • Kéo thả vào đây</div>
+    <div class="uzh">JPG, PNG (nhiều ảnh), PDF • Kéo thả vào đây</div>
   </div>
+
+  <!-- Preview strip for multi-image -->
+  <div id="preview-strip">
+    <div class="preview-header">
+      <span id="preview-count">0 ảnh đã chọn</span>
+      <span style="font-size:11px;color:var(--muted)">Kéo để xem thêm</span>
+    </div>
+    <div class="preview-list" id="preview-list"></div>
+  </div>
+
   <button class="upload-btn" onclick="document.getElementById('file-input').click()">📂 Chọn đề thi</button>
+  <button class="start-btn" id="start-btn" style="display:none" onclick="startExam()">🚀 Bắt đầu làm bài</button>
 </div>
 
 <!-- LOADING -->
-<div id="loading"><div class="spinner"></div><p>Đang tải đề thi...</p></div>
+<div id="loading"><div class="spinner"></div><p id="loading-msg">Đang tải đề thi...</p></div>
 
 <!-- APP -->
 <div id="app">
   <button id="home-btn" onclick="goHome()">🏠</button>
-  <div id="pdf-nav">
-    <button id="pdf-prev" onclick="changePage(-1)">◀</button>
-    <span id="pdf-page-info">1 / 1</span>
-    <button id="pdf-next" onclick="changePage(1)">▶</button>
+
+  <!-- Unified page nav (PDF or multi-image) -->
+  <div id="page-nav">
+    <span class="nav-label" id="nav-label">TRANG</span>
+    <button id="page-prev" onclick="changePage(-1)">◀</button>
+    <span id="page-info">1 / 1</span>
+    <button id="page-next" onclick="changePage(1)">▶</button>
   </div>
+
   <div id="mode-hint"></div>
 
   <div id="canvas-area">
@@ -231,13 +271,23 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
         ⭕<span class="lbl">Tròn</span>
       </button>
       <button class="tb-btn" id="btn-move" onclick="setTool('move')">
-        ✋<span class="lbl">Dịch chuyển</span>
+        ✋<span class="lbl">Di chuyển</span>
       </button>
       <button class="tb-btn" id="btn-eraser" onclick="setTool('eraser')">
         🧹<span class="lbl">Tẩy</span>
       </button>
     </div>
     <div class="tb-div"></div>
+    <!-- Selection actions: duplicate & delete — shown when circle selected in move mode -->
+    <div class="tb-group" id="selection-actions">
+      <button class="tb-btn duplicate hidden" id="btn-duplicate" onclick="duplicateSelected()">
+        📋<span class="lbl">Copy</span>
+      </button>
+      <button class="tb-btn del-circle hidden" id="btn-del-circle" onclick="deleteSelected()">
+        ✂️<span class="lbl">Xóa vòng</span>
+      </button>
+    </div>
+    <div class="tb-div" id="selection-div" style="display:none"></div>
     <div class="tb-group">
       <div class="color-btn red active" onclick="setColor('#ef4444',this)" title="Đỏ"></div>
       <div class="color-btn blue" onclick="setColor('#3b82f6',this)" title="Xanh"></div>
@@ -263,7 +313,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
     </div>
     <div class="tb-div"></div>
     <div class="tb-group">
-      <button class="tb-btn danger" onclick="clearCanvas()">🗑️<span class="lbl">Xóa</span></button>
+      <button class="tb-btn danger" onclick="clearCanvas()">🗑️<span class="lbl">Xóa tất</span></button>
       <button class="tb-btn success" onclick="saveImage()">💾<span class="lbl">Lưu</span></button>
     </div>
   </div>
@@ -277,52 +327,39 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
 // STATE
 // ═══════════════════════════════════════════════════
 const S = {
-  tool: 'pen',        // 'pen' | 'circle' | 'move' | 'eraser' | 'scroll'
-  prevTool: 'pen',    // tool before entering scroll mode
-  color: '#ef4444',
-  size: 3,
+  tool: 'pen', prevTool: 'pen',
+  color: '#ef4444', size: 3,
 
-  isDrawing: false,
-  lastX: 0, lastY: 0,
-
+  isDrawing: false, lastX: 0, lastY: 0,
   circleStart: null,
 
-  circles: [],
-  nextId: 1,
-  selectedId: null,
+  circles: [], nextId: 1, selectedId: null,
+  draggingId: null, dragOffsetX: 0, dragOffsetY: 0,
+  resizingId: null, resizeHandle: null,
+  resizeStartX: 0, resizeStartY: 0, resizeOrigCircle: null,
 
-  // Move mode
-  draggingId: null,
-  dragOffsetX: 0,
-  dragOffsetY: 0,
-
-  // *** Resize mode (new) ***
-  resizingId: null,      // which circle is being resized
-  resizeHandle: null,    // 'tl'|'tr'|'bl'|'br'|'l'|'r'|'t'|'b'
-  resizeStartX: 0,
-  resizeStartY: 0,
-  resizeOrigCircle: null, // snapshot of circle before resize
-
-  // Scroll/pan (for 'scroll' tool and pinch)
   isPanning: false,
   panStartX: 0, panStartY: 0,
   panStartPanX: 0, panStartPanY: 0,
 
   scale: 1, panX: 0, panY: 0,
 
-  lastTouchDist: 0,
-  lastTouchMid: null,
-  isPinching: false,
+  lastTouchDist: 0, lastTouchMid: null, isPinching: false,
 
-  history: [],
-  histIdx: -1,
+  history: [], histIdx: -1,
+  canvasW: 0, canvasH: 0,
 
-  canvasW: 0,
-  canvasH: 0,
-
+  // PDF mode
   pdfDoc: null,
-  currentPage: 1,
-  totalPages: 1,
+
+  // Multi-source pages: array of { type:'pdf'|'image', pdfPage?:number, imgUrl?:string, imgW?:number, imgH?:number }
+  pages: [],
+  currentPage: 1, // 1-indexed
+
+  // Per-page saved state (circles + pen snapshot as dataURL)
+  pageStates: {}, // key = page index (1-based)
+
+  mode: 'none', // 'none' | 'pdf' | 'images'
 };
 
 // ═══════════════════════════════════════════════════
@@ -340,8 +377,42 @@ const canvasArea   = document.getElementById('canvas-area');
 const app          = document.getElementById('app');
 const uploadScreen = document.getElementById('upload-screen');
 const loading      = document.getElementById('loading');
-const pdfNav       = document.getElementById('pdf-nav');
+const pageNav      = document.getElementById('page-nav');
 const modeHint     = document.getElementById('mode-hint');
+
+// ═══════════════════════════════════════════════════
+// SELECTION ACTIONS UI
+// ═══════════════════════════════════════════════════
+function updateSelectionUI() {
+  const hasSelection = S.tool === 'move' && S.selectedId !== null;
+  document.getElementById('btn-duplicate').classList.toggle('hidden', !hasSelection);
+  document.getElementById('btn-del-circle').classList.toggle('hidden', !hasSelection);
+  document.getElementById('selection-div').style.display = hasSelection ? '' : 'none';
+}
+
+function duplicateSelected() {
+  if (S.selectedId === null) return;
+  const src = S.circles.find(c => c.id === S.selectedId);
+  if (!src) return;
+  const offset = Math.max(src.rx, src.ry) * 0.5 + 24;
+  const newC = { ...src, id: S.nextId++, cx: src.cx + offset, cy: src.cy + offset };
+  S.circles.push(newC);
+  S.selectedId = newC.id;
+  renderCircles();
+  saveHistory();
+  updateSelectionUI();
+  showToast('📋 Đã copy vòng tròn! Kéo đến vị trí mới');
+}
+
+function deleteSelected() {
+  if (S.selectedId === null) return;
+  S.circles = S.circles.filter(c => c.id !== S.selectedId);
+  S.selectedId = null;
+  renderCircles();
+  saveHistory();
+  updateSelectionUI();
+  showToast('✂️ Đã xóa vòng tròn');
+}
 
 // ═══════════════════════════════════════════════════
 // ORIENTATION / FULLSCREEN
@@ -350,8 +421,7 @@ function checkOrientation() {
   const overlay = document.getElementById('rotate-overlay');
   const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
   if (!isMobile) { overlay.style.display = 'none'; return; }
-  const isLandscape = window.innerWidth > window.innerHeight;
-  overlay.style.display = isLandscape ? 'none' : 'flex';
+  overlay.style.display = window.innerWidth > window.innerHeight ? 'none' : 'flex';
 }
 function tryLockLandscape() {
   if (screen.orientation && screen.orientation.lock)
@@ -368,88 +438,260 @@ window.addEventListener('resize', () =>
   setTimeout(() => { checkOrientation(); fitCanvasToArea(); }, 100));
 
 // ═══════════════════════════════════════════════════
-// FILE UPLOAD
+// FILE UPLOAD — multi-image support
 // ═══════════════════════════════════════════════════
 const fileInput  = document.getElementById('file-input');
 const uploadZone = document.getElementById('upload-zone');
+
+// Staged image list (before starting exam)
+let stagedFiles = [];
 
 uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
 uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
 uploadZone.addEventListener('drop', e => {
   e.preventDefault(); uploadZone.classList.remove('drag-over');
-  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+  if (e.dataTransfer.files.length) handleFileSelect(Array.from(e.dataTransfer.files));
 });
-fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+fileInput.addEventListener('change', e => {
+  if (e.target.files.length) handleFileSelect(Array.from(e.target.files));
+});
 
-async function handleFile(file) {
+function handleFileSelect(files) {
+  // Separate PDF from images
+  const pdfs   = files.filter(f => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'));
+  const images = files.filter(f => f.type.startsWith('image/'));
+
+  if (pdfs.length > 0) {
+    // PDF mode: load immediately (single PDF)
+    stagedFiles = [];
+    loadAndStartPDF(pdfs[0]);
+    return;
+  }
+
+  if (images.length > 0) {
+    // Image mode: stage them, show preview
+    stagedFiles = [...stagedFiles, ...images].slice(0, 20); // max 20
+    renderPreviewStrip();
+  }
+}
+
+function renderPreviewStrip() {
+  const strip  = document.getElementById('preview-strip');
+  const list   = document.getElementById('preview-list');
+  const count  = document.getElementById('preview-count');
+  const startB = document.getElementById('start-btn');
+
+  if (stagedFiles.length === 0) {
+    strip.classList.remove('has-files');
+    startB.style.display = 'none';
+    return;
+  }
+
+  strip.classList.add('has-files');
+  count.textContent = `${stagedFiles.length} ảnh đã chọn`;
+  startB.style.display = '';
+
+  list.innerHTML = '';
+  stagedFiles.forEach((f, i) => {
+    const url  = URL.createObjectURL(f);
+    const div  = document.createElement('div');
+    div.className = 'preview-thumb';
+    div.innerHTML = `<img src="${url}"><span class="pn">${i+1}</span>
+      <button class="px-btn" onclick="removeStagedFile(${i})">×</button>`;
+    list.appendChild(div);
+  });
+}
+
+function removeStagedFile(idx) {
+  stagedFiles.splice(idx, 1);
+  renderPreviewStrip();
+}
+
+async function startExam() {
+  if (stagedFiles.length === 0) return;
   loading.classList.add('show');
+  document.getElementById('loading-msg').textContent = 'Đang tải ảnh...';
   try {
-    if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf'))
-      await loadPDF(file);
-    else if (file.type.startsWith('image/'))
-      await loadImage(file);
-    else { showToast('⚠️ Chỉ hỗ trợ JPG, PNG, PDF'); loading.classList.remove('show'); return; }
-
+    await loadMultiImages(stagedFiles);
     uploadScreen.style.display = 'none';
     app.classList.add('active');
     tryLockLandscape(); requestFullscreen(); checkOrientation();
+  } catch(err) { showToast('❌ Lỗi: ' + err.message); }
+  loading.classList.remove('show');
+}
 
-    S.circles = []; S.selectedId = null;
-    S.history = []; S.histIdx = -1;
-    saveHistory();
-  } catch (err) { showToast('❌ Lỗi: ' + err.message); }
+async function loadAndStartPDF(file) {
+  loading.classList.add('show');
+  document.getElementById('loading-msg').textContent = 'Đang tải PDF...';
+  try {
+    await loadPDF(file);
+    uploadScreen.style.display = 'none';
+    app.classList.add('active');
+    tryLockLandscape(); requestFullscreen(); checkOrientation();
+  } catch(err) { showToast('❌ Lỗi: ' + err.message); }
   loading.classList.remove('show');
 }
 
 // ═══════════════════════════════════════════════════
-// LOAD IMAGE / PDF
+// LOAD MULTI-IMAGE
 // ═══════════════════════════════════════════════════
-async function loadImage(file) {
+async function loadMultiImages(files) {
+  S.mode = 'images';
+  S.pages = [];
+  S.pageStates = {};
+  S.pdfDoc = null;
+
+  for (const f of files) {
+    const url = await fileToDataURL(f);
+    const dim = await getImageDimensions(url);
+    S.pages.push({ type: 'image', imgUrl: url, imgW: dim.w, imgH: dim.h });
+  }
+
+  S.currentPage = 1;
+  updatePageNav();
+  await renderImagePage(1);
+  initPageState(1);
+}
+
+function fileToDataURL(file) {
   return new Promise((res, rej) => {
-    const url = URL.createObjectURL(file);
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+
+function getImageDimensions(url) {
+  return new Promise((res, rej) => {
+    const img = new Image();
+    img.onload = () => res({ w: img.width, h: img.height });
+    img.onerror = rej;
+    img.src = url;
+  });
+}
+
+async function renderImagePage(n) {
+  const pg = S.pages[n - 1];
+  return new Promise((res, rej) => {
     const img = new Image();
     img.onload = () => {
-      S.pdfDoc = null; pdfNav.classList.remove('visible');
       setupCanvases(img.width, img.height);
       bgCtx.drawImage(img, 0, 0);
       clearPenCanvas(); clearCircleCanvas();
       fitCanvasToArea();
-      URL.revokeObjectURL(url); res();
+      res();
     };
-    img.onerror = rej; img.src = url;
+    img.onerror = rej;
+    img.src = pg.imgUrl;
   });
 }
+
+// ═══════════════════════════════════════════════════
+// LOAD PDF
+// ═══════════════════════════════════════════════════
 async function loadPDF(file) {
   pdfjsLib.GlobalWorkerOptions.workerSrc =
     'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
   const ab = await file.arrayBuffer();
   S.pdfDoc = await pdfjsLib.getDocument({ data: ab }).promise;
-  S.totalPages = S.pdfDoc.numPages; S.currentPage = 1;
-  pdfNav.classList.add('visible');
-  await renderPDFPage(1); updatePDFNav();
+  S.mode = 'pdf';
+  S.pages = [];
+  S.pageStates = {};
+
+  for (let i = 1; i <= S.pdfDoc.numPages; i++)
+    S.pages.push({ type: 'pdf', pdfPage: i });
+
+  S.currentPage = 1;
+  updatePageNav();
+  await renderPDFPage(1);
+  initPageState(1);
 }
+
 async function renderPDFPage(n) {
-  const page = await S.pdfDoc.getPage(n);
-  const vp = page.getViewport({ scale: 2.0 });
+  const pg   = S.pages[n - 1];
+  const page = await S.pdfDoc.getPage(pg.pdfPage);
+  const vp   = page.getViewport({ scale: 2.0 });
   setupCanvases(vp.width, vp.height);
   clearPenCanvas(); clearCircleCanvas();
   await page.render({ canvasContext: bgCtx, viewport: vp }).promise;
   fitCanvasToArea();
 }
+
+// ═══════════════════════════════════════════════════
+// PAGE NAVIGATION (shared PDF + images)
+// ═══════════════════════════════════════════════════
+function updatePageNav() {
+  const total = S.pages.length;
+  if (total <= 1) { pageNav.classList.remove('visible'); return; }
+  pageNav.classList.add('visible');
+  document.getElementById('nav-label').textContent = S.mode === 'pdf' ? 'TRANG PDF' : 'ẢNH';
+  document.getElementById('page-info').textContent = `${S.currentPage} / ${total}`;
+  document.getElementById('page-prev').disabled = S.currentPage <= 1;
+  document.getElementById('page-next').disabled = S.currentPage >= total;
+}
+
+// Save current page's drawing state before switching
+function savePageState(n) {
+  S.pageStates[n] = {
+    penSnap: drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height),
+    circles: JSON.parse(JSON.stringify(S.circles)),
+    nextId:  S.nextId,
+  };
+}
+
+// Initialise blank state for a new page
+function initPageState(n) {
+  if (!S.pageStates[n]) {
+    S.pageStates[n] = {
+      penSnap: drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height),
+      circles: [],
+      nextId:  1,
+    };
+  }
+  // Reset history for new page
+  S.history = [];
+  S.histIdx = -1;
+  saveHistory();
+}
+
 async function changePage(delta) {
   const np = S.currentPage + delta;
-  if (np < 1 || np > S.totalPages) return;
+  if (np < 1 || np > S.pages.length) return;
+
+  // Save current page state
+  savePageState(S.currentPage);
+
   loading.classList.add('show');
+  document.getElementById('loading-msg').textContent = 'Đang chuyển trang...';
+
   S.currentPage = np;
-  await renderPDFPage(np);
-  S.circles = []; S.history = []; S.histIdx = -1;
-  saveHistory(); updatePDFNav();
+  S.selectedId  = null;
+  S.circles     = [];
+
+  const pg = S.pages[np - 1];
+  if (pg.type === 'pdf') {
+    await renderPDFPage(np);
+  } else {
+    await renderImagePage(np);
+  }
+
+  // Restore saved state for this page if exists
+  if (S.pageStates[np]) {
+    const st = S.pageStates[np];
+    // Only restore if canvas dimensions match
+    try { drawCtx.putImageData(st.penSnap, 0, 0); } catch(e) {}
+    S.circles = JSON.parse(JSON.stringify(st.circles));
+    S.nextId   = st.nextId;
+    renderCircles();
+  } else {
+    initPageState(np);
+  }
+
+  updatePageNav();
+  updateSelectionUI();
+  updateHistoryBtns();
   loading.classList.remove('show');
-}
-function updatePDFNav() {
-  document.getElementById('pdf-page-info').textContent = `${S.currentPage} / ${S.totalPages}`;
-  document.getElementById('pdf-prev').disabled = S.currentPage <= 1;
-  document.getElementById('pdf-next').disabled = S.currentPage >= S.totalPages;
 }
 
 // ═══════════════════════════════════════════════════
@@ -489,33 +731,20 @@ function zoomStep(dir) {
 // ═══════════════════════════════════════════════════
 // TOOL & STYLE
 // ═══════════════════════════════════════════════════
-
-// Toggle pen: if already in pen mode → enter scroll mode. If in scroll → back to pen.
 function togglePen() {
   if (S.tool === 'pen') {
-    // Enter scroll mode
-    S.prevTool = 'pen';
-    S.tool = 'scroll';
-    S.selectedId = null;
-    renderCircles();
-    document.querySelectorAll('.tb-btn[id^="btn-"]').forEach(b => {
-      b.classList.remove('active');
-      b.classList.remove('scroll-mode');
-    });
+    S.tool = 'scroll'; S.selectedId = null;
+    renderCircles(); updateSelectionUI();
+    document.querySelectorAll('.tb-btn[id^="btn-"]').forEach(b => { b.classList.remove('active','scroll-mode'); });
     const btn = document.getElementById('btn-pen');
     btn.classList.add('scroll-mode');
     btn.querySelector('.lbl').textContent = 'Cuộn';
     hitCanvas.style.cursor = 'grab';
     showHint('scroll', '🖐 Chế độ cuộn — kéo để di chuyển, pinch để zoom');
   } else if (S.tool === 'scroll') {
-    // Back to pen
-    S.tool = 'pen';
-    S.selectedId = null;
-    renderCircles();
-    document.querySelectorAll('.tb-btn[id^="btn-"]').forEach(b => {
-      b.classList.remove('active');
-      b.classList.remove('scroll-mode');
-    });
+    S.tool = 'pen'; S.selectedId = null;
+    renderCircles(); updateSelectionUI();
+    document.querySelectorAll('.tb-btn[id^="btn-"]').forEach(b => { b.classList.remove('active','scroll-mode'); });
     const btn = document.getElementById('btn-pen');
     btn.classList.add('active');
     btn.querySelector('.lbl').textContent = 'Bút';
@@ -527,44 +756,30 @@ function togglePen() {
 }
 
 function setTool(tool) {
-  S.tool = tool;
-  S.selectedId = null;
-  S.resizingId = null;
-  renderCircles();
-
-  document.querySelectorAll('.tb-btn[id^="btn-"]').forEach(b => {
-    b.classList.remove('active');
-    b.classList.remove('scroll-mode');
-  });
-  // Reset pen label
+  S.tool = tool; S.selectedId = null; S.resizingId = null;
+  renderCircles(); updateSelectionUI();
+  document.querySelectorAll('.tb-btn[id^="btn-"]').forEach(b => { b.classList.remove('active','scroll-mode'); });
   const penBtn = document.getElementById('btn-pen');
   if (penBtn) penBtn.querySelector('.lbl').textContent = 'Bút';
-
   const btn = document.getElementById('btn-' + tool);
   if (btn) btn.classList.add('active');
-
   if (tool === 'move') {
     hitCanvas.style.cursor = 'grab';
-    showHint('move', '✋ Nhấn vào vòng tròn để chọn & kéo resize handles');
+    showHint('move', '✋ Nhấn vào vòng tròn để chọn → Copy hoặc kéo resize');
     clearTimeout(window._mht);
     window._mht = setTimeout(() => hideHint(), 3500);
   } else if (tool === 'eraser') {
-    hitCanvas.style.cursor = 'cell';
-    hideHint();
+    hitCanvas.style.cursor = 'cell'; hideHint();
   } else {
-    hitCanvas.style.cursor = 'crosshair';
-    hideHint();
+    hitCanvas.style.cursor = 'crosshair'; hideHint();
   }
 }
 
 function showHint(type, msg) {
-  modeHint.textContent = msg;
-  modeHint.className = '';
+  modeHint.textContent = msg; modeHint.className = '';
   modeHint.classList.add('show', type);
 }
-function hideHint() {
-  modeHint.classList.remove('show');
-}
+function hideHint() { modeHint.classList.remove('show'); }
 
 function setColor(hex, el) {
   S.color = hex;
@@ -578,10 +793,7 @@ function setSize(val) { S.size = parseInt(val); }
 // ═══════════════════════════════════════════════════
 function toCanvas(sx, sy) {
   const r = canvasArea.getBoundingClientRect();
-  return {
-    x: (sx - r.left - S.panX) / S.scale,
-    y: (sy - r.top  - S.panY) / S.scale,
-  };
+  return { x: (sx - r.left - S.panX) / S.scale, y: (sy - r.top - S.panY) / S.scale };
 }
 
 // ═══════════════════════════════════════════════════
@@ -592,137 +804,95 @@ function hitCircle(x, y) {
   for (let i = S.circles.length - 1; i >= 0; i--) {
     const c = S.circles[i];
     if (c.rx < 1 || c.ry < 1) continue;
-    const nx = (x - c.cx) / c.rx;
-    const ny = (y - c.cy) / c.ry;
-    const d  = Math.sqrt(nx * nx + ny * ny);
+    const nx = (x - c.cx) / c.rx, ny = (y - c.cy) / c.ry;
+    const d  = Math.sqrt(nx*nx + ny*ny);
     const tol = hitPx / Math.min(c.rx, c.ry);
     if (Math.abs(d - 1) < tol) return c;
     if (c.rx < 40 && c.ry < 40 && d < 1.1 + tol) return c;
   }
   return null;
 }
-
-// Returns resize handle name if (x,y) is near one of the 8 handles
-// of the selected circle, else null
 function hitResizeHandle(x, y, c) {
   if (!c) return null;
   const handleR = Math.max(12 / S.scale, 6);
-  const handles = getHandlePositions(c);
-  for (const [name, hx, hy] of handles) {
-    const dx = x - hx, dy = y - hy;
-    if (Math.sqrt(dx*dx + dy*dy) < handleR) return name;
+  for (const [name, hx, hy] of getHandlePositions(c)) {
+    const dx = x-hx, dy = y-hy;
+    if (Math.sqrt(dx*dx+dy*dy) < handleR) return name;
   }
   return null;
 }
-
-// 8 resize handle positions for a circle
 function getHandlePositions(c) {
   return [
-    ['tl', c.cx - c.rx, c.cy - c.ry],
-    ['t',  c.cx,         c.cy - c.ry],
-    ['tr', c.cx + c.rx, c.cy - c.ry],
-    ['r',  c.cx + c.rx, c.cy        ],
-    ['br', c.cx + c.rx, c.cy + c.ry],
-    ['b',  c.cx,         c.cy + c.ry],
-    ['bl', c.cx - c.rx, c.cy + c.ry],
-    ['l',  c.cx - c.rx, c.cy        ],
+    ['tl',c.cx-c.rx,c.cy-c.ry],['t',c.cx,c.cy-c.ry],['tr',c.cx+c.rx,c.cy-c.ry],
+    ['r',c.cx+c.rx,c.cy],['br',c.cx+c.rx,c.cy+c.ry],
+    ['b',c.cx,c.cy+c.ry],['bl',c.cx-c.rx,c.cy+c.ry],['l',c.cx-c.rx,c.cy],
   ];
 }
 
 // ═══════════════════════════════════════════════════
-// RENDER CIRCLES (with resize handles when selected)
+// RENDER CIRCLES
 // ═══════════════════════════════════════════════════
 function renderCircles() {
   circleCtx.clearRect(0, 0, circleCanvas.width, circleCanvas.height);
   for (const c of S.circles) {
     const selected = c.id === S.selectedId;
     const rx = Math.max(1, c.rx), ry = Math.max(1, c.ry);
-
-    // Selection dashed ring
     if (selected) {
       circleCtx.beginPath();
-      circleCtx.ellipse(c.cx, c.cy, rx + 6/S.scale, ry + 6/S.scale, 0, 0, Math.PI*2);
+      circleCtx.ellipse(c.cx, c.cy, rx+6/S.scale, ry+6/S.scale, 0, 0, Math.PI*2);
       circleCtx.strokeStyle = 'rgba(255,255,255,0.4)';
-      circleCtx.lineWidth   = 1.5 / S.scale;
-      circleCtx.setLineDash([6/S.scale, 3/S.scale]);
-      circleCtx.stroke();
-      circleCtx.setLineDash([]);
+      circleCtx.lineWidth = 1.5/S.scale;
+      circleCtx.setLineDash([6/S.scale,3/S.scale]);
+      circleCtx.stroke(); circleCtx.setLineDash([]);
     }
-
-    // The circle
     circleCtx.beginPath();
     circleCtx.ellipse(c.cx, c.cy, rx, ry, 0, 0, Math.PI*2);
-    circleCtx.strokeStyle = c.color;
-    circleCtx.lineWidth   = c.size;
-    circleCtx.lineCap     = 'round';
-    circleCtx.stroke();
+    circleCtx.strokeStyle = c.color; circleCtx.lineWidth = c.size;
+    circleCtx.lineCap = 'round'; circleCtx.stroke();
 
-    // Resize handles when selected (in move tool)
     if (selected && S.tool === 'move') {
       const handles = getHandlePositions(c);
-      const hr = Math.max(7 / S.scale, 4);
+      const hr = Math.max(7/S.scale, 4);
       for (const [name, hx, hy] of handles) {
-        // outer circle (white border)
-        circleCtx.beginPath();
-        circleCtx.arc(hx, hy, hr, 0, Math.PI*2);
-        circleCtx.fillStyle = '#4f8ef7';
-        circleCtx.fill();
-        circleCtx.strokeStyle = '#fff';
-        circleCtx.lineWidth = 1.5 / S.scale;
-        circleCtx.stroke();
-
-        // tiny icon for corners vs edges
+        circleCtx.beginPath(); circleCtx.arc(hx, hy, hr, 0, Math.PI*2);
+        circleCtx.fillStyle = '#4f8ef7'; circleCtx.fill();
+        circleCtx.strokeStyle = '#fff'; circleCtx.lineWidth = 1.5/S.scale; circleCtx.stroke();
         circleCtx.fillStyle = '#fff';
         circleCtx.font = `bold ${Math.max(6/S.scale,5)}px sans-serif`;
-        circleCtx.textAlign = 'center';
-        circleCtx.textBaseline = 'middle';
+        circleCtx.textAlign = 'center'; circleCtx.textBaseline = 'middle';
         const icons = {tl:'↖',tr:'↗',bl:'↙',br:'↘',t:'↕',b:'↕',l:'↔',r:'↔'};
-        circleCtx.fillText(icons[name] || '·', hx, hy);
+        circleCtx.fillText(icons[name]||'·', hx, hy);
       }
-
-      // Move handle at centre
       const mhr = Math.max(9/S.scale, 5);
-      circleCtx.beginPath();
-      circleCtx.arc(c.cx, c.cy, mhr, 0, Math.PI*2);
-      circleCtx.fillStyle = 'rgba(79,142,247,0.85)';
-      circleCtx.fill();
-      circleCtx.strokeStyle = '#fff';
-      circleCtx.lineWidth = 1.5/S.scale;
-      circleCtx.stroke();
+      circleCtx.beginPath(); circleCtx.arc(c.cx, c.cy, mhr, 0, Math.PI*2);
+      circleCtx.fillStyle = 'rgba(79,142,247,0.85)'; circleCtx.fill();
+      circleCtx.strokeStyle = '#fff'; circleCtx.lineWidth = 1.5/S.scale; circleCtx.stroke();
       circleCtx.fillStyle = '#fff';
       circleCtx.font = `bold ${Math.max(8/S.scale,6)}px sans-serif`;
-      circleCtx.textAlign = 'center';
-      circleCtx.textBaseline = 'middle';
+      circleCtx.textAlign = 'center'; circleCtx.textBaseline = 'middle';
       circleCtx.fillText('✥', c.cx, c.cy);
     }
   }
 }
-
-function renderCirclePreview(x1, y1, x2, y2) {
+function renderCirclePreview(x1,y1,x2,y2) {
   renderCircles();
-  const cx = (x1+x2)/2, cy = (y1+y2)/2;
-  const rx = Math.abs(x2-x1)/2, ry = Math.abs(y2-y1)/2;
-  if (rx < 1 && ry < 1) return;
+  const cx=(x1+x2)/2, cy=(y1+y2)/2, rx=Math.abs(x2-x1)/2, ry=Math.abs(y2-y1)/2;
+  if (rx<1&&ry<1) return;
   circleCtx.beginPath();
-  circleCtx.ellipse(cx, cy, Math.max(1,rx), Math.max(1,ry), 0, 0, Math.PI*2);
-  circleCtx.strokeStyle = S.color;
-  circleCtx.lineWidth   = S.size;
-  circleCtx.lineCap     = 'round';
-  circleCtx.stroke();
+  circleCtx.ellipse(cx,cy,Math.max(1,rx),Math.max(1,ry),0,0,Math.PI*2);
+  circleCtx.strokeStyle=S.color; circleCtx.lineWidth=S.size; circleCtx.lineCap='round'; circleCtx.stroke();
 }
 
 // ═══════════════════════════════════════════════════
 // MOUSE EVENTS
 // ═══════════════════════════════════════════════════
 hitCanvas.addEventListener('mousedown', e => {
-  if (e.button !== 0) return; e.preventDefault();
-  const p = toCanvas(e.clientX, e.clientY);
-  onDown(p.x, p.y, e.clientX, e.clientY);
+  if (e.button!==0) return; e.preventDefault();
+  const p = toCanvas(e.clientX, e.clientY); onDown(p.x,p.y,e.clientX,e.clientY);
 });
 hitCanvas.addEventListener('mousemove', e => {
   e.preventDefault();
-  const p = toCanvas(e.clientX, e.clientY);
-  onMove(p.x, p.y, e.clientX, e.clientY);
+  const p = toCanvas(e.clientX, e.clientY); onMove(p.x,p.y,e.clientX,e.clientY);
 });
 hitCanvas.addEventListener('mouseup',    () => onUp());
 hitCanvas.addEventListener('mouseleave', () => onUp());
@@ -730,271 +900,164 @@ hitCanvas.addEventListener('mouseleave', () => onUp());
 // ═══════════════════════════════════════════════════
 // TOUCH EVENTS
 // ═══════════════════════════════════════════════════
-canvasArea.addEventListener('touchstart',  onTouchStart,  { passive: false });
-canvasArea.addEventListener('touchmove',   onTouchMove,   { passive: false });
-canvasArea.addEventListener('touchend',    onTouchEnd,    { passive: false });
-canvasArea.addEventListener('touchcancel', onTouchEnd,    { passive: false });
+canvasArea.addEventListener('touchstart',  onTouchStart,  {passive:false});
+canvasArea.addEventListener('touchmove',   onTouchMove,   {passive:false});
+canvasArea.addEventListener('touchend',    onTouchEnd,    {passive:false});
+canvasArea.addEventListener('touchcancel', onTouchEnd,    {passive:false});
 
 function onTouchStart(e) {
   e.preventDefault();
-  if (e.touches.length === 1) {
-    S.isPinching = false;
-    const t = e.touches[0];
-    const p = toCanvas(t.clientX, t.clientY);
-    onDown(p.x, p.y, t.clientX, t.clientY);
-  } else if (e.touches.length === 2) {
-    onUp();
-    S.isPinching = true;
-    S.lastTouchDist = getTouchDist(e.touches);
-    S.lastTouchMid  = getTouchMid(e.touches);
+  if (e.touches.length===1) {
+    S.isPinching=false;
+    const t=e.touches[0], p=toCanvas(t.clientX,t.clientY);
+    onDown(p.x,p.y,t.clientX,t.clientY);
+  } else if (e.touches.length===2) {
+    onUp(); S.isPinching=true;
+    S.lastTouchDist=getTouchDist(e.touches);
+    S.lastTouchMid=getTouchMid(e.touches);
   }
 }
 function onTouchMove(e) {
   e.preventDefault();
-  if (e.touches.length === 1 && !S.isPinching) {
-    const t = e.touches[0];
-    const p = toCanvas(t.clientX, t.clientY);
-    onMove(p.x, p.y, t.clientX, t.clientY);
-  } else if (e.touches.length === 2) {
-    const dist  = getTouchDist(e.touches);
-    const mid   = getTouchMid(e.touches);
-    const rect  = canvasArea.getBoundingClientRect();
-    const ns    = Math.max(0.15, Math.min(8, S.scale * (dist / S.lastTouchDist)));
-    const mx    = mid.x - rect.left;
-    const my    = mid.y - rect.top;
-    const cx    = (mx - S.panX) / S.scale;
-    const cy    = (my - S.panY) / S.scale;
-    S.panX = mx - cx * ns + (mid.x - S.lastTouchMid.x);
-    S.panY = my - cy * ns + (mid.y - S.lastTouchMid.y);
-    S.scale = ns;
-    S.lastTouchDist = dist;
-    S.lastTouchMid  = mid;
+  if (e.touches.length===1&&!S.isPinching) {
+    const t=e.touches[0], p=toCanvas(t.clientX,t.clientY);
+    onMove(p.x,p.y,t.clientX,t.clientY);
+  } else if (e.touches.length===2) {
+    const dist=getTouchDist(e.touches), mid=getTouchMid(e.touches);
+    const rect=canvasArea.getBoundingClientRect();
+    const ns=Math.max(0.15,Math.min(8,S.scale*(dist/S.lastTouchDist)));
+    const mx=mid.x-rect.left, my=mid.y-rect.top;
+    const cx=(mx-S.panX)/S.scale, cy=(my-S.panY)/S.scale;
+    S.panX=mx-cx*ns+(mid.x-S.lastTouchMid.x);
+    S.panY=my-cy*ns+(mid.y-S.lastTouchMid.y);
+    S.scale=ns; S.lastTouchDist=dist; S.lastTouchMid=mid;
     applyTransform();
   }
 }
 function onTouchEnd(e) {
   e.preventDefault();
-  if (e.touches.length === 0) { onUp(); S.isPinching = false; }
-  else if (e.touches.length === 1) {
-    S.isPinching = false;
-    const t = e.touches[0];
-    const p = toCanvas(t.clientX, t.clientY);
-    onDown(p.x, p.y, t.clientX, t.clientY);
+  if (e.touches.length===0) { onUp(); S.isPinching=false; }
+  else if (e.touches.length===1) {
+    S.isPinching=false;
+    const t=e.touches[0], p=toCanvas(t.clientX,t.clientY);
+    onDown(p.x,p.y,t.clientX,t.clientY);
   }
 }
-function getTouchDist(ts) {
-  const dx=ts[0].clientX-ts[1].clientX, dy=ts[0].clientY-ts[1].clientY;
-  return Math.sqrt(dx*dx+dy*dy);
-}
-function getTouchMid(ts) {
-  return { x:(ts[0].clientX+ts[1].clientX)/2, y:(ts[0].clientY+ts[1].clientY)/2 };
-}
+function getTouchDist(ts){const dx=ts[0].clientX-ts[1].clientX,dy=ts[0].clientY-ts[1].clientY;return Math.sqrt(dx*dx+dy*dy);}
+function getTouchMid(ts){return{x:(ts[0].clientX+ts[1].clientX)/2,y:(ts[0].clientY+ts[1].clientY)/2};}
 
 // ═══════════════════════════════════════════════════
 // UNIFIED POINTER LOGIC
-// screenX/screenY = raw screen coords for panning
 // ═══════════════════════════════════════════════════
-function onDown(x, y, screenX, screenY) {
-  S.lastX = x; S.lastY = y;
+function onDown(x,y,screenX,screenY) {
+  S.lastX=x; S.lastY=y;
 
-  // ── SCROLL MODE: pan the canvas ──
-  if (S.tool === 'scroll') {
-    S.isPanning = true;
-    S.panStartX = screenX;
-    S.panStartY = screenY;
-    S.panStartPanX = S.panX;
-    S.panStartPanY = S.panY;
-    hitCanvas.style.cursor = 'grabbing';
-    return;
+  if (S.tool==='scroll') {
+    S.isPanning=true; S.panStartX=screenX; S.panStartY=screenY;
+    S.panStartPanX=S.panX; S.panStartPanY=S.panY;
+    hitCanvas.style.cursor='grabbing'; return;
   }
 
-  // ── MOVE TOOL ──
-  if (S.tool === 'move') {
-    const selCircle = S.circles.find(c => c.id === S.selectedId);
-
-    // Check resize handles first (only if a circle is selected)
-    if (selCircle) {
-      const handle = hitResizeHandle(x, y, selCircle);
+  if (S.tool==='move') {
+    const selC = S.circles.find(c=>c.id===S.selectedId);
+    if (selC) {
+      const handle=hitResizeHandle(x,y,selC);
       if (handle) {
-        S.resizingId = selCircle.id;
-        S.resizeHandle = handle;
-        S.resizeStartX = x;
-        S.resizeStartY = y;
-        S.resizeOrigCircle = { ...selCircle };
-        hitCanvas.style.cursor = 'nwse-resize';
-        return;
+        S.resizingId=selC.id; S.resizeHandle=handle;
+        S.resizeStartX=x; S.resizeStartY=y;
+        S.resizeOrigCircle={...selC};
+        hitCanvas.style.cursor='nwse-resize'; return;
       }
-      // Check centre move handle
-      const dx = x - selCircle.cx, dy = y - selCircle.cy;
-      const mr = Math.max(12/S.scale, 6);
-      if (Math.sqrt(dx*dx+dy*dy) < mr) {
-        S.draggingId  = selCircle.id;
-        S.dragOffsetX = dx;
-        S.dragOffsetY = dy;
-        hitCanvas.style.cursor = 'grabbing';
-        return;
+      const dx=x-selC.cx, dy=y-selC.cy;
+      const mr=Math.max(12/S.scale,6);
+      if (Math.sqrt(dx*dx+dy*dy)<mr) {
+        S.draggingId=selC.id; S.dragOffsetX=dx; S.dragOffsetY=dy;
+        hitCanvas.style.cursor='grabbing'; return;
       }
     }
-
-    // Hit-test circle outline to select it
-    const hit = hitCircle(x, y);
+    const hit=hitCircle(x,y);
     if (hit) {
-      S.selectedId = hit.id;
-      // Immediately start dragging it
-      S.draggingId  = hit.id;
-      S.dragOffsetX = x - hit.cx;
-      S.dragOffsetY = y - hit.cy;
-      hitCanvas.style.cursor = 'grabbing';
-    } else {
-      // Deselect
-      S.selectedId = null;
-      S.draggingId = null;
-    }
-    renderCircles();
-    return;
+      S.selectedId=hit.id; S.draggingId=hit.id;
+      S.dragOffsetX=x-hit.cx; S.dragOffsetY=y-hit.cy;
+      hitCanvas.style.cursor='grabbing';
+    } else { S.selectedId=null; S.draggingId=null; }
+    renderCircles(); updateSelectionUI(); return;
   }
 
-  S.isDrawing = true;
-
-  if (S.tool === 'circle') {
-    S.circleStart = { x, y };
-    return;
-  }
-
-  // pen / eraser — dot at start
+  S.isDrawing=true;
+  if (S.tool==='circle') { S.circleStart={x,y}; return; }
   applyPenStyle();
-  drawCtx.beginPath();
-  drawCtx.arc(x, y, S.size / 2, 0, Math.PI * 2);
-  drawCtx.fill();
+  drawCtx.beginPath(); drawCtx.arc(x,y,S.size/2,0,Math.PI*2); drawCtx.fill();
 }
 
-function onMove(x, y, screenX, screenY) {
-  // Scroll / pan
-  if (S.tool === 'scroll') {
+function onMove(x,y,screenX,screenY) {
+  if (S.tool==='scroll') {
     if (!S.isPanning) return;
-    S.panX = S.panStartPanX + (screenX - S.panStartX);
-    S.panY = S.panStartPanY + (screenY - S.panStartY);
-    applyTransform();
-    return;
+    S.panX=S.panStartPanX+(screenX-S.panStartX);
+    S.panY=S.panStartPanY+(screenY-S.panStartY);
+    applyTransform(); return;
   }
-
-  // Resize
-  if (S.tool === 'move' && S.resizingId !== null) {
-    const c = S.circles.find(c => c.id === S.resizingId);
-    const orig = S.resizeOrigCircle;
-    if (!c || !orig) return;
-    const dx = x - S.resizeStartX;
-    const dy = y - S.resizeStartY;
-    const h = S.resizeHandle;
-
-    // Compute new bounding box edges
-    let left   = orig.cx - orig.rx;
-    let right  = orig.cx + orig.rx;
-    let top    = orig.cy - orig.ry;
-    let bottom = orig.cy + orig.ry;
-
-    if (h.includes('l')) left   = Math.min(left + dx, right - 4);
-    if (h.includes('r')) right  = Math.max(right + dx, left + 4);
-    if (h.includes('t')) top    = Math.min(top + dy, bottom - 4);
-    if (h.includes('b')) bottom = Math.max(bottom + dy, top + 4);
-
-    c.cx = (left + right) / 2;
-    c.cy = (top + bottom) / 2;
-    c.rx = (right - left) / 2;
-    c.ry = (bottom - top) / 2;
-    renderCircles();
-    return;
+  if (S.tool==='move'&&S.resizingId!==null) {
+    const c=S.circles.find(c=>c.id===S.resizingId), orig=S.resizeOrigCircle;
+    if (!c||!orig) return;
+    const dx=x-S.resizeStartX, dy=y-S.resizeStartY, h=S.resizeHandle;
+    let left=orig.cx-orig.rx,right=orig.cx+orig.rx,top=orig.cy-orig.ry,bottom=orig.cy+orig.ry;
+    if (h.includes('l')) left=Math.min(left+dx,right-4);
+    if (h.includes('r')) right=Math.max(right+dx,left+4);
+    if (h.includes('t')) top=Math.min(top+dy,bottom-4);
+    if (h.includes('b')) bottom=Math.max(bottom+dy,top+4);
+    c.cx=(left+right)/2; c.cy=(top+bottom)/2; c.rx=(right-left)/2; c.ry=(bottom-top)/2;
+    renderCircles(); return;
   }
-
-  // Move drag
-  if (S.tool === 'move') {
-    if (S.draggingId !== null) {
-      const c = S.circles.find(c => c.id === S.draggingId);
-      if (c) { c.cx = x - S.dragOffsetX; c.cy = y - S.dragOffsetY; }
+  if (S.tool==='move') {
+    if (S.draggingId!==null) {
+      const c=S.circles.find(c=>c.id===S.draggingId);
+      if (c) { c.cx=x-S.dragOffsetX; c.cy=y-S.dragOffsetY; }
       renderCircles();
     }
-    S.lastX = x; S.lastY = y;
-    return;
+    S.lastX=x; S.lastY=y; return;
   }
-
   if (!S.isDrawing) return;
-
-  if (S.tool === 'circle') {
-    renderCirclePreview(S.circleStart.x, S.circleStart.y, x, y);
+  if (S.tool==='circle') {
+    renderCirclePreview(S.circleStart.x,S.circleStart.y,x,y);
   } else {
     applyPenStyle();
-    drawCtx.beginPath();
-    drawCtx.moveTo(S.lastX, S.lastY);
-    drawCtx.lineTo(x, y);
-    drawCtx.stroke();
+    drawCtx.beginPath(); drawCtx.moveTo(S.lastX,S.lastY); drawCtx.lineTo(x,y); drawCtx.stroke();
   }
-  S.lastX = x; S.lastY = y;
+  S.lastX=x; S.lastY=y;
 }
 
 function onUp() {
-  // Scroll
-  if (S.tool === 'scroll') {
-    S.isPanning = false;
-    hitCanvas.style.cursor = 'grab';
+  if (S.tool==='scroll') { S.isPanning=false; hitCanvas.style.cursor='grab'; return; }
+  if (S.tool==='move'&&S.resizingId!==null) {
+    S.resizingId=null; S.resizeHandle=null; S.resizeOrigCircle=null;
+    hitCanvas.style.cursor='grab'; saveHistory(); return;
+  }
+  if (S.tool==='move') {
+    if (S.draggingId!==null) { S.draggingId=null; hitCanvas.style.cursor='grab'; saveHistory(); }
     return;
   }
-
-  // Resize end
-  if (S.tool === 'move' && S.resizingId !== null) {
-    S.resizingId = null;
-    S.resizeHandle = null;
-    S.resizeOrigCircle = null;
-    hitCanvas.style.cursor = 'grab';
-    saveHistory();
-    return;
-  }
-
-  // Move end
-  if (S.tool === 'move') {
-    if (S.draggingId !== null) {
-      S.draggingId = null;
-      hitCanvas.style.cursor = 'grab';
-      saveHistory();
-    }
-    return;
-  }
-
   if (!S.isDrawing) return;
-  S.isDrawing = false;
-  drawCtx.globalCompositeOperation = 'source-over';
-
-  if (S.tool === 'circle' && S.circleStart) {
-    const x1=S.circleStart.x, y1=S.circleStart.y, x2=S.lastX, y2=S.lastY;
+  S.isDrawing=false;
+  drawCtx.globalCompositeOperation='source-over';
+  if (S.tool==='circle'&&S.circleStart) {
+    const x1=S.circleStart.x,y1=S.circleStart.y,x2=S.lastX,y2=S.lastY;
     const rx=Math.abs(x2-x1)/2, ry=Math.abs(y2-y1)/2;
-    if (rx > 3 || ry > 3) {
-      S.circles.push({
-        id: S.nextId++,
-        cx: (x1+x2)/2, cy: (y1+y2)/2,
-        rx, ry,
-        color: S.color,
-        size:  S.size,
-      });
+    if (rx>3||ry>3) {
+      S.circles.push({id:S.nextId++,cx:(x1+x2)/2,cy:(y1+y2)/2,rx,ry,color:S.color,size:S.size});
     }
-    S.circleStart = null;
-    renderCircles();
-    saveHistory();
-  } else if (S.tool !== 'circle') {
-    saveHistory();
-  }
+    S.circleStart=null; renderCircles(); saveHistory();
+  } else if (S.tool!=='circle') { saveHistory(); }
 }
 
 function applyPenStyle() {
-  drawCtx.lineWidth  = S.size;
-  drawCtx.lineCap    = 'round';
-  drawCtx.lineJoin   = 'round';
-  if (S.tool === 'eraser') {
-    drawCtx.globalCompositeOperation = 'destination-out';
-    drawCtx.strokeStyle = 'rgba(0,0,0,1)';
-    drawCtx.fillStyle   = 'rgba(0,0,0,1)';
+  drawCtx.lineWidth=S.size; drawCtx.lineCap='round'; drawCtx.lineJoin='round';
+  if (S.tool==='eraser') {
+    drawCtx.globalCompositeOperation='destination-out';
+    drawCtx.strokeStyle='rgba(0,0,0,1)'; drawCtx.fillStyle='rgba(0,0,0,1)';
   } else {
-    drawCtx.globalCompositeOperation = 'source-over';
-    drawCtx.strokeStyle = S.color;
-    drawCtx.fillStyle   = S.color;
+    drawCtx.globalCompositeOperation='source-over';
+    drawCtx.strokeStyle=S.color; drawCtx.fillStyle=S.color;
   }
 }
 
@@ -1002,89 +1065,82 @@ function applyPenStyle() {
 // HISTORY
 // ═══════════════════════════════════════════════════
 function saveHistory() {
-  S.history = S.history.slice(0, S.histIdx + 1);
+  S.history=S.history.slice(0,S.histIdx+1);
   S.history.push({
-    penSnap: drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height),
+    penSnap: drawCtx.getImageData(0,0,drawCanvas.width,drawCanvas.height),
     circles: JSON.parse(JSON.stringify(S.circles)),
   });
-  S.histIdx = S.history.length - 1;
+  S.histIdx=S.history.length-1;
   updateHistoryBtns();
 }
 function undo() {
-  if (S.histIdx <= 0) { showToast('⚠️ Không còn gì để Undo'); return; }
-  S.histIdx--;
-  restore(S.history[S.histIdx]);
+  if (S.histIdx<=0){showToast('⚠️ Không còn gì để Undo');return;}
+  S.histIdx--; restore(S.history[S.histIdx]);
 }
 function redo() {
-  if (S.histIdx >= S.history.length - 1) { showToast('⚠️ Không còn gì để Redo'); return; }
-  S.histIdx++;
-  restore(S.history[S.histIdx]);
+  if (S.histIdx>=S.history.length-1){showToast('⚠️ Không còn gì để Redo');return;}
+  S.histIdx++; restore(S.history[S.histIdx]);
 }
 function restore(h) {
-  drawCtx.putImageData(h.penSnap, 0, 0);
-  S.circles = JSON.parse(JSON.stringify(h.circles));
-  S.selectedId = null;
-  renderCircles();
-  updateHistoryBtns();
+  drawCtx.putImageData(h.penSnap,0,0);
+  S.circles=JSON.parse(JSON.stringify(h.circles));
+  S.selectedId=null; renderCircles(); updateHistoryBtns(); updateSelectionUI();
 }
 function updateHistoryBtns() {
-  document.getElementById('btn-undo').style.opacity = S.histIdx > 0 ? '1' : '0.35';
-  document.getElementById('btn-redo').style.opacity = S.histIdx < S.history.length-1 ? '1' : '0.35';
+  document.getElementById('btn-undo').style.opacity=S.histIdx>0?'1':'0.35';
+  document.getElementById('btn-redo').style.opacity=S.histIdx<S.history.length-1?'1':'0.35';
 }
 
 // ═══════════════════════════════════════════════════
 // CLEAR / SAVE / HOME
 // ═══════════════════════════════════════════════════
 function clearCanvas() {
-  if (!confirm('Xóa toàn bộ nét vẽ và vòng tròn?')) return;
+  if (!confirm('Xóa toàn bộ nét vẽ và vòng tròn trang này?')) return;
   clearPenCanvas(); clearCircleCanvas();
-  S.circles = []; S.selectedId = null;
-  saveHistory(); showToast('🗑️ Đã xóa toàn bộ');
+  S.circles=[]; S.selectedId=null; saveHistory(); updateSelectionUI();
+  showToast('🗑️ Đã xóa toàn bộ');
 }
-function clearPenCanvas()    { drawCtx.clearRect(0,0,drawCanvas.width,drawCanvas.height); }
-function clearCircleCanvas() { circleCtx.clearRect(0,0,circleCanvas.width,circleCanvas.height); }
+function clearPenCanvas(){ drawCtx.clearRect(0,0,drawCanvas.width,drawCanvas.height); }
+function clearCircleCanvas(){ circleCtx.clearRect(0,0,circleCanvas.width,circleCanvas.height); }
 
 function saveImage() {
-  const prevSel = S.selectedId;
-  S.selectedId = null;
-  renderCircles();
-
-  const out = document.createElement('canvas');
-  out.width = S.canvasW; out.height = S.canvasH;
-  const ctx = out.getContext('2d');
-  ctx.drawImage(bgCanvas, 0, 0);
-  ctx.drawImage(drawCanvas, 0, 0);
-  ctx.drawImage(circleCanvas, 0, 0);
-
-  const link = document.createElement('a');
-  link.download = `exam_${Date.now()}.png`;
-  link.href = out.toDataURL('image/png');
-  link.click();
-
-  S.selectedId = prevSel;
-  renderCircles();
-  showToast('💾 Đã lưu ảnh!');
+  const prevSel=S.selectedId; S.selectedId=null; renderCircles();
+  const out=document.createElement('canvas');
+  out.width=S.canvasW; out.height=S.canvasH;
+  const ctx=out.getContext('2d');
+  ctx.drawImage(bgCanvas,0,0); ctx.drawImage(drawCanvas,0,0); ctx.drawImage(circleCanvas,0,0);
+  const link=document.createElement('a');
+  link.download=`exam_p${S.currentPage}_${Date.now()}.png`;
+  link.href=out.toDataURL('image/png'); link.click();
+  S.selectedId=prevSel; renderCircles();
+  showToast('💾 Đã lưu ảnh trang ' + S.currentPage);
 }
 
 function goHome() {
-  if (!confirm('Tải đề mới? Bài làm chưa lưu sẽ mất.')) return;
-  S.pdfDoc = null; pdfNav.classList.remove('visible');
+  if (!confirm('Về trang chủ? Bài làm chưa lưu sẽ mất.')) return;
+  S.pdfDoc=null; S.pages=[]; S.pageStates={};
   clearPenCanvas(); clearCircleCanvas();
-  bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
-  S.circles = []; S.history = []; S.histIdx = -1;
-  fileInput.value = '';
+  bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height);
+  S.circles=[]; S.history=[]; S.histIdx=-1; S.selectedId=null;
+  stagedFiles=[];
+  fileInput.value='';
+  pageNav.classList.remove('visible');
   app.classList.remove('active');
-  uploadScreen.style.display = 'flex';
+  uploadScreen.style.display='flex';
+  document.getElementById('preview-strip').classList.remove('has-files');
+  document.getElementById('preview-list').innerHTML='';
+  document.getElementById('start-btn').style.display='none';
+  updateSelectionUI();
 }
 
 // ═══════════════════════════════════════════════════
 // TOAST
 // ═══════════════════════════════════════════════════
 function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
   clearTimeout(window._tt);
-  window._tt = setTimeout(() => t.classList.remove('show'), 2200);
+  window._tt=setTimeout(()=>t.classList.remove('show'),2200);
 }
 
 // ═══════════════════════════════════════════════════
@@ -1092,11 +1148,12 @@ function showToast(msg) {
 // ═══════════════════════════════════════════════════
 checkOrientation();
 updateHistoryBtns();
-document.getElementById('sizeSlider').value = S.size;
-document.addEventListener('contextmenu', e => e.preventDefault());
-document.addEventListener('touchmove', e => {
-  if (canvasArea.contains(e.target)) e.preventDefault();
-}, { passive: false });
+updateSelectionUI();
+document.getElementById('sizeSlider').value=S.size;
+document.addEventListener('contextmenu',e=>e.preventDefault());
+document.addEventListener('touchmove',e=>{
+  if(canvasArea.contains(e.target))e.preventDefault();
+},{passive:false});
 </script>
 </body>
 </html>
