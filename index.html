@@ -55,6 +55,21 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
   padding:16px;cursor:pointer;transition:opacity .2s;}
 .upload-btn:hover{opacity:.9}
 
+/* RESUME BANNER */
+#resume-banner{display:none;width:100%;max-width:400px;
+  background:linear-gradient(135deg,rgba(79,142,247,0.15),rgba(124,58,237,0.15));
+  border:1px solid rgba(79,142,247,0.35);border-radius:16px;
+  padding:16px 18px;flex-direction:column;gap:10px;}
+#resume-banner.show{display:flex}
+.rb-title{font-size:14px;font-weight:800;color:var(--accent);display:flex;align-items:center;gap:8px}
+.rb-info{font-size:12px;color:var(--muted);line-height:1.5}
+.rb-actions{display:flex;gap:8px}
+.rb-btn{flex:1;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
+.rb-btn:active{transform:scale(.96)}
+.rb-btn.resume{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+.rb-btn.discard{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+.rb-btn.discard:hover{color:var(--red)}
+
 #preview-strip{display:none;width:100%;max-width:400px;flex-direction:column;gap:10px;}
 #preview-strip.has-files{display:flex}
 .preview-header{font-size:13px;font-weight:700;color:var(--accent);display:flex;align-items:center;justify-content:space-between}
@@ -154,6 +169,17 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
   justify-content:center;cursor:pointer;z-index:400;transition:all .15s;}
 #home-btn:hover{color:var(--text)}
 
+/* AUTO-SAVE INDICATOR */
+#autosave-indicator{position:fixed;top:10px;left:10px;
+  background:rgba(26,29,39,.9);border:1px solid var(--border);
+  border-radius:8px;padding:5px 10px;font-size:10px;font-weight:700;
+  color:var(--muted);z-index:400;display:flex;align-items:center;gap:5px;
+  transition:all .3s;}
+#autosave-indicator .dot{width:6px;height:6px;border-radius:50%;background:var(--muted);transition:background .3s}
+#autosave-indicator.saving .dot{background:var(--orange);animation:pulse .6s ease-in-out infinite alternate}
+#autosave-indicator.saved .dot{background:var(--green)}
+@keyframes pulse{from{opacity:.4}to{opacity:1}}
+
 /* PAGE NAV */
 #page-nav{display:none;position:fixed;top:10px;left:50%;
   transform:translateX(-50%);background:rgba(26,29,39,.95);
@@ -197,16 +223,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
 #mode-hint.resize{background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.35);color:#4ade80}
 #mode-hint.duplicate{background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.35);color:#fbbf24}
 
-/* ════════════════════════════════════════
-   GALLERY MODAL
-════════════════════════════════════════ */
+/* GALLERY MODAL */
 #gallery-modal{
   display:none;position:fixed;inset:0;z-index:800;
   background:rgba(8,10,16,0.96);backdrop-filter:blur(16px);
   flex-direction:column;
 }
 #gallery-modal.open{display:flex}
-
 .gallery-header{
   display:flex;align-items:center;justify-content:space-between;
   padding:14px 18px;border-bottom:1px solid var(--border);
@@ -218,7 +241,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;
 }
 .gallery-actions{display:flex;gap:8px;align-items:center}
-
 .g-btn{
   border:none;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:700;
   cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .15s;
@@ -230,109 +252,53 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
 .g-btn.close-g:hover{color:var(--text)}
 .g-btn.capture-all{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
 .g-btn.capture-all:disabled{opacity:.4;cursor:not-allowed}
-
-/* Progress bar inside gallery */
-#gallery-progress{
-  height:3px;background:var(--surface2);flex-shrink:0;overflow:hidden;
-  display:none;
-}
+#gallery-progress{height:3px;background:var(--surface2);flex-shrink:0;overflow:hidden;display:none;}
 #gallery-progress.show{display:block}
 #gallery-progress-bar{height:100%;background:linear-gradient(90deg,var(--accent),#f59e0b);width:0%;transition:width .3s}
-
-.gallery-status{
-  font-size:12px;color:var(--muted);padding:8px 18px;flex-shrink:0;
-  border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;
-}
+.gallery-status{font-size:12px;color:var(--muted);padding:8px 18px;flex-shrink:0;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
 .gallery-status .dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex-shrink:0}
 .gallery-status .dot.saved{background:var(--green)}
 .gallery-status .dot.unsaved{background:var(--orange)}
-
-/* Gallery grid */
-.gallery-body{
-  flex:1;overflow-y:auto;padding:16px;
-  display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
-  gap:14px;align-content:start;
-}
+.gallery-body{flex:1;overflow-y:auto;padding:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;align-content:start;}
 .gallery-body::-webkit-scrollbar{width:4px}
 .gallery-body::-webkit-scrollbar-track{background:transparent}
 .gallery-body::-webkit-scrollbar-thumb{background:var(--surface2);border-radius:4px}
-
-.gallery-card{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:14px;overflow:hidden;display:flex;flex-direction:column;
-  transition:all .2s;position:relative;
-}
+.gallery-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;transition:all .2s;position:relative;}
 .gallery-card:hover{border-color:rgba(79,142,247,0.4);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.4)}
 .gallery-card.is-current{border-color:var(--accent);box-shadow:0 0 0 2px rgba(79,142,247,0.3)}
-
-.gc-thumb{
-  width:100%;aspect-ratio:4/3;overflow:hidden;background:#111;
-  position:relative;cursor:pointer;
-}
+.gc-thumb{width:100%;aspect-ratio:4/3;overflow:hidden;background:#111;position:relative;cursor:pointer;}
 .gc-thumb img{width:100%;height:100%;object-fit:contain;background:#111}
-.gc-thumb .gc-overlay{
-  position:absolute;inset:0;background:rgba(0,0,0,0);
-  display:flex;align-items:center;justify-content:center;
-  transition:background .2s;
-}
+.gc-thumb .gc-overlay{position:absolute;inset:0;background:rgba(0,0,0,0);display:flex;align-items:center;justify-content:center;transition:background .2s;}
 .gc-thumb:hover .gc-overlay{background:rgba(0,0,0,0.45)}
 .gc-overlay .preview-icon{font-size:28px;opacity:0;transform:scale(.8);transition:all .2s}
 .gc-thumb:hover .preview-icon{opacity:1;transform:scale(1)}
-
-/* Spinner inside card */
-.gc-spinner{
-  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-  background:rgba(15,17,23,0.8);
-}
-.gc-spinner .mini-spin{
-  width:24px;height:24px;border:2px solid rgba(79,142,247,.2);
-  border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;
-}
-
 .gc-info{padding:10px 12px;display:flex;flex-direction:column;gap:6px}
 .gc-label{font-size:12px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px}
 .gc-badge{font-size:9px;padding:2px 6px;border-radius:4px;font-weight:700}
 .gc-badge.current{background:rgba(79,142,247,0.2);color:var(--accent)}
 .gc-badge.saved{background:rgba(34,197,94,0.2);color:var(--green)}
 .gc-badge.unsaved{background:rgba(245,158,11,0.2);color:#f59e0b}
-
 .gc-actions{display:flex;gap:6px;padding:0 12px 12px}
-.gc-dl{
-  flex:1;border:none;border-radius:8px;padding:7px 8px;font-size:11px;font-weight:700;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;
-  transition:all .15s;
-}
+.gc-dl{flex:1;border:none;border-radius:8px;padding:7px 8px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;transition:all .15s;}
 .gc-dl:active{transform:scale(.95)}
 .gc-dl.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
 .gc-dl.secondary{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
 .gc-dl.secondary:hover{color:var(--text)}
 .gc-dl:disabled{opacity:.35;cursor:not-allowed}
 
-/* Lightbox */
-#lightbox{
-  display:none;position:fixed;inset:0;z-index:900;
-  background:rgba(0,0,0,0.92);align-items:center;justify-content:center;
-  flex-direction:column;gap:12px;
-}
+/* LIGHTBOX */
+#lightbox{display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,0.92);align-items:center;justify-content:center;flex-direction:column;gap:12px;}
 #lightbox.open{display:flex}
 #lightbox img{max-width:94vw;max-height:80vh;border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,.8)}
-.lb-close{position:absolute;top:14px;right:14px;width:40px;height:40px;
-  border-radius:50%;background:rgba(255,255,255,.1);border:none;color:#fff;
-  font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.lb-close{position:absolute;top:14px;right:14px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.1);border:none;color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 .lb-close:hover{background:rgba(255,255,255,.2)}
 .lb-label{font-size:13px;color:rgba(255,255,255,.6);font-weight:600}
-.lb-dl{border:none;border-radius:10px;padding:10px 20px;font-size:13px;font-weight:700;
-  background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;cursor:pointer;}
+.lb-dl{border:none;border-radius:10px;padding:10px 20px;font-size:13px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;cursor:pointer;}
 .lb-dl:hover{opacity:.9}
 
-/* Empty gallery state */
-.gallery-empty{
-  grid-column:1/-1;display:flex;flex-direction:column;align-items:center;
-  justify-content:center;gap:16px;padding:60px 20px;text-align:center;
-}
+.gallery-empty{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:60px 20px;text-align:center;}
 .gallery-empty .ge-icon{font-size:52px;opacity:.4}
 .gallery-empty .ge-text{font-size:14px;color:var(--muted);line-height:1.6}
-.gallery-empty .ge-hint{font-size:12px;color:rgba(79,142,247,.6)}
 </style>
 </head>
 <body>
@@ -351,6 +317,17 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
     <div class="upload-title">Làm bài thi trực tiếp</div>
     <div class="upload-sub">Upload đề thi, vẽ và khoanh đáp án ngay<br>Hỗ trợ JPG, PNG (nhiều ảnh) và PDF</div>
   </div>
+
+  <!-- RESUME BANNER - hiện khi có session cũ -->
+  <div id="resume-banner">
+    <div class="rb-title">💾 Tìm thấy bài làm chưa hoàn thành!</div>
+    <div class="rb-info" id="resume-info">Bạn có thể tiếp tục làm bài từ lần trước.</div>
+    <div class="rb-actions">
+      <button class="rb-btn resume" onclick="resumeSession()">▶ Tiếp tục làm bài</button>
+      <button class="rb-btn discard" onclick="discardSession()">🗑 Xóa & bắt đầu mới</button>
+    </div>
+  </div>
+
   <div class="upload-zone" id="upload-zone">
     <input type="file" id="file-input" accept="image/*,.pdf" multiple/>
     <div class="upload-icon">📄</div>
@@ -376,6 +353,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
 <!-- APP -->
 <div id="app">
   <button id="home-btn" onclick="goHome()">🏠</button>
+  <div id="autosave-indicator"><div class="dot"></div><span id="autosave-text">Tự động lưu</span></div>
 
   <div id="page-nav">
     <span class="nav-label" id="nav-label">TRANG</span>
@@ -452,7 +430,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
   </div>
 </div>
 
-<!-- ═══════════════ GALLERY MODAL ═══════════════ -->
+<!-- GALLERY MODAL -->
 <div id="gallery-modal">
   <div class="gallery-header">
     <div class="gallery-title">🖼️ Thư viện bài làm</div>
@@ -474,7 +452,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
   <div class="gallery-body" id="gallery-body"></div>
 </div>
 
-<!-- ═══════════════ LIGHTBOX ═══════════════ -->
+<!-- LIGHTBOX -->
 <div id="lightbox">
   <button class="lb-close" onclick="closeLightbox()">✕</button>
   <img id="lb-img" src="" alt="">
@@ -486,6 +464,265 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
+// ═══════════════════════════════════════════════════
+// LOCALSTORAGE PERSISTENCE
+// ═══════════════════════════════════════════════════
+const LS_KEY = 'examdraw_session_v2';
+const LS_GALLERY_KEY = 'examdraw_gallery_v2';
+let autosaveTimer = null;
+
+function setAutosaveIndicator(state) {
+  const el = document.getElementById('autosave-indicator');
+  const txt = document.getElementById('autosave-text');
+  el.className = state;
+  if (state === 'saving') txt.textContent = 'Đang lưu...';
+  else if (state === 'saved') txt.textContent = 'Đã lưu tự động';
+  else txt.textContent = 'Tự động lưu';
+}
+
+/** Debounced autosave: saves after 1.5s of inactivity */
+function scheduleAutosave() {
+  setAutosaveIndicator('saving');
+  clearTimeout(autosaveTimer);
+  autosaveTimer = setTimeout(() => {
+    try { persistSession(); setAutosaveIndicator('saved'); }
+    catch(e) { console.warn('Autosave failed:', e); setAutosaveIndicator(''); }
+  }, 1500);
+}
+
+/** Serialize full session to localStorage */
+function persistSession() {
+  // Save current page state first
+  savePageState(S.currentPage);
+
+  const sessionData = {
+    mode: S.mode,
+    currentPage: S.currentPage,
+    savedAt: Date.now(),
+    pages: S.pages.map(pg => ({
+      type: pg.type,
+      imgUrl: pg.type === 'image' ? pg.imgUrl : null, // data URL preserved
+      imgW: pg.imgW || null,
+      imgH: pg.imgH || null,
+      pdfPage: pg.pdfPage || null,
+    })),
+    pageStates: {},
+    tool: S.tool,
+    color: S.color,
+    size: S.size,
+  };
+
+  // Serialize page states: pen canvas as dataURL + circles
+  for (const [pageNum, st] of Object.entries(S.pageStates)) {
+    if (!st) continue;
+    // Convert ImageData to canvas dataURL for storage
+    const tmpC = document.createElement('canvas');
+    tmpC.width = drawCanvas.width;
+    tmpC.height = drawCanvas.height;
+    const tmpCtx = tmpC.getContext('2d');
+    tmpCtx.putImageData(st.penSnap, 0, 0);
+    sessionData.pageStates[pageNum] = {
+      penDataURL: tmpC.toDataURL('image/png'),
+      circles: st.circles,
+      nextId: st.nextId,
+    };
+  }
+
+  const jsonStr = JSON.stringify(sessionData);
+  // Check size (localStorage limit ~5MB)
+  if (jsonStr.length > 4.5 * 1024 * 1024) {
+    // Too large: save only circles + metadata, skip pen canvas
+    for (const k of Object.keys(sessionData.pageStates)) {
+      sessionData.pageStates[k].penDataURL = null;
+    }
+  }
+  localStorage.setItem(LS_KEY, JSON.stringify(sessionData));
+
+  // Persist gallery data separately
+  const galleryToSave = {};
+  for (const [k, v] of Object.entries(galleryData)) {
+    if (v) galleryToSave[k] = { dataURL: v.dataURL, pageNum: v.pageNum, label: v.label };
+  }
+  try { localStorage.setItem(LS_GALLERY_KEY, JSON.stringify(galleryToSave)); } catch(e) {}
+}
+
+/** Load session from localStorage, return parsed data or null */
+function loadPersistedSession() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    if (!data || !data.pages || data.pages.length === 0) return null;
+    return data;
+  } catch(e) { return null; }
+}
+
+function loadPersistedGallery() {
+  try {
+    const raw = localStorage.getItem(LS_GALLERY_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    for (const [k, v] of Object.entries(data)) {
+      if (v) galleryData[k] = v;
+    }
+  } catch(e) {}
+}
+
+function clearPersistedSession() {
+  localStorage.removeItem(LS_KEY);
+  localStorage.removeItem(LS_GALLERY_KEY);
+}
+
+/** Check on load if there's a saved session to resume */
+function checkForSavedSession() {
+  const data = loadPersistedSession();
+  if (!data) return;
+
+  // Only show resume banner for image sessions (PDF can't be re-stored as file)
+  if (data.mode === 'images' && data.pages.length > 0) {
+    const savedDate = new Date(data.savedAt);
+    const timeAgo = formatTimeAgo(savedDate);
+    const info = document.getElementById('resume-info');
+    info.textContent = `${data.pages.length} ảnh • ${timeAgo} • Nhấn để tiếp tục ngay`;
+    document.getElementById('resume-banner').classList.add('show');
+  } else if (data.mode === 'pdf') {
+    // PDF: can't restore the file but we show notice
+    const savedDate = new Date(data.savedAt);
+    const timeAgo = formatTimeAgo(savedDate);
+    const info = document.getElementById('resume-info');
+    info.textContent = `File PDF • ${timeAgo} — (PDF cần upload lại, nét vẽ đã được lưu)`;
+    document.getElementById('resume-banner').classList.add('show');
+  }
+}
+
+function formatTimeAgo(date) {
+  const diff = Date.now() - date.getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'Vừa xong';
+  if (mins < 60) return `${mins} phút trước`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs} giờ trước`;
+  return `${Math.floor(hrs/24)} ngày trước`;
+}
+
+/** Resume a saved image session */
+async function resumeSession() {
+  const data = loadPersistedSession();
+  if (!data) return;
+
+  document.getElementById('resume-banner').classList.remove('show');
+  loading.classList.add('show');
+  document.getElementById('loading-msg').textContent = 'Đang khôi phục bài làm...';
+
+  try {
+    if (data.mode === 'images') {
+      S.mode = 'images';
+      S.pages = [];
+      S.pageStates = {};
+      S.pdfDoc = null;
+
+      // Restore pages from stored dataURLs
+      for (const pg of data.pages) {
+        if (pg.type === 'image' && pg.imgUrl) {
+          const dim = pg.imgW && pg.imgH
+            ? { w: pg.imgW, h: pg.imgH }
+            : await getImageDimensions(pg.imgUrl);
+          S.pages.push({ type: 'image', imgUrl: pg.imgUrl, imgW: dim.w, imgH: dim.h });
+        }
+      }
+
+      if (S.pages.length === 0) throw new Error('Không tìm thấy ảnh');
+
+      S.currentPage = data.currentPage || 1;
+      if (S.currentPage > S.pages.length) S.currentPage = 1;
+
+      // Restore page states
+      for (const [pageNum, st] of Object.entries(data.pageStates || {})) {
+        if (!st) continue;
+        S.pageStates[pageNum] = {
+          penDataURL: st.penDataURL || null,
+          circles: st.circles || [],
+          nextId: st.nextId || 1,
+        };
+      }
+
+      // Render current page
+      await renderImagePage(S.currentPage);
+
+      // Restore pen drawing for current page
+      await restorePageDrawing(S.currentPage);
+
+      updatePageNav();
+
+      // Restore tool/color/size
+      if (data.tool && ['pen','circle','move','eraser','scroll'].includes(data.tool)) {
+        S.tool = data.tool;
+      }
+      if (data.color) S.color = data.color;
+      if (data.size) S.size = data.size;
+      document.getElementById('sizeSlider').value = S.size;
+
+      // Restore gallery
+      loadPersistedGallery();
+
+      uploadScreen.style.display = 'none';
+      app.classList.add('active');
+      tryLockLandscape(); requestFullscreen(); checkOrientation();
+      showToast('✅ Đã khôi phục bài làm!');
+      setAutosaveIndicator('saved');
+    } else {
+      // PDF: can't restore file, show message
+      showToast('⚠️ PDF cần upload lại để tiếp tục');
+      discardSession();
+    }
+  } catch(err) {
+    showToast('❌ Không thể khôi phục: ' + err.message);
+    clearPersistedSession();
+  }
+  loading.classList.remove('show');
+  updateSelectionUI();
+  updateHistoryBtns();
+}
+
+/** Restore pen drawing from stored dataURL for a page */
+async function restorePageDrawing(pageNum) {
+  const st = S.pageStates[pageNum];
+  if (!st) return;
+
+  S.circles = JSON.parse(JSON.stringify(st.circles || []));
+  S.nextId = st.nextId || 1;
+
+  if (st.penDataURL) {
+    await new Promise((res) => {
+      const img = new Image();
+      img.onload = () => {
+        drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+        drawCtx.drawImage(img, 0, 0);
+        // Now update penSnap in pageStates
+        S.pageStates[pageNum].penSnap = drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height);
+        res();
+      };
+      img.onerror = res;
+      img.src = st.penDataURL;
+    });
+  } else {
+    // No pen data, create blank
+    S.pageStates[pageNum].penSnap = drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height);
+  }
+
+  renderCircles();
+  // Save initial history for this page
+  S.history = [];
+  S.histIdx = -1;
+  saveHistory();
+}
+
+function discardSession() {
+  clearPersistedSession();
+  document.getElementById('resume-banner').classList.remove('show');
+  showToast('🗑 Đã xóa phiên làm bài cũ');
+}
+
 // ═══════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════
@@ -512,7 +749,6 @@ const S = {
   mode: 'none',
 };
 
-// Gallery: savedImages[pageIndex (1-based)] = { dataURL, pageNum, label }
 const galleryData = {};
 
 // ═══════════════════════════════════════════════════
@@ -536,8 +772,6 @@ const modeHint     = document.getElementById('mode-hint');
 // ═══════════════════════════════════════════════════
 // GALLERY CORE
 // ═══════════════════════════════════════════════════
-
-/** Render current canvas layers into a merged dataURL */
 function compositeCurrentPage() {
   const prevSel = S.selectedId;
   S.selectedId = null;
@@ -554,9 +788,7 @@ function compositeCurrentPage() {
   return url;
 }
 
-/** Save current page drawing state then composite */
 function captureCurrentPage() {
-  // Make sure current page's circle/pen state is reflected before compositing
   const dataURL = compositeCurrentPage();
   const pageNum = S.currentPage;
   const label = S.pages.length > 1
@@ -566,31 +798,27 @@ function captureCurrentPage() {
   return dataURL;
 }
 
-/** Quick-save current page (called from toolbar "Lưu trang") */
 function saveImage() {
   const dataURL = captureCurrentPage();
-  // Also trigger download immediately
   const link = document.createElement('a');
   link.download = `exam_p${S.currentPage}_${Date.now()}.png`;
   link.href = dataURL;
   link.click();
   showToast('💾 Đã lưu & tải xuống trang ' + S.currentPage);
-  // Refresh gallery if open
   if (document.getElementById('gallery-modal').classList.contains('open')) {
     renderGallery();
   }
+  scheduleAutosave();
 }
 
 // ═══════════════════════════════════════════════════
 // GALLERY MODAL
 // ═══════════════════════════════════════════════════
 function openGallery() {
-  // Auto-capture current page into gallery (without downloading)
   captureCurrentPageSilent();
   renderGallery();
   document.getElementById('gallery-modal').classList.add('open');
 }
-
 function captureCurrentPageSilent() {
   const dataURL = compositeCurrentPage();
   const pageNum = S.currentPage;
@@ -599,243 +827,153 @@ function captureCurrentPageSilent() {
     : 'Bài làm';
   galleryData[pageNum] = { dataURL, pageNum, label, savedAt: new Date() };
 }
-
 function closeGallery() {
   document.getElementById('gallery-modal').classList.remove('open');
 }
-
 function renderGallery() {
   const body = document.getElementById('gallery-body');
   const total = S.pages.length;
-
   updateGalleryStatus();
-
   if (total === 0) {
-    body.innerHTML = `<div class="gallery-empty">
-      <div class="ge-icon">🖼️</div>
-      <div class="ge-text">Chưa có bài làm nào.<br>Upload đề thi để bắt đầu!</div>
-    </div>`;
+    body.innerHTML = `<div class="gallery-empty"><div class="ge-icon">🖼️</div><div class="ge-text">Chưa có bài làm nào.<br>Upload đề thi để bắt đầu!</div></div>`;
     return;
   }
-
   body.innerHTML = '';
   for (let p = 1; p <= total; p++) {
     const saved = galleryData[p];
     const isCurrent = p === S.currentPage;
     const label = S.mode === 'pdf' ? `Trang ${p}` : (total > 1 ? `Ảnh ${p}` : 'Bài làm');
-
     const card = document.createElement('div');
     card.className = 'gallery-card' + (isCurrent ? ' is-current' : '');
     card.id = `gc-${p}`;
-
     let thumbHtml = '';
     if (saved) {
-      thumbHtml = `
-        <div class="gc-thumb" onclick="openLightbox(${p})">
-          <img src="${saved.dataURL}" alt="${label}">
-          <div class="gc-overlay"><span class="preview-icon">🔍</span></div>
-        </div>`;
+      thumbHtml = `<div class="gc-thumb" onclick="openLightbox(${p})"><img src="${saved.dataURL}" alt="${label}"><div class="gc-overlay"><span class="preview-icon">🔍</span></div></div>`;
     } else {
-      thumbHtml = `
-        <div class="gc-thumb" onclick="captureSinglePage(${p},this)" style="cursor:pointer;background:#111;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px">
-          <span style="font-size:32px;opacity:.4">📄</span>
-          <span style="font-size:11px;color:var(--muted)">Nhấn để chụp</span>
-        </div>`;
+      thumbHtml = `<div class="gc-thumb" onclick="captureSinglePage(${p},this)" style="cursor:pointer;background:#111;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px"><span style="font-size:32px;opacity:.4">📄</span><span style="font-size:11px;color:var(--muted)">Nhấn để chụp</span></div>`;
     }
-
     const badge = isCurrent
       ? `<span class="gc-badge current">Trang hiện tại</span>`
       : (saved ? `<span class="gc-badge saved">✓ Đã lưu</span>` : `<span class="gc-badge unsaved">Chưa chụp</span>`);
-
     const dlBtn = saved
       ? `<button class="gc-dl primary" onclick="downloadPage(${p})">⬇️ Tải xuống</button>`
       : `<button class="gc-dl primary" onclick="captureSinglePage(${p},null)" style="background:linear-gradient(135deg,var(--orange),#d97706)">📸 Lưu trang này</button>`;
-
-    card.innerHTML = `
-      ${thumbHtml}
-      <div class="gc-info">
-        <div class="gc-label">${label} ${badge}</div>
-      </div>
-      <div class="gc-actions">${dlBtn}</div>`;
+    card.innerHTML = `${thumbHtml}<div class="gc-info"><div class="gc-label">${label} ${badge}</div></div><div class="gc-actions">${dlBtn}</div>`;
     body.appendChild(card);
   }
 }
-
 function updateGalleryStatus() {
   const total = S.pages.length;
   const savedCount = Object.keys(galleryData).filter(k => galleryData[k]).length;
   const dot = document.getElementById('status-dot');
   const txt = document.getElementById('status-text');
-
-  if (savedCount === 0) {
-    dot.className = 'dot';
-    txt.textContent = 'Chưa có trang nào được lưu vào thư viện';
-  } else if (savedCount < total) {
-    dot.className = 'dot unsaved';
-    txt.textContent = `${savedCount}/${total} trang đã được lưu`;
-  } else {
-    dot.className = 'dot saved';
-    txt.textContent = `✓ Tất cả ${total} trang đã được lưu`;
-  }
-
+  if (savedCount === 0) { dot.className = 'dot'; txt.textContent = 'Chưa có trang nào được lưu vào thư viện'; }
+  else if (savedCount < total) { dot.className = 'dot unsaved'; txt.textContent = `${savedCount}/${total} trang đã được lưu`; }
+  else { dot.className = 'dot saved'; txt.textContent = `✓ Tất cả ${total} trang đã được lưu`; }
   document.getElementById('btn-save-all').disabled = savedCount === 0;
 }
-
-/** Capture a single page that's not the current one (requires navigation) */
 async function captureSinglePage(pageNum, thumbEl) {
-  if (pageNum === S.currentPage) {
-    captureCurrentPageSilent();
-    renderGallery();
-    showToast(`📸 Đã lưu trang ${pageNum} vào thư viện`);
-    return;
-  }
-  // We need to switch to that page temporarily
+  if (pageNum === S.currentPage) { captureCurrentPageSilent(); renderGallery(); showToast(`📸 Đã lưu trang ${pageNum} vào thư viện`); return; }
   showToast(`⏳ Đang chụp trang ${pageNum}...`);
-
-  // Save current state
   savePageState(S.currentPage);
   const returnPage = S.currentPage;
-
-  // Navigate to target page silently
-  S.currentPage = pageNum;
-  S.selectedId = null; S.circles = [];
-
+  S.currentPage = pageNum; S.selectedId = null; S.circles = [];
   const pg = S.pages[pageNum - 1];
   if (pg.type === 'pdf') await renderPDFPage(pageNum);
   else await renderImagePage(pageNum);
-
   if (S.pageStates[pageNum]) {
     const st = S.pageStates[pageNum];
-    try { drawCtx.putImageData(st.penSnap, 0, 0); } catch(e) {}
-    S.circles = JSON.parse(JSON.stringify(st.circles));
-    S.nextId = st.nextId;
-    renderCircles();
+    try { if (st.penDataURL) { await restorePageDrawingQuick(pageNum); } else if (st.penSnap) { drawCtx.putImageData(st.penSnap, 0, 0); } } catch(e) {}
+    S.circles = JSON.parse(JSON.stringify(st.circles)); S.nextId = st.nextId; renderCircles();
   }
-
   captureCurrentPageSilent();
-
-  // Return to original page
-  S.currentPage = returnPage;
-  S.selectedId = null; S.circles = [];
-
+  S.currentPage = returnPage; S.selectedId = null; S.circles = [];
   const rpg = S.pages[returnPage - 1];
   if (rpg.type === 'pdf') await renderPDFPage(returnPage);
   else await renderImagePage(returnPage);
-
   if (S.pageStates[returnPage]) {
     const st = S.pageStates[returnPage];
-    try { drawCtx.putImageData(st.penSnap, 0, 0); } catch(e) {}
-    S.circles = JSON.parse(JSON.stringify(st.circles));
-    S.nextId = st.nextId;
-    renderCircles();
+    try { if (st.penDataURL) { await restorePageDrawingQuick(returnPage); } else if (st.penSnap) { drawCtx.putImageData(st.penSnap, 0, 0); } } catch(e) {}
+    S.circles = JSON.parse(JSON.stringify(st.circles)); S.nextId = st.nextId; renderCircles();
   }
-
-  updatePageNav();
-  renderGallery();
-  showToast(`✅ Đã lưu trang ${pageNum} vào thư viện`);
+  updatePageNav(); renderGallery(); showToast(`✅ Đã lưu trang ${pageNum} vào thư viện`);
 }
-
-/** Capture ALL pages into galleryData with progress bar */
+async function restorePageDrawingQuick(pageNum) {
+  const st = S.pageStates[pageNum];
+  if (!st || !st.penDataURL) return;
+  await new Promise(res => {
+    const img = new Image();
+    img.onload = () => { drawCtx.clearRect(0,0,drawCanvas.width,drawCanvas.height); drawCtx.drawImage(img,0,0); res(); };
+    img.onerror = res; img.src = st.penDataURL;
+  });
+}
 async function captureAllPages() {
   const total = S.pages.length;
   const btn = document.getElementById('btn-capture-all');
-  btn.disabled = true;
-  btn.textContent = '⏳ Đang chụp...';
-
+  btn.disabled = true; btn.textContent = '⏳ Đang chụp...';
   const prog = document.getElementById('gallery-progress');
   const bar = document.getElementById('gallery-progress-bar');
-  prog.classList.add('show');
-  bar.style.width = '0%';
-
-  // Save current page state first
+  prog.classList.add('show'); bar.style.width = '0%';
   savePageState(S.currentPage);
   const returnPage = S.currentPage;
-
   for (let p = 1; p <= total; p++) {
     bar.style.width = ((p - 1) / total * 100) + '%';
     document.getElementById('status-text').textContent = `Đang chụp trang ${p}/${total}...`;
-
-    if (p === returnPage) {
-      // Already rendered
-    } else {
-      S.currentPage = p;
-      S.selectedId = null; S.circles = [];
+    if (p !== returnPage) {
+      S.currentPage = p; S.selectedId = null; S.circles = [];
       const pg = S.pages[p - 1];
       if (pg.type === 'pdf') await renderPDFPage(p);
       else await renderImagePage(p);
-
       if (S.pageStates[p]) {
         const st = S.pageStates[p];
-        try { drawCtx.putImageData(st.penSnap, 0, 0); } catch(e) {}
-        S.circles = JSON.parse(JSON.stringify(st.circles));
-        S.nextId = st.nextId;
-        renderCircles();
+        if (st.penDataURL) await restorePageDrawingQuick(p);
+        else if (st.penSnap) try { drawCtx.putImageData(st.penSnap, 0, 0); } catch(e) {}
+        S.circles = JSON.parse(JSON.stringify(st.circles)); S.nextId = st.nextId; renderCircles();
       }
     }
     captureCurrentPageSilent();
     bar.style.width = (p / total * 100) + '%';
-    // Yield to browser
     await new Promise(r => setTimeout(r, 30));
   }
-
-  // Return to original page
   if (S.currentPage !== returnPage) {
-    S.currentPage = returnPage;
-    S.selectedId = null; S.circles = [];
+    S.currentPage = returnPage; S.selectedId = null; S.circles = [];
     const rpg = S.pages[returnPage - 1];
     if (rpg.type === 'pdf') await renderPDFPage(returnPage);
     else await renderImagePage(returnPage);
     if (S.pageStates[returnPage]) {
       const st = S.pageStates[returnPage];
-      try { drawCtx.putImageData(st.penSnap, 0, 0); } catch(e) {}
-      S.circles = JSON.parse(JSON.stringify(st.circles));
-      S.nextId = st.nextId;
-      renderCircles();
+      if (st.penDataURL) await restorePageDrawingQuick(returnPage);
+      else if (st.penSnap) try { drawCtx.putImageData(st.penSnap, 0, 0); } catch(e) {}
+      S.circles = JSON.parse(JSON.stringify(st.circles)); S.nextId = st.nextId; renderCircles();
     }
     updatePageNav();
   }
-
   bar.style.width = '100%';
   setTimeout(() => { prog.classList.remove('show'); bar.style.width = '0%'; }, 600);
-
-  btn.disabled = false;
-  btn.textContent = '📸 Lưu tất cả trang';
-
-  renderGallery();
-  showToast(`✅ Đã lưu tất cả ${total} trang vào thư viện!`);
+  btn.disabled = false; btn.textContent = '📸 Lưu tất cả trang';
+  renderGallery(); showToast(`✅ Đã lưu tất cả ${total} trang vào thư viện!`);
 }
-
-/** Download a single saved page */
 function downloadPage(pageNum) {
   const entry = galleryData[pageNum];
   if (!entry) return showToast('⚠️ Chưa có ảnh cho trang này');
   const link = document.createElement('a');
   link.download = `exam_p${pageNum}_${Date.now()}.png`;
-  link.href = entry.dataURL;
-  link.click();
+  link.href = entry.dataURL; link.click();
   showToast(`⬇️ Đã tải xuống trang ${pageNum}`);
 }
-
-/** Download all saved pages */
 async function downloadAllSaved() {
   const entries = Object.values(galleryData).filter(Boolean);
   if (entries.length === 0) return showToast('⚠️ Chưa có trang nào được lưu');
-
   const btn = document.getElementById('btn-save-all');
-  btn.disabled = true;
-  showToast(`⬇️ Đang tải ${entries.length} ảnh...`);
-
+  btn.disabled = true; showToast(`⬇️ Đang tải ${entries.length} ảnh...`);
   for (let i = 0; i < entries.length; i++) {
     const e = entries[i];
     await new Promise(r => setTimeout(r, 120 * i));
     const link = document.createElement('a');
     link.download = `exam_p${e.pageNum}_${Date.now()}.png`;
-    link.href = e.dataURL;
-    link.click();
+    link.href = e.dataURL; link.click();
   }
-
-  btn.disabled = false;
-  showToast(`✅ Đã tải xuống ${entries.length} ảnh!`);
+  btn.disabled = false; showToast(`✅ Đã tải xuống ${entries.length} ảnh!`);
 }
 
 // ═══════════════════════════════════════════════════
@@ -850,13 +988,8 @@ function openLightbox(pageNum) {
   document.getElementById('lb-label').textContent = entry.label;
   document.getElementById('lightbox').classList.add('open');
 }
-function closeLightbox() {
-  document.getElementById('lightbox').classList.remove('open');
-  lightboxPage = null;
-}
-function lightboxDownload() {
-  if (lightboxPage) downloadPage(lightboxPage);
-}
+function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); lightboxPage = null; }
+function lightboxDownload() { if (lightboxPage) downloadPage(lightboxPage); }
 
 // ═══════════════════════════════════════════════════
 // SELECTION ACTIONS UI
@@ -867,24 +1000,21 @@ function updateSelectionUI() {
   document.getElementById('btn-del-circle').classList.toggle('hidden', !hasSelection);
   document.getElementById('selection-div').style.display = hasSelection ? '' : 'none';
 }
-
 function duplicateSelected() {
   if (S.selectedId === null) return;
   const src = S.circles.find(c => c.id === S.selectedId);
   if (!src) return;
   const offset = Math.max(src.rx, src.ry) * 0.5 + 24;
   const newC = { ...src, id: S.nextId++, cx: src.cx + offset, cy: src.cy + offset };
-  S.circles.push(newC);
-  S.selectedId = newC.id;
-  renderCircles(); saveHistory(); updateSelectionUI();
+  S.circles.push(newC); S.selectedId = newC.id;
+  renderCircles(); saveHistory(); updateSelectionUI(); scheduleAutosave();
   showToast('📋 Đã copy vòng tròn!');
 }
-
 function deleteSelected() {
   if (S.selectedId === null) return;
   S.circles = S.circles.filter(c => c.id !== S.selectedId);
   S.selectedId = null;
-  renderCircles(); saveHistory(); updateSelectionUI();
+  renderCircles(); saveHistory(); updateSelectionUI(); scheduleAutosave();
   showToast('✂️ Đã xóa vòng tròn');
 }
 
@@ -898,18 +1028,29 @@ function checkOrientation() {
   overlay.style.display = window.innerWidth > window.innerHeight ? 'none' : 'flex';
 }
 function tryLockLandscape() {
-  if (screen.orientation && screen.orientation.lock)
-    screen.orientation.lock('landscape').catch(() => {});
+  if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {});
 }
 function requestFullscreen() {
   const el = document.documentElement;
   if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
   else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
 }
-window.addEventListener('orientationchange', () =>
-  setTimeout(() => { checkOrientation(); fitCanvasToArea(); }, 300));
-window.addEventListener('resize', () =>
-  setTimeout(() => { checkOrientation(); fitCanvasToArea(); }, 100));
+window.addEventListener('orientationchange', () => setTimeout(() => { checkOrientation(); fitCanvasToArea(); }, 300));
+window.addEventListener('resize', () => setTimeout(() => { checkOrientation(); fitCanvasToArea(); }, 100));
+
+// Auto-save when user leaves the page
+window.addEventListener('beforeunload', () => {
+  if (S.pages.length > 0 && S.mode === 'images') {
+    savePageState(S.currentPage);
+    persistSession();
+  }
+});
+window.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden' && S.pages.length > 0 && S.mode === 'images') {
+    savePageState(S.currentPage);
+    persistSession();
+  }
+});
 
 // ═══════════════════════════════════════════════════
 // FILE UPLOAD
@@ -934,7 +1075,6 @@ function handleFileSelect(files) {
   if (pdfs.length > 0) { stagedFiles = []; loadAndStartPDF(pdfs[0]); return; }
   if (images.length > 0) { stagedFiles = [...stagedFiles, ...images].slice(0, 20); renderPreviewStrip(); }
 }
-
 function renderPreviewStrip() {
   const strip = document.getElementById('preview-strip');
   const list  = document.getElementById('preview-list');
@@ -949,16 +1089,18 @@ function renderPreviewStrip() {
     const url = URL.createObjectURL(f);
     const div = document.createElement('div');
     div.className = 'preview-thumb';
-    div.innerHTML = `<img src="${url}"><span class="pn">${i+1}</span>
-      <button class="px-btn" onclick="removeStagedFile(${i})">×</button>`;
+    div.innerHTML = `<img src="${url}"><span class="pn">${i+1}</span><button class="px-btn" onclick="removeStagedFile(${i})">×</button>`;
     list.appendChild(div);
   });
 }
-
 function removeStagedFile(idx) { stagedFiles.splice(idx, 1); renderPreviewStrip(); }
 
 async function startExam() {
   if (stagedFiles.length === 0) return;
+  // Clear any old session when starting fresh
+  clearPersistedSession();
+  Object.keys(galleryData).forEach(k => delete galleryData[k]);
+
   loading.classList.add('show');
   document.getElementById('loading-msg').textContent = 'Đang tải ảnh...';
   try {
@@ -969,8 +1111,9 @@ async function startExam() {
   } catch(err) { showToast('❌ Lỗi: ' + err.message); }
   loading.classList.remove('show');
 }
-
 async function loadAndStartPDF(file) {
+  clearPersistedSession();
+  Object.keys(galleryData).forEach(k => delete galleryData[k]);
   loading.classList.add('show');
   document.getElementById('loading-msg').textContent = 'Đang tải PDF...';
   try {
@@ -1026,8 +1169,7 @@ async function renderPDFPage(n) {
   const pg = S.pages[n-1];
   const page = await S.pdfDoc.getPage(pg.pdfPage);
   const vp = page.getViewport({ scale: 2.0 });
-  setupCanvases(vp.width, vp.height);
-  clearPenCanvas(); clearCircleCanvas();
+  setupCanvases(vp.width, vp.height); clearPenCanvas(); clearCircleCanvas();
   await page.render({ canvasContext: bgCtx, viewport: vp }).promise;
   fitCanvasToArea();
 }
@@ -1046,8 +1188,14 @@ function updatePageNav() {
 }
 
 function savePageState(n) {
+  const penSnap = drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height);
+  // Also update penDataURL so restore works correctly
+  const tmpC = document.createElement('canvas');
+  tmpC.width = drawCanvas.width; tmpC.height = drawCanvas.height;
+  tmpC.getContext('2d').putImageData(penSnap, 0, 0);
   S.pageStates[n] = {
-    penSnap: drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height),
+    penSnap,
+    penDataURL: tmpC.toDataURL('image/png'),
     circles: JSON.parse(JSON.stringify(S.circles)),
     nextId: S.nextId,
   };
@@ -1057,9 +1205,12 @@ function initPageState(n) {
   if (!S.pageStates[n]) {
     S.pageStates[n] = {
       penSnap: drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height),
+      penDataURL: null,
       circles: [], nextId: 1,
     };
   }
+  S.circles = JSON.parse(JSON.stringify(S.pageStates[n].circles));
+  S.nextId = S.pageStates[n].nextId;
   S.history = []; S.histIdx = -1; saveHistory();
 }
 
@@ -1067,6 +1218,7 @@ async function changePage(delta) {
   const np = S.currentPage + delta;
   if (np < 1 || np > S.pages.length) return;
   savePageState(S.currentPage);
+  scheduleAutosave();
   loading.classList.add('show');
   document.getElementById('loading-msg').textContent = 'Đang chuyển trang...';
   S.currentPage = np; S.selectedId = null; S.circles = [];
@@ -1075,10 +1227,12 @@ async function changePage(delta) {
   else await renderImagePage(np);
   if (S.pageStates[np]) {
     const st = S.pageStates[np];
-    try { drawCtx.putImageData(st.penSnap, 0, 0); } catch(e) {}
+    if (st.penDataURL) await restorePageDrawingQuick(np);
+    else if (st.penSnap) { try { drawCtx.putImageData(st.penSnap, 0, 0); } catch(e) {} }
     S.circles = JSON.parse(JSON.stringify(st.circles));
     S.nextId = st.nextId;
     renderCircles();
+    S.history = []; S.histIdx = -1; saveHistory();
   } else { initPageState(np); }
   updatePageNav(); updateSelectionUI(); updateHistoryBtns();
   loading.classList.remove('show');
@@ -1252,14 +1406,8 @@ function renderCirclePreview(x1,y1,x2,y2) {
 // ═══════════════════════════════════════════════════
 // MOUSE EVENTS
 // ═══════════════════════════════════════════════════
-hitCanvas.addEventListener('mousedown', e => {
-  if (e.button!==0) return; e.preventDefault();
-  const p = toCanvas(e.clientX, e.clientY); onDown(p.x,p.y,e.clientX,e.clientY);
-});
-hitCanvas.addEventListener('mousemove', e => {
-  e.preventDefault();
-  const p = toCanvas(e.clientX, e.clientY); onMove(p.x,p.y,e.clientX,e.clientY);
-});
+hitCanvas.addEventListener('mousedown', e => { if (e.button!==0) return; e.preventDefault(); const p=toCanvas(e.clientX,e.clientY); onDown(p.x,p.y,e.clientX,e.clientY); });
+hitCanvas.addEventListener('mousemove', e => { e.preventDefault(); const p=toCanvas(e.clientX,e.clientY); onMove(p.x,p.y,e.clientX,e.clientY); });
 hitCanvas.addEventListener('mouseup', () => onUp());
 hitCanvas.addEventListener('mouseleave', () => onUp());
 
@@ -1273,26 +1421,18 @@ canvasArea.addEventListener('touchcancel', onTouchEnd,   {passive:false});
 
 function onTouchStart(e) {
   e.preventDefault();
-  if (e.touches.length===1) {
-    S.isPinching=false;
-    const t=e.touches[0], p=toCanvas(t.clientX,t.clientY);
-    onDown(p.x,p.y,t.clientX,t.clientY);
-  } else if (e.touches.length===2) {
-    onUp(); S.isPinching=true;
-    S.lastTouchDist=getTouchDist(e.touches); S.lastTouchMid=getTouchMid(e.touches);
-  }
+  if (e.touches.length===1) { S.isPinching=false; const t=e.touches[0],p=toCanvas(t.clientX,t.clientY); onDown(p.x,p.y,t.clientX,t.clientY); }
+  else if (e.touches.length===2) { onUp(); S.isPinching=true; S.lastTouchDist=getTouchDist(e.touches); S.lastTouchMid=getTouchMid(e.touches); }
 }
 function onTouchMove(e) {
   e.preventDefault();
-  if (e.touches.length===1&&!S.isPinching) {
-    const t=e.touches[0], p=toCanvas(t.clientX,t.clientY);
-    onMove(p.x,p.y,t.clientX,t.clientY);
-  } else if (e.touches.length===2) {
-    const dist=getTouchDist(e.touches), mid=getTouchMid(e.touches);
+  if (e.touches.length===1&&!S.isPinching) { const t=e.touches[0],p=toCanvas(t.clientX,t.clientY); onMove(p.x,p.y,t.clientX,t.clientY); }
+  else if (e.touches.length===2) {
+    const dist=getTouchDist(e.touches),mid=getTouchMid(e.touches);
     const rect=canvasArea.getBoundingClientRect();
     const ns=Math.max(0.15,Math.min(8,S.scale*(dist/S.lastTouchDist)));
-    const mx=mid.x-rect.left, my=mid.y-rect.top;
-    const cx=(mx-S.panX)/S.scale, cy=(my-S.panY)/S.scale;
+    const mx=mid.x-rect.left,my=mid.y-rect.top;
+    const cx=(mx-S.panX)/S.scale,cy=(my-S.panY)/S.scale;
     S.panX=mx-cx*ns+(mid.x-S.lastTouchMid.x);
     S.panY=my-cy*ns+(mid.y-S.lastTouchMid.y);
     S.scale=ns; S.lastTouchDist=dist; S.lastTouchMid=mid; applyTransform();
@@ -1301,11 +1441,7 @@ function onTouchMove(e) {
 function onTouchEnd(e) {
   e.preventDefault();
   if (e.touches.length===0) { onUp(); S.isPinching=false; }
-  else if (e.touches.length===1) {
-    S.isPinching=false;
-    const t=e.touches[0], p=toCanvas(t.clientX,t.clientY);
-    onDown(p.x,p.y,t.clientX,t.clientY);
-  }
+  else if (e.touches.length===1) { S.isPinching=false; const t=e.touches[0],p=toCanvas(t.clientX,t.clientY); onDown(p.x,p.y,t.clientX,t.clientY); }
 }
 function getTouchDist(ts){const dx=ts[0].clientX-ts[1].clientX,dy=ts[0].clientY-ts[1].clientY;return Math.sqrt(dx*dx+dy*dy);}
 function getTouchMid(ts){return{x:(ts[0].clientX+ts[1].clientX)/2,y:(ts[0].clientY+ts[1].clientY)/2};}
@@ -1321,27 +1457,17 @@ function onDown(x,y,screenX,screenY) {
     hitCanvas.style.cursor='grabbing'; return;
   }
   if (S.tool==='move') {
-    const selC = S.circles.find(c=>c.id===S.selectedId);
+    const selC=S.circles.find(c=>c.id===S.selectedId);
     if (selC) {
       const handle=hitResizeHandle(x,y,selC);
-      if (handle) {
-        S.resizingId=selC.id; S.resizeHandle=handle;
-        S.resizeStartX=x; S.resizeStartY=y; S.resizeOrigCircle={...selC};
-        hitCanvas.style.cursor='nwse-resize'; return;
-      }
-      const dx=x-selC.cx, dy=y-selC.cy;
+      if (handle) { S.resizingId=selC.id; S.resizeHandle=handle; S.resizeStartX=x; S.resizeStartY=y; S.resizeOrigCircle={...selC}; hitCanvas.style.cursor='nwse-resize'; return; }
+      const dx=x-selC.cx,dy=y-selC.cy;
       const mr=Math.max(12/S.scale,6);
-      if (Math.sqrt(dx*dx+dy*dy)<mr) {
-        S.draggingId=selC.id; S.dragOffsetX=dx; S.dragOffsetY=dy;
-        hitCanvas.style.cursor='grabbing'; return;
-      }
+      if (Math.sqrt(dx*dx+dy*dy)<mr) { S.draggingId=selC.id; S.dragOffsetX=dx; S.dragOffsetY=dy; hitCanvas.style.cursor='grabbing'; return; }
     }
     const hit=hitCircle(x,y);
-    if (hit) {
-      S.selectedId=hit.id; S.draggingId=hit.id;
-      S.dragOffsetX=x-hit.cx; S.dragOffsetY=y-hit.cy;
-      hitCanvas.style.cursor='grabbing';
-    } else { S.selectedId=null; S.draggingId=null; }
+    if (hit) { S.selectedId=hit.id; S.draggingId=hit.id; S.dragOffsetX=x-hit.cx; S.dragOffsetY=y-hit.cy; hitCanvas.style.cursor='grabbing'; }
+    else { S.selectedId=null; S.draggingId=null; }
     renderCircles(); updateSelectionUI(); return;
   }
   S.isDrawing=true;
@@ -1349,7 +1475,6 @@ function onDown(x,y,screenX,screenY) {
   applyPenStyle();
   drawCtx.beginPath(); drawCtx.arc(x,y,S.size/2,0,Math.PI*2); drawCtx.fill();
 }
-
 function onMove(x,y,screenX,screenY) {
   if (S.tool==='scroll') {
     if (!S.isPanning) return;
@@ -1358,9 +1483,9 @@ function onMove(x,y,screenX,screenY) {
     applyTransform(); return;
   }
   if (S.tool==='move'&&S.resizingId!==null) {
-    const c=S.circles.find(c=>c.id===S.resizingId), orig=S.resizeOrigCircle;
+    const c=S.circles.find(c=>c.id===S.resizingId),orig=S.resizeOrigCircle;
     if (!c||!orig) return;
-    const dx=x-S.resizeStartX, dy=y-S.resizeStartY, h=S.resizeHandle;
+    const dx=x-S.resizeStartX,dy=y-S.resizeStartY,h=S.resizeHandle;
     let left=orig.cx-orig.rx,right=orig.cx+orig.rx,top=orig.cy-orig.ry,bottom=orig.cy+orig.ry;
     if (h.includes('l')) left=Math.min(left+dx,right-4);
     if (h.includes('r')) right=Math.max(right+dx,left+4);
@@ -1370,31 +1495,22 @@ function onMove(x,y,screenX,screenY) {
     renderCircles(); return;
   }
   if (S.tool==='move') {
-    if (S.draggingId!==null) {
-      const c=S.circles.find(c=>c.id===S.draggingId);
-      if (c) { c.cx=x-S.dragOffsetX; c.cy=y-S.dragOffsetY; }
-      renderCircles();
-    }
+    if (S.draggingId!==null) { const c=S.circles.find(c=>c.id===S.draggingId); if (c) { c.cx=x-S.dragOffsetX; c.cy=y-S.dragOffsetY; } renderCircles(); }
     S.lastX=x; S.lastY=y; return;
   }
   if (!S.isDrawing) return;
-  if (S.tool==='circle') {
-    renderCirclePreview(S.circleStart.x,S.circleStart.y,x,y);
-  } else {
-    applyPenStyle();
-    drawCtx.beginPath(); drawCtx.moveTo(S.lastX,S.lastY); drawCtx.lineTo(x,y); drawCtx.stroke();
-  }
+  if (S.tool==='circle') { renderCirclePreview(S.circleStart.x,S.circleStart.y,x,y); }
+  else { applyPenStyle(); drawCtx.beginPath(); drawCtx.moveTo(S.lastX,S.lastY); drawCtx.lineTo(x,y); drawCtx.stroke(); }
   S.lastX=x; S.lastY=y;
 }
-
 function onUp() {
   if (S.tool==='scroll') { S.isPanning=false; hitCanvas.style.cursor='grab'; return; }
   if (S.tool==='move'&&S.resizingId!==null) {
     S.resizingId=null; S.resizeHandle=null; S.resizeOrigCircle=null;
-    hitCanvas.style.cursor='grab'; saveHistory(); return;
+    hitCanvas.style.cursor='grab'; saveHistory(); scheduleAutosave(); return;
   }
   if (S.tool==='move') {
-    if (S.draggingId!==null) { S.draggingId=null; hitCanvas.style.cursor='grab'; saveHistory(); }
+    if (S.draggingId!==null) { S.draggingId=null; hitCanvas.style.cursor='grab'; saveHistory(); scheduleAutosave(); }
     return;
   }
   if (!S.isDrawing) return;
@@ -1402,12 +1518,11 @@ function onUp() {
   drawCtx.globalCompositeOperation='source-over';
   if (S.tool==='circle'&&S.circleStart) {
     const x1=S.circleStart.x,y1=S.circleStart.y,x2=S.lastX,y2=S.lastY;
-    const rx=Math.abs(x2-x1)/2, ry=Math.abs(y2-y1)/2;
+    const rx=Math.abs(x2-x1)/2,ry=Math.abs(y2-y1)/2;
     if (rx>3||ry>3) S.circles.push({id:S.nextId++,cx:(x1+x2)/2,cy:(y1+y2)/2,rx,ry,color:S.color,size:S.size});
-    S.circleStart=null; renderCircles(); saveHistory();
-  } else if (S.tool!=='circle') { saveHistory(); }
+    S.circleStart=null; renderCircles(); saveHistory(); scheduleAutosave();
+  } else if (S.tool!=='circle') { saveHistory(); scheduleAutosave(); }
 }
-
 function applyPenStyle() {
   drawCtx.lineWidth=S.size; drawCtx.lineCap='round'; drawCtx.lineJoin='round';
   if (S.tool==='eraser') {
@@ -1427,8 +1542,8 @@ function saveHistory() {
   S.history.push({ penSnap: drawCtx.getImageData(0,0,drawCanvas.width,drawCanvas.height), circles: JSON.parse(JSON.stringify(S.circles)) });
   S.histIdx=S.history.length-1; updateHistoryBtns();
 }
-function undo() { if (S.histIdx<=0){showToast('⚠️ Không còn gì để Undo');return;} S.histIdx--; restore(S.history[S.histIdx]); }
-function redo() { if (S.histIdx>=S.history.length-1){showToast('⚠️ Không còn gì để Redo');return;} S.histIdx++; restore(S.history[S.histIdx]); }
+function undo() { if (S.histIdx<=0){showToast('⚠️ Không còn gì để Undo');return;} S.histIdx--; restore(S.history[S.histIdx]); scheduleAutosave(); }
+function redo() { if (S.histIdx>=S.history.length-1){showToast('⚠️ Không còn gì để Redo');return;} S.histIdx++; restore(S.history[S.histIdx]); scheduleAutosave(); }
 function restore(h) {
   drawCtx.putImageData(h.penSnap,0,0);
   S.circles=JSON.parse(JSON.stringify(h.circles));
@@ -1445,14 +1560,19 @@ function updateHistoryBtns() {
 function clearCanvas() {
   if (!confirm('Xóa toàn bộ nét vẽ và vòng tròn trang này?')) return;
   clearPenCanvas(); clearCircleCanvas();
-  S.circles=[]; S.selectedId=null; saveHistory(); updateSelectionUI();
+  S.circles=[]; S.selectedId=null; saveHistory(); updateSelectionUI(); scheduleAutosave();
   showToast('🗑️ Đã xóa toàn bộ');
 }
 function clearPenCanvas(){ drawCtx.clearRect(0,0,drawCanvas.width,drawCanvas.height); }
 function clearCircleCanvas(){ circleCtx.clearRect(0,0,circleCanvas.width,circleCanvas.height); }
 
 function goHome() {
-  if (!confirm('Về trang chủ? Bài làm chưa lưu sẽ mất.')) return;
+  if (!confirm('Về trang chủ? Bài làm sẽ được lưu tự động để tiếp tục sau.')) return;
+  // Save before going home
+  if (S.pages.length > 0 && S.mode === 'images') {
+    savePageState(S.currentPage);
+    persistSession();
+  }
   S.pdfDoc=null; S.pages=[]; S.pageStates={};
   clearPenCanvas(); clearCircleCanvas();
   bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height);
@@ -1464,10 +1584,11 @@ function goHome() {
   document.getElementById('preview-strip').classList.remove('has-files');
   document.getElementById('preview-list').innerHTML='';
   document.getElementById('start-btn').style.display='none';
-  // Clear gallery
   Object.keys(galleryData).forEach(k => delete galleryData[k]);
   closeGallery();
   updateSelectionUI();
+  // Re-check for saved session banner
+  checkForSavedSession();
 }
 
 // ═══════════════════════════════════════════════════
@@ -1487,14 +1608,13 @@ updateHistoryBtns();
 updateSelectionUI();
 document.getElementById('sizeSlider').value=S.size;
 document.addEventListener('contextmenu',e=>e.preventDefault());
-document.addEventListener('touchmove',e=>{
-  if(canvasArea.contains(e.target))e.preventDefault();
-},{passive:false});
-
-// Close gallery/lightbox on Escape
+document.addEventListener('touchmove',e=>{ if(canvasArea.contains(e.target))e.preventDefault(); },{passive:false});
 document.addEventListener('keydown', e => {
   if (e.key==='Escape') { closeLightbox(); closeGallery(); }
 });
+
+// Check for saved session on page load
+checkForSavedSession();
 </script>
 </body>
 </html>
