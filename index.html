@@ -55,7 +55,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
   padding:16px;cursor:pointer;transition:opacity .2s;}
 .upload-btn:hover{opacity:.9}
 
-/* Image preview strip on upload screen */
 #preview-strip{display:none;width:100%;max-width:400px;flex-direction:column;gap:10px;}
 #preview-strip.has-files{display:flex}
 .preview-header{font-size:13px;font-weight:700;color:var(--accent);display:flex;align-items:center;justify-content:space-between}
@@ -98,6 +97,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
 .tb-btn.danger:hover{background:rgba(239,68,68,0.1)}
 .tb-btn.success{color:var(--green)}
 .tb-btn.success:hover{background:rgba(34,197,94,0.1)}
+.tb-btn.gallery-btn{color:#f59e0b}
+.tb-btn.gallery-btn:hover{background:rgba(245,158,11,0.1)}
 .tb-btn.duplicate{color:var(--orange)}
 .tb-btn.duplicate:hover{background:rgba(245,158,11,0.15)}
 .tb-btn.duplicate.hidden{display:none}
@@ -105,7 +106,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
 .tb-btn.del-circle:hover{background:rgba(239,68,68,0.15)}
 .tb-btn.del-circle.hidden{display:none}
 
-/* Color buttons */
 .color-btn{width:30px;height:30px;border-radius:50%;border:3px solid transparent;
   cursor:pointer;flex-shrink:0;transition:all .15s;}
 .color-btn.active{border-color:#fff;transform:scale(1.2)}
@@ -115,7 +115,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
 .color-btn.black.active{border-color:#fff}
 .color-btn.green{background:#22c55e}
 
-/* Size slider */
 .size-wrap{display:flex;align-items:center;gap:6px;flex-shrink:0;padding:0 4px}
 .size-wrap label{font-size:9px;color:var(--muted);font-weight:600}
 #sizeSlider{-webkit-appearance:none;width:56px;height:4px;border-radius:2px;
@@ -123,7 +122,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
 #sizeSlider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;
   border-radius:50%;background:var(--accent);cursor:pointer;}
 
-/* Zoom strip */
 .zoom-wrap{display:flex;align-items:center;gap:3px;flex-shrink:0}
 .zoom-btn{width:36px;height:36px;border-radius:10px;border:1px solid var(--border);
   background:var(--surface2);color:var(--text);font-size:18px;font-weight:700;
@@ -156,7 +154,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
   justify-content:center;cursor:pointer;z-index:400;transition:all .15s;}
 #home-btn:hover{color:var(--text)}
 
-/* PAGE NAV — supports both PDF and multi-image */
+/* PAGE NAV */
 #page-nav{display:none;position:fixed;top:10px;left:50%;
   transform:translateX(-50%);background:rgba(26,29,39,.95);
   border:1px solid var(--border);border-radius:12px;
@@ -188,7 +186,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
   color:var(--text);opacity:0;transition:all .3s;z-index:600;white-space:nowrap}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* MODE HINT banner */
+/* MODE HINT */
 #mode-hint{position:fixed;top:52px;left:50%;transform:translateX(-50%);
   border-radius:8px;padding:7px 16px;font-size:12px;font-weight:600;
   z-index:410;pointer-events:none;
@@ -198,6 +196,143 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
 #mode-hint.scroll{background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.35);color:#a78bfa}
 #mode-hint.resize{background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.35);color:#4ade80}
 #mode-hint.duplicate{background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.35);color:#fbbf24}
+
+/* ════════════════════════════════════════
+   GALLERY MODAL
+════════════════════════════════════════ */
+#gallery-modal{
+  display:none;position:fixed;inset:0;z-index:800;
+  background:rgba(8,10,16,0.96);backdrop-filter:blur(16px);
+  flex-direction:column;
+}
+#gallery-modal.open{display:flex}
+
+.gallery-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 18px;border-bottom:1px solid var(--border);
+  background:rgba(22,25,36,0.9);flex-shrink:0;
+}
+.gallery-title{
+  font-size:16px;font-weight:800;
+  background:linear-gradient(135deg,var(--accent),#f59e0b);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.gallery-actions{display:flex;gap:8px;align-items:center}
+
+.g-btn{
+  border:none;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .15s;
+}
+.g-btn:active{transform:scale(.95)}
+.g-btn.save-all{background:linear-gradient(135deg,var(--green),#16a34a);color:#fff}
+.g-btn.save-all:disabled{opacity:.4;cursor:not-allowed}
+.g-btn.close-g{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+.g-btn.close-g:hover{color:var(--text)}
+.g-btn.capture-all{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+.g-btn.capture-all:disabled{opacity:.4;cursor:not-allowed}
+
+/* Progress bar inside gallery */
+#gallery-progress{
+  height:3px;background:var(--surface2);flex-shrink:0;overflow:hidden;
+  display:none;
+}
+#gallery-progress.show{display:block}
+#gallery-progress-bar{height:100%;background:linear-gradient(90deg,var(--accent),#f59e0b);width:0%;transition:width .3s}
+
+.gallery-status{
+  font-size:12px;color:var(--muted);padding:8px 18px;flex-shrink:0;
+  border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;
+}
+.gallery-status .dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex-shrink:0}
+.gallery-status .dot.saved{background:var(--green)}
+.gallery-status .dot.unsaved{background:var(--orange)}
+
+/* Gallery grid */
+.gallery-body{
+  flex:1;overflow-y:auto;padding:16px;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+  gap:14px;align-content:start;
+}
+.gallery-body::-webkit-scrollbar{width:4px}
+.gallery-body::-webkit-scrollbar-track{background:transparent}
+.gallery-body::-webkit-scrollbar-thumb{background:var(--surface2);border-radius:4px}
+
+.gallery-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:14px;overflow:hidden;display:flex;flex-direction:column;
+  transition:all .2s;position:relative;
+}
+.gallery-card:hover{border-color:rgba(79,142,247,0.4);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.gallery-card.is-current{border-color:var(--accent);box-shadow:0 0 0 2px rgba(79,142,247,0.3)}
+
+.gc-thumb{
+  width:100%;aspect-ratio:4/3;overflow:hidden;background:#111;
+  position:relative;cursor:pointer;
+}
+.gc-thumb img{width:100%;height:100%;object-fit:contain;background:#111}
+.gc-thumb .gc-overlay{
+  position:absolute;inset:0;background:rgba(0,0,0,0);
+  display:flex;align-items:center;justify-content:center;
+  transition:background .2s;
+}
+.gc-thumb:hover .gc-overlay{background:rgba(0,0,0,0.45)}
+.gc-overlay .preview-icon{font-size:28px;opacity:0;transform:scale(.8);transition:all .2s}
+.gc-thumb:hover .preview-icon{opacity:1;transform:scale(1)}
+
+/* Spinner inside card */
+.gc-spinner{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  background:rgba(15,17,23,0.8);
+}
+.gc-spinner .mini-spin{
+  width:24px;height:24px;border:2px solid rgba(79,142,247,.2);
+  border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;
+}
+
+.gc-info{padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.gc-label{font-size:12px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px}
+.gc-badge{font-size:9px;padding:2px 6px;border-radius:4px;font-weight:700}
+.gc-badge.current{background:rgba(79,142,247,0.2);color:var(--accent)}
+.gc-badge.saved{background:rgba(34,197,94,0.2);color:var(--green)}
+.gc-badge.unsaved{background:rgba(245,158,11,0.2);color:#f59e0b}
+
+.gc-actions{display:flex;gap:6px;padding:0 12px 12px}
+.gc-dl{
+  flex:1;border:none;border-radius:8px;padding:7px 8px;font-size:11px;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;
+  transition:all .15s;
+}
+.gc-dl:active{transform:scale(.95)}
+.gc-dl.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+.gc-dl.secondary{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+.gc-dl.secondary:hover{color:var(--text)}
+.gc-dl:disabled{opacity:.35;cursor:not-allowed}
+
+/* Lightbox */
+#lightbox{
+  display:none;position:fixed;inset:0;z-index:900;
+  background:rgba(0,0,0,0.92);align-items:center;justify-content:center;
+  flex-direction:column;gap:12px;
+}
+#lightbox.open{display:flex}
+#lightbox img{max-width:94vw;max-height:80vh;border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,.8)}
+.lb-close{position:absolute;top:14px;right:14px;width:40px;height:40px;
+  border-radius:50%;background:rgba(255,255,255,.1);border:none;color:#fff;
+  font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.lb-close:hover{background:rgba(255,255,255,.2)}
+.lb-label{font-size:13px;color:rgba(255,255,255,.6);font-weight:600}
+.lb-dl{border:none;border-radius:10px;padding:10px 20px;font-size:13px;font-weight:700;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;cursor:pointer;}
+.lb-dl:hover{opacity:.9}
+
+/* Empty gallery state */
+.gallery-empty{
+  grid-column:1/-1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:16px;padding:60px 20px;text-align:center;
+}
+.gallery-empty .ge-icon{font-size:52px;opacity:.4}
+.gallery-empty .ge-text{font-size:14px;color:var(--muted);line-height:1.6}
+.gallery-empty .ge-hint{font-size:12px;color:rgba(79,142,247,.6)}
 </style>
 </head>
 <body>
@@ -223,7 +358,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
     <div class="uzh">JPG, PNG (nhiều ảnh), PDF • Kéo thả vào đây</div>
   </div>
 
-  <!-- Preview strip for multi-image -->
   <div id="preview-strip">
     <div class="preview-header">
       <span id="preview-count">0 ảnh đã chọn</span>
@@ -243,7 +377,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
 <div id="app">
   <button id="home-btn" onclick="goHome()">🏠</button>
 
-  <!-- Unified page nav (PDF or multi-image) -->
   <div id="page-nav">
     <span class="nav-label" id="nav-label">TRANG</span>
     <button id="page-prev" onclick="changePage(-1)">◀</button>
@@ -278,7 +411,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
       </button>
     </div>
     <div class="tb-div"></div>
-    <!-- Selection actions: duplicate & delete — shown when circle selected in move mode -->
     <div class="tb-group" id="selection-actions">
       <button class="tb-btn duplicate hidden" id="btn-duplicate" onclick="duplicateSelected()">
         📋<span class="lbl">Copy</span>
@@ -314,9 +446,40 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
     <div class="tb-div"></div>
     <div class="tb-group">
       <button class="tb-btn danger" onclick="clearCanvas()">🗑️<span class="lbl">Xóa tất</span></button>
-      <button class="tb-btn success" onclick="saveImage()">💾<span class="lbl">Lưu</span></button>
+      <button class="tb-btn success" onclick="saveImage()">💾<span class="lbl">Lưu trang</span></button>
+      <button class="tb-btn gallery-btn" onclick="openGallery()">🖼️<span class="lbl">Thư viện</span></button>
     </div>
   </div>
+</div>
+
+<!-- ═══════════════ GALLERY MODAL ═══════════════ -->
+<div id="gallery-modal">
+  <div class="gallery-header">
+    <div class="gallery-title">🖼️ Thư viện bài làm</div>
+    <div class="gallery-actions">
+      <button class="g-btn capture-all" id="btn-capture-all" onclick="captureAllPages()">
+        📸 Lưu tất cả trang
+      </button>
+      <button class="g-btn save-all" id="btn-save-all" onclick="downloadAllSaved()">
+        ⬇️ Tải xuống tất cả
+      </button>
+      <button class="g-btn close-g" onclick="closeGallery()">✕ Đóng</button>
+    </div>
+  </div>
+  <div id="gallery-progress"><div id="gallery-progress-bar"></div></div>
+  <div class="gallery-status" id="gallery-status">
+    <div class="dot" id="status-dot"></div>
+    <span id="status-text">Chưa có ảnh nào được lưu</span>
+  </div>
+  <div class="gallery-body" id="gallery-body"></div>
+</div>
+
+<!-- ═══════════════ LIGHTBOX ═══════════════ -->
+<div id="lightbox">
+  <button class="lb-close" onclick="closeLightbox()">✕</button>
+  <img id="lb-img" src="" alt="">
+  <div class="lb-label" id="lb-label"></div>
+  <button class="lb-dl" onclick="lightboxDownload()">⬇️ Tải xuống ảnh này</button>
 </div>
 
 <div id="toast"></div>
@@ -329,38 +492,28 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
 const S = {
   tool: 'pen', prevTool: 'pen',
   color: '#ef4444', size: 3,
-
   isDrawing: false, lastX: 0, lastY: 0,
   circleStart: null,
-
   circles: [], nextId: 1, selectedId: null,
   draggingId: null, dragOffsetX: 0, dragOffsetY: 0,
   resizingId: null, resizeHandle: null,
   resizeStartX: 0, resizeStartY: 0, resizeOrigCircle: null,
-
   isPanning: false,
   panStartX: 0, panStartY: 0,
   panStartPanX: 0, panStartPanY: 0,
-
   scale: 1, panX: 0, panY: 0,
-
   lastTouchDist: 0, lastTouchMid: null, isPinching: false,
-
   history: [], histIdx: -1,
   canvasW: 0, canvasH: 0,
-
-  // PDF mode
   pdfDoc: null,
-
-  // Multi-source pages: array of { type:'pdf'|'image', pdfPage?:number, imgUrl?:string, imgW?:number, imgH?:number }
   pages: [],
-  currentPage: 1, // 1-indexed
-
-  // Per-page saved state (circles + pen snapshot as dataURL)
-  pageStates: {}, // key = page index (1-based)
-
-  mode: 'none', // 'none' | 'pdf' | 'images'
+  currentPage: 1,
+  pageStates: {},
+  mode: 'none',
 };
+
+// Gallery: savedImages[pageIndex (1-based)] = { dataURL, pageNum, label }
+const galleryData = {};
 
 // ═══════════════════════════════════════════════════
 // DOM REFS
@@ -381,6 +534,331 @@ const pageNav      = document.getElementById('page-nav');
 const modeHint     = document.getElementById('mode-hint');
 
 // ═══════════════════════════════════════════════════
+// GALLERY CORE
+// ═══════════════════════════════════════════════════
+
+/** Render current canvas layers into a merged dataURL */
+function compositeCurrentPage() {
+  const prevSel = S.selectedId;
+  S.selectedId = null;
+  renderCircles();
+  const out = document.createElement('canvas');
+  out.width = S.canvasW; out.height = S.canvasH;
+  const ctx = out.getContext('2d');
+  ctx.drawImage(bgCanvas, 0, 0);
+  ctx.drawImage(drawCanvas, 0, 0);
+  ctx.drawImage(circleCanvas, 0, 0);
+  const url = out.toDataURL('image/png');
+  S.selectedId = prevSel;
+  renderCircles();
+  return url;
+}
+
+/** Save current page drawing state then composite */
+function captureCurrentPage() {
+  // Make sure current page's circle/pen state is reflected before compositing
+  const dataURL = compositeCurrentPage();
+  const pageNum = S.currentPage;
+  const label = S.pages.length > 1
+    ? (S.mode === 'pdf' ? `Trang PDF ${pageNum}` : `Ảnh ${pageNum}`)
+    : 'Bài làm';
+  galleryData[pageNum] = { dataURL, pageNum, label, savedAt: new Date() };
+  return dataURL;
+}
+
+/** Quick-save current page (called from toolbar "Lưu trang") */
+function saveImage() {
+  const dataURL = captureCurrentPage();
+  // Also trigger download immediately
+  const link = document.createElement('a');
+  link.download = `exam_p${S.currentPage}_${Date.now()}.png`;
+  link.href = dataURL;
+  link.click();
+  showToast('💾 Đã lưu & tải xuống trang ' + S.currentPage);
+  // Refresh gallery if open
+  if (document.getElementById('gallery-modal').classList.contains('open')) {
+    renderGallery();
+  }
+}
+
+// ═══════════════════════════════════════════════════
+// GALLERY MODAL
+// ═══════════════════════════════════════════════════
+function openGallery() {
+  // Auto-capture current page into gallery (without downloading)
+  captureCurrentPageSilent();
+  renderGallery();
+  document.getElementById('gallery-modal').classList.add('open');
+}
+
+function captureCurrentPageSilent() {
+  const dataURL = compositeCurrentPage();
+  const pageNum = S.currentPage;
+  const label = S.pages.length > 1
+    ? (S.mode === 'pdf' ? `Trang PDF ${pageNum}` : `Ảnh ${pageNum}`)
+    : 'Bài làm';
+  galleryData[pageNum] = { dataURL, pageNum, label, savedAt: new Date() };
+}
+
+function closeGallery() {
+  document.getElementById('gallery-modal').classList.remove('open');
+}
+
+function renderGallery() {
+  const body = document.getElementById('gallery-body');
+  const total = S.pages.length;
+
+  updateGalleryStatus();
+
+  if (total === 0) {
+    body.innerHTML = `<div class="gallery-empty">
+      <div class="ge-icon">🖼️</div>
+      <div class="ge-text">Chưa có bài làm nào.<br>Upload đề thi để bắt đầu!</div>
+    </div>`;
+    return;
+  }
+
+  body.innerHTML = '';
+  for (let p = 1; p <= total; p++) {
+    const saved = galleryData[p];
+    const isCurrent = p === S.currentPage;
+    const label = S.mode === 'pdf' ? `Trang ${p}` : (total > 1 ? `Ảnh ${p}` : 'Bài làm');
+
+    const card = document.createElement('div');
+    card.className = 'gallery-card' + (isCurrent ? ' is-current' : '');
+    card.id = `gc-${p}`;
+
+    let thumbHtml = '';
+    if (saved) {
+      thumbHtml = `
+        <div class="gc-thumb" onclick="openLightbox(${p})">
+          <img src="${saved.dataURL}" alt="${label}">
+          <div class="gc-overlay"><span class="preview-icon">🔍</span></div>
+        </div>`;
+    } else {
+      thumbHtml = `
+        <div class="gc-thumb" onclick="captureSinglePage(${p},this)" style="cursor:pointer;background:#111;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px">
+          <span style="font-size:32px;opacity:.4">📄</span>
+          <span style="font-size:11px;color:var(--muted)">Nhấn để chụp</span>
+        </div>`;
+    }
+
+    const badge = isCurrent
+      ? `<span class="gc-badge current">Trang hiện tại</span>`
+      : (saved ? `<span class="gc-badge saved">✓ Đã lưu</span>` : `<span class="gc-badge unsaved">Chưa chụp</span>`);
+
+    const dlBtn = saved
+      ? `<button class="gc-dl primary" onclick="downloadPage(${p})">⬇️ Tải xuống</button>`
+      : `<button class="gc-dl primary" onclick="captureSinglePage(${p},null)" style="background:linear-gradient(135deg,var(--orange),#d97706)">📸 Lưu trang này</button>`;
+
+    card.innerHTML = `
+      ${thumbHtml}
+      <div class="gc-info">
+        <div class="gc-label">${label} ${badge}</div>
+      </div>
+      <div class="gc-actions">${dlBtn}</div>`;
+    body.appendChild(card);
+  }
+}
+
+function updateGalleryStatus() {
+  const total = S.pages.length;
+  const savedCount = Object.keys(galleryData).filter(k => galleryData[k]).length;
+  const dot = document.getElementById('status-dot');
+  const txt = document.getElementById('status-text');
+
+  if (savedCount === 0) {
+    dot.className = 'dot';
+    txt.textContent = 'Chưa có trang nào được lưu vào thư viện';
+  } else if (savedCount < total) {
+    dot.className = 'dot unsaved';
+    txt.textContent = `${savedCount}/${total} trang đã được lưu`;
+  } else {
+    dot.className = 'dot saved';
+    txt.textContent = `✓ Tất cả ${total} trang đã được lưu`;
+  }
+
+  document.getElementById('btn-save-all').disabled = savedCount === 0;
+}
+
+/** Capture a single page that's not the current one (requires navigation) */
+async function captureSinglePage(pageNum, thumbEl) {
+  if (pageNum === S.currentPage) {
+    captureCurrentPageSilent();
+    renderGallery();
+    showToast(`📸 Đã lưu trang ${pageNum} vào thư viện`);
+    return;
+  }
+  // We need to switch to that page temporarily
+  showToast(`⏳ Đang chụp trang ${pageNum}...`);
+
+  // Save current state
+  savePageState(S.currentPage);
+  const returnPage = S.currentPage;
+
+  // Navigate to target page silently
+  S.currentPage = pageNum;
+  S.selectedId = null; S.circles = [];
+
+  const pg = S.pages[pageNum - 1];
+  if (pg.type === 'pdf') await renderPDFPage(pageNum);
+  else await renderImagePage(pageNum);
+
+  if (S.pageStates[pageNum]) {
+    const st = S.pageStates[pageNum];
+    try { drawCtx.putImageData(st.penSnap, 0, 0); } catch(e) {}
+    S.circles = JSON.parse(JSON.stringify(st.circles));
+    S.nextId = st.nextId;
+    renderCircles();
+  }
+
+  captureCurrentPageSilent();
+
+  // Return to original page
+  S.currentPage = returnPage;
+  S.selectedId = null; S.circles = [];
+
+  const rpg = S.pages[returnPage - 1];
+  if (rpg.type === 'pdf') await renderPDFPage(returnPage);
+  else await renderImagePage(returnPage);
+
+  if (S.pageStates[returnPage]) {
+    const st = S.pageStates[returnPage];
+    try { drawCtx.putImageData(st.penSnap, 0, 0); } catch(e) {}
+    S.circles = JSON.parse(JSON.stringify(st.circles));
+    S.nextId = st.nextId;
+    renderCircles();
+  }
+
+  updatePageNav();
+  renderGallery();
+  showToast(`✅ Đã lưu trang ${pageNum} vào thư viện`);
+}
+
+/** Capture ALL pages into galleryData with progress bar */
+async function captureAllPages() {
+  const total = S.pages.length;
+  const btn = document.getElementById('btn-capture-all');
+  btn.disabled = true;
+  btn.textContent = '⏳ Đang chụp...';
+
+  const prog = document.getElementById('gallery-progress');
+  const bar = document.getElementById('gallery-progress-bar');
+  prog.classList.add('show');
+  bar.style.width = '0%';
+
+  // Save current page state first
+  savePageState(S.currentPage);
+  const returnPage = S.currentPage;
+
+  for (let p = 1; p <= total; p++) {
+    bar.style.width = ((p - 1) / total * 100) + '%';
+    document.getElementById('status-text').textContent = `Đang chụp trang ${p}/${total}...`;
+
+    if (p === returnPage) {
+      // Already rendered
+    } else {
+      S.currentPage = p;
+      S.selectedId = null; S.circles = [];
+      const pg = S.pages[p - 1];
+      if (pg.type === 'pdf') await renderPDFPage(p);
+      else await renderImagePage(p);
+
+      if (S.pageStates[p]) {
+        const st = S.pageStates[p];
+        try { drawCtx.putImageData(st.penSnap, 0, 0); } catch(e) {}
+        S.circles = JSON.parse(JSON.stringify(st.circles));
+        S.nextId = st.nextId;
+        renderCircles();
+      }
+    }
+    captureCurrentPageSilent();
+    bar.style.width = (p / total * 100) + '%';
+    // Yield to browser
+    await new Promise(r => setTimeout(r, 30));
+  }
+
+  // Return to original page
+  if (S.currentPage !== returnPage) {
+    S.currentPage = returnPage;
+    S.selectedId = null; S.circles = [];
+    const rpg = S.pages[returnPage - 1];
+    if (rpg.type === 'pdf') await renderPDFPage(returnPage);
+    else await renderImagePage(returnPage);
+    if (S.pageStates[returnPage]) {
+      const st = S.pageStates[returnPage];
+      try { drawCtx.putImageData(st.penSnap, 0, 0); } catch(e) {}
+      S.circles = JSON.parse(JSON.stringify(st.circles));
+      S.nextId = st.nextId;
+      renderCircles();
+    }
+    updatePageNav();
+  }
+
+  bar.style.width = '100%';
+  setTimeout(() => { prog.classList.remove('show'); bar.style.width = '0%'; }, 600);
+
+  btn.disabled = false;
+  btn.textContent = '📸 Lưu tất cả trang';
+
+  renderGallery();
+  showToast(`✅ Đã lưu tất cả ${total} trang vào thư viện!`);
+}
+
+/** Download a single saved page */
+function downloadPage(pageNum) {
+  const entry = galleryData[pageNum];
+  if (!entry) return showToast('⚠️ Chưa có ảnh cho trang này');
+  const link = document.createElement('a');
+  link.download = `exam_p${pageNum}_${Date.now()}.png`;
+  link.href = entry.dataURL;
+  link.click();
+  showToast(`⬇️ Đã tải xuống trang ${pageNum}`);
+}
+
+/** Download all saved pages */
+async function downloadAllSaved() {
+  const entries = Object.values(galleryData).filter(Boolean);
+  if (entries.length === 0) return showToast('⚠️ Chưa có trang nào được lưu');
+
+  const btn = document.getElementById('btn-save-all');
+  btn.disabled = true;
+  showToast(`⬇️ Đang tải ${entries.length} ảnh...`);
+
+  for (let i = 0; i < entries.length; i++) {
+    const e = entries[i];
+    await new Promise(r => setTimeout(r, 120 * i));
+    const link = document.createElement('a');
+    link.download = `exam_p${e.pageNum}_${Date.now()}.png`;
+    link.href = e.dataURL;
+    link.click();
+  }
+
+  btn.disabled = false;
+  showToast(`✅ Đã tải xuống ${entries.length} ảnh!`);
+}
+
+// ═══════════════════════════════════════════════════
+// LIGHTBOX
+// ═══════════════════════════════════════════════════
+let lightboxPage = null;
+function openLightbox(pageNum) {
+  const entry = galleryData[pageNum];
+  if (!entry) return;
+  lightboxPage = pageNum;
+  document.getElementById('lb-img').src = entry.dataURL;
+  document.getElementById('lb-label').textContent = entry.label;
+  document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  lightboxPage = null;
+}
+function lightboxDownload() {
+  if (lightboxPage) downloadPage(lightboxPage);
+}
+
+// ═══════════════════════════════════════════════════
 // SELECTION ACTIONS UI
 // ═══════════════════════════════════════════════════
 function updateSelectionUI() {
@@ -398,19 +876,15 @@ function duplicateSelected() {
   const newC = { ...src, id: S.nextId++, cx: src.cx + offset, cy: src.cy + offset };
   S.circles.push(newC);
   S.selectedId = newC.id;
-  renderCircles();
-  saveHistory();
-  updateSelectionUI();
-  showToast('📋 Đã copy vòng tròn! Kéo đến vị trí mới');
+  renderCircles(); saveHistory(); updateSelectionUI();
+  showToast('📋 Đã copy vòng tròn!');
 }
 
 function deleteSelected() {
   if (S.selectedId === null) return;
   S.circles = S.circles.filter(c => c.id !== S.selectedId);
   S.selectedId = null;
-  renderCircles();
-  saveHistory();
-  updateSelectionUI();
+  renderCircles(); saveHistory(); updateSelectionUI();
   showToast('✂️ Đã xóa vòng tròn');
 }
 
@@ -438,13 +912,11 @@ window.addEventListener('resize', () =>
   setTimeout(() => { checkOrientation(); fitCanvasToArea(); }, 100));
 
 // ═══════════════════════════════════════════════════
-// FILE UPLOAD — multi-image support
+// FILE UPLOAD
 // ═══════════════════════════════════════════════════
 const fileInput  = document.getElementById('file-input');
 const uploadZone = document.getElementById('upload-zone');
-
-// Staged image list (before starting exam)
-let stagedFiles = [];
+let stagedFiles  = [];
 
 uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
 uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
@@ -457,44 +929,25 @@ fileInput.addEventListener('change', e => {
 });
 
 function handleFileSelect(files) {
-  // Separate PDF from images
   const pdfs   = files.filter(f => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'));
   const images = files.filter(f => f.type.startsWith('image/'));
-
-  if (pdfs.length > 0) {
-    // PDF mode: load immediately (single PDF)
-    stagedFiles = [];
-    loadAndStartPDF(pdfs[0]);
-    return;
-  }
-
-  if (images.length > 0) {
-    // Image mode: stage them, show preview
-    stagedFiles = [...stagedFiles, ...images].slice(0, 20); // max 20
-    renderPreviewStrip();
-  }
+  if (pdfs.length > 0) { stagedFiles = []; loadAndStartPDF(pdfs[0]); return; }
+  if (images.length > 0) { stagedFiles = [...stagedFiles, ...images].slice(0, 20); renderPreviewStrip(); }
 }
 
 function renderPreviewStrip() {
-  const strip  = document.getElementById('preview-strip');
-  const list   = document.getElementById('preview-list');
-  const count  = document.getElementById('preview-count');
+  const strip = document.getElementById('preview-strip');
+  const list  = document.getElementById('preview-list');
+  const count = document.getElementById('preview-count');
   const startB = document.getElementById('start-btn');
-
-  if (stagedFiles.length === 0) {
-    strip.classList.remove('has-files');
-    startB.style.display = 'none';
-    return;
-  }
-
+  if (stagedFiles.length === 0) { strip.classList.remove('has-files'); startB.style.display = 'none'; return; }
   strip.classList.add('has-files');
   count.textContent = `${stagedFiles.length} ảnh đã chọn`;
   startB.style.display = '';
-
   list.innerHTML = '';
   stagedFiles.forEach((f, i) => {
-    const url  = URL.createObjectURL(f);
-    const div  = document.createElement('div');
+    const url = URL.createObjectURL(f);
+    const div = document.createElement('div');
     div.className = 'preview-thumb';
     div.innerHTML = `<img src="${url}"><span class="pn">${i+1}</span>
       <button class="px-btn" onclick="removeStagedFile(${i})">×</button>`;
@@ -502,10 +955,7 @@ function renderPreviewStrip() {
   });
 }
 
-function removeStagedFile(idx) {
-  stagedFiles.splice(idx, 1);
-  renderPreviewStrip();
-}
+function removeStagedFile(idx) { stagedFiles.splice(idx, 1); renderPreviewStrip(); }
 
 async function startExam() {
   if (stagedFiles.length === 0) return;
@@ -533,85 +983,49 @@ async function loadAndStartPDF(file) {
 }
 
 // ═══════════════════════════════════════════════════
-// LOAD MULTI-IMAGE
+// MULTI-IMAGE
 // ═══════════════════════════════════════════════════
 async function loadMultiImages(files) {
-  S.mode = 'images';
-  S.pages = [];
-  S.pageStates = {};
-  S.pdfDoc = null;
-
+  S.mode = 'images'; S.pages = []; S.pageStates = {}; S.pdfDoc = null;
   for (const f of files) {
     const url = await fileToDataURL(f);
     const dim = await getImageDimensions(url);
     S.pages.push({ type: 'image', imgUrl: url, imgW: dim.w, imgH: dim.h });
   }
-
-  S.currentPage = 1;
-  updatePageNav();
-  await renderImagePage(1);
-  initPageState(1);
+  S.currentPage = 1; updatePageNav();
+  await renderImagePage(1); initPageState(1);
 }
-
 function fileToDataURL(file) {
-  return new Promise((res, rej) => {
-    const r = new FileReader();
-    r.onload = () => res(r.result);
-    r.onerror = rej;
-    r.readAsDataURL(file);
-  });
+  return new Promise((res, rej) => { const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); });
 }
-
 function getImageDimensions(url) {
-  return new Promise((res, rej) => {
-    const img = new Image();
-    img.onload = () => res({ w: img.width, h: img.height });
-    img.onerror = rej;
-    img.src = url;
-  });
+  return new Promise((res, rej) => { const img=new Image(); img.onload=()=>res({w:img.width,h:img.height}); img.onerror=rej; img.src=url; });
 }
-
 async function renderImagePage(n) {
-  const pg = S.pages[n - 1];
+  const pg = S.pages[n-1];
   return new Promise((res, rej) => {
     const img = new Image();
-    img.onload = () => {
-      setupCanvases(img.width, img.height);
-      bgCtx.drawImage(img, 0, 0);
-      clearPenCanvas(); clearCircleCanvas();
-      fitCanvasToArea();
-      res();
-    };
-    img.onerror = rej;
-    img.src = pg.imgUrl;
+    img.onload = () => { setupCanvases(img.width,img.height); bgCtx.drawImage(img,0,0); clearPenCanvas(); clearCircleCanvas(); fitCanvasToArea(); res(); };
+    img.onerror = rej; img.src = pg.imgUrl;
   });
 }
 
 // ═══════════════════════════════════════════════════
-// LOAD PDF
+// PDF
 // ═══════════════════════════════════════════════════
 async function loadPDF(file) {
-  pdfjsLib.GlobalWorkerOptions.workerSrc =
-    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
   const ab = await file.arrayBuffer();
   S.pdfDoc = await pdfjsLib.getDocument({ data: ab }).promise;
-  S.mode = 'pdf';
-  S.pages = [];
-  S.pageStates = {};
-
-  for (let i = 1; i <= S.pdfDoc.numPages; i++)
-    S.pages.push({ type: 'pdf', pdfPage: i });
-
-  S.currentPage = 1;
-  updatePageNav();
-  await renderPDFPage(1);
-  initPageState(1);
+  S.mode = 'pdf'; S.pages = []; S.pageStates = {};
+  for (let i = 1; i <= S.pdfDoc.numPages; i++) S.pages.push({ type: 'pdf', pdfPage: i });
+  S.currentPage = 1; updatePageNav();
+  await renderPDFPage(1); initPageState(1);
 }
-
 async function renderPDFPage(n) {
-  const pg   = S.pages[n - 1];
+  const pg = S.pages[n-1];
   const page = await S.pdfDoc.getPage(pg.pdfPage);
-  const vp   = page.getViewport({ scale: 2.0 });
+  const vp = page.getViewport({ scale: 2.0 });
   setupCanvases(vp.width, vp.height);
   clearPenCanvas(); clearCircleCanvas();
   await page.render({ canvasContext: bgCtx, viewport: vp }).promise;
@@ -619,7 +1033,7 @@ async function renderPDFPage(n) {
 }
 
 // ═══════════════════════════════════════════════════
-// PAGE NAVIGATION (shared PDF + images)
+// PAGE NAV
 // ═══════════════════════════════════════════════════
 function updatePageNav() {
   const total = S.pages.length;
@@ -631,66 +1045,42 @@ function updatePageNav() {
   document.getElementById('page-next').disabled = S.currentPage >= total;
 }
 
-// Save current page's drawing state before switching
 function savePageState(n) {
   S.pageStates[n] = {
     penSnap: drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height),
     circles: JSON.parse(JSON.stringify(S.circles)),
-    nextId:  S.nextId,
+    nextId: S.nextId,
   };
 }
 
-// Initialise blank state for a new page
 function initPageState(n) {
   if (!S.pageStates[n]) {
     S.pageStates[n] = {
       penSnap: drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height),
-      circles: [],
-      nextId:  1,
+      circles: [], nextId: 1,
     };
   }
-  // Reset history for new page
-  S.history = [];
-  S.histIdx = -1;
-  saveHistory();
+  S.history = []; S.histIdx = -1; saveHistory();
 }
 
 async function changePage(delta) {
   const np = S.currentPage + delta;
   if (np < 1 || np > S.pages.length) return;
-
-  // Save current page state
   savePageState(S.currentPage);
-
   loading.classList.add('show');
   document.getElementById('loading-msg').textContent = 'Đang chuyển trang...';
-
-  S.currentPage = np;
-  S.selectedId  = null;
-  S.circles     = [];
-
-  const pg = S.pages[np - 1];
-  if (pg.type === 'pdf') {
-    await renderPDFPage(np);
-  } else {
-    await renderImagePage(np);
-  }
-
-  // Restore saved state for this page if exists
+  S.currentPage = np; S.selectedId = null; S.circles = [];
+  const pg = S.pages[np-1];
+  if (pg.type === 'pdf') await renderPDFPage(np);
+  else await renderImagePage(np);
   if (S.pageStates[np]) {
     const st = S.pageStates[np];
-    // Only restore if canvas dimensions match
     try { drawCtx.putImageData(st.penSnap, 0, 0); } catch(e) {}
     S.circles = JSON.parse(JSON.stringify(st.circles));
-    S.nextId   = st.nextId;
+    S.nextId = st.nextId;
     renderCircles();
-  } else {
-    initPageState(np);
-  }
-
-  updatePageNav();
-  updateSelectionUI();
-  updateHistoryBtns();
+  } else { initPageState(np); }
+  updatePageNav(); updateSelectionUI(); updateHistoryBtns();
   loading.classList.remove('show');
 }
 
@@ -699,18 +1089,15 @@ async function changePage(delta) {
 // ═══════════════════════════════════════════════════
 function setupCanvases(w, h) {
   S.canvasW = w; S.canvasH = h;
-  [bgCanvas, drawCanvas, circleCanvas, hitCanvas].forEach(c => {
-    c.width = w; c.height = h;
-  });
-  wrapper.style.width  = w + 'px';
-  wrapper.style.height = h + 'px';
+  [bgCanvas, drawCanvas, circleCanvas, hitCanvas].forEach(c => { c.width = w; c.height = h; });
+  wrapper.style.width = w + 'px'; wrapper.style.height = h + 'px';
 }
 function fitCanvasToArea() {
   if (!S.canvasW || !S.canvasH) return;
   const aw = canvasArea.clientWidth, ah = canvasArea.clientHeight;
   S.scale = Math.min(aw / S.canvasW, ah / S.canvasH);
-  S.panX  = (aw - S.canvasW * S.scale) / 2;
-  S.panY  = (ah - S.canvasH * S.scale) / 2;
+  S.panX = (aw - S.canvasW * S.scale) / 2;
+  S.panY = (ah - S.canvasH * S.scale) / 2;
   applyTransform();
 }
 function applyTransform() {
@@ -724,8 +1111,7 @@ function zoomStep(dir) {
   const newScale = Math.max(0.15, Math.min(8, S.scale + dir * step));
   S.panX = cx - (cx - S.panX) * (newScale / S.scale);
   S.panY = cy - (cy - S.panY) * (newScale / S.scale);
-  S.scale = newScale;
-  applyTransform();
+  S.scale = newScale; applyTransform();
 }
 
 // ═══════════════════════════════════════════════════
@@ -733,54 +1119,37 @@ function zoomStep(dir) {
 // ═══════════════════════════════════════════════════
 function togglePen() {
   if (S.tool === 'pen') {
-    S.tool = 'scroll'; S.selectedId = null;
-    renderCircles(); updateSelectionUI();
-    document.querySelectorAll('.tb-btn[id^="btn-"]').forEach(b => { b.classList.remove('active','scroll-mode'); });
+    S.tool = 'scroll'; S.selectedId = null; renderCircles(); updateSelectionUI();
+    document.querySelectorAll('.tb-btn[id^="btn-"]').forEach(b => b.classList.remove('active','scroll-mode'));
     const btn = document.getElementById('btn-pen');
-    btn.classList.add('scroll-mode');
-    btn.querySelector('.lbl').textContent = 'Cuộn';
+    btn.classList.add('scroll-mode'); btn.querySelector('.lbl').textContent = 'Cuộn';
     hitCanvas.style.cursor = 'grab';
-    showHint('scroll', '🖐 Chế độ cuộn — kéo để di chuyển, pinch để zoom');
+    showHint('scroll','🖐 Chế độ cuộn — kéo để di chuyển, pinch để zoom');
   } else if (S.tool === 'scroll') {
-    S.tool = 'pen'; S.selectedId = null;
-    renderCircles(); updateSelectionUI();
-    document.querySelectorAll('.tb-btn[id^="btn-"]').forEach(b => { b.classList.remove('active','scroll-mode'); });
+    S.tool = 'pen'; S.selectedId = null; renderCircles(); updateSelectionUI();
+    document.querySelectorAll('.tb-btn[id^="btn-"]').forEach(b => b.classList.remove('active','scroll-mode'));
     const btn = document.getElementById('btn-pen');
-    btn.classList.add('active');
-    btn.querySelector('.lbl').textContent = 'Bút';
-    hitCanvas.style.cursor = 'crosshair';
-    hideHint();
-  } else {
-    setTool('pen');
-  }
+    btn.classList.add('active'); btn.querySelector('.lbl').textContent = 'Bút';
+    hitCanvas.style.cursor = 'crosshair'; hideHint();
+  } else { setTool('pen'); }
 }
-
 function setTool(tool) {
   S.tool = tool; S.selectedId = null; S.resizingId = null;
   renderCircles(); updateSelectionUI();
-  document.querySelectorAll('.tb-btn[id^="btn-"]').forEach(b => { b.classList.remove('active','scroll-mode'); });
+  document.querySelectorAll('.tb-btn[id^="btn-"]').forEach(b => b.classList.remove('active','scroll-mode'));
   const penBtn = document.getElementById('btn-pen');
   if (penBtn) penBtn.querySelector('.lbl').textContent = 'Bút';
   const btn = document.getElementById('btn-' + tool);
   if (btn) btn.classList.add('active');
   if (tool === 'move') {
     hitCanvas.style.cursor = 'grab';
-    showHint('move', '✋ Nhấn vào vòng tròn để chọn → Copy hoặc kéo resize');
-    clearTimeout(window._mht);
-    window._mht = setTimeout(() => hideHint(), 3500);
-  } else if (tool === 'eraser') {
-    hitCanvas.style.cursor = 'cell'; hideHint();
-  } else {
-    hitCanvas.style.cursor = 'crosshair'; hideHint();
-  }
+    showHint('move','✋ Nhấn vào vòng tròn để chọn → Copy hoặc kéo resize');
+    clearTimeout(window._mht); window._mht = setTimeout(() => hideHint(), 3500);
+  } else if (tool === 'eraser') { hitCanvas.style.cursor = 'cell'; hideHint(); }
+  else { hitCanvas.style.cursor = 'crosshair'; hideHint(); }
 }
-
-function showHint(type, msg) {
-  modeHint.textContent = msg; modeHint.className = '';
-  modeHint.classList.add('show', type);
-}
+function showHint(type, msg) { modeHint.textContent = msg; modeHint.className = ''; modeHint.classList.add('show', type); }
 function hideHint() { modeHint.classList.remove('show'); }
-
 function setColor(hex, el) {
   S.color = hex;
   document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
@@ -789,7 +1158,7 @@ function setColor(hex, el) {
 function setSize(val) { S.size = parseInt(val); }
 
 // ═══════════════════════════════════════════════════
-// COORDINATE: screen → canvas logical
+// COORDINATES
 // ═══════════════════════════════════════════════════
 function toCanvas(sx, sy) {
   const r = canvasArea.getBoundingClientRect();
@@ -805,7 +1174,7 @@ function hitCircle(x, y) {
     const c = S.circles[i];
     if (c.rx < 1 || c.ry < 1) continue;
     const nx = (x - c.cx) / c.rx, ny = (y - c.cy) / c.ry;
-    const d  = Math.sqrt(nx*nx + ny*ny);
+    const d = Math.sqrt(nx*nx + ny*ny);
     const tol = hitPx / Math.min(c.rx, c.ry);
     if (Math.abs(d - 1) < tol) return c;
     if (c.rx < 40 && c.ry < 40 && d < 1.1 + tol) return c;
@@ -840,16 +1209,13 @@ function renderCircles() {
     if (selected) {
       circleCtx.beginPath();
       circleCtx.ellipse(c.cx, c.cy, rx+6/S.scale, ry+6/S.scale, 0, 0, Math.PI*2);
-      circleCtx.strokeStyle = 'rgba(255,255,255,0.4)';
-      circleCtx.lineWidth = 1.5/S.scale;
-      circleCtx.setLineDash([6/S.scale,3/S.scale]);
-      circleCtx.stroke(); circleCtx.setLineDash([]);
+      circleCtx.strokeStyle = 'rgba(255,255,255,0.4)'; circleCtx.lineWidth = 1.5/S.scale;
+      circleCtx.setLineDash([6/S.scale,3/S.scale]); circleCtx.stroke(); circleCtx.setLineDash([]);
     }
     circleCtx.beginPath();
     circleCtx.ellipse(c.cx, c.cy, rx, ry, 0, 0, Math.PI*2);
     circleCtx.strokeStyle = c.color; circleCtx.lineWidth = c.size;
     circleCtx.lineCap = 'round'; circleCtx.stroke();
-
     if (selected && S.tool === 'move') {
       const handles = getHandlePositions(c);
       const hr = Math.max(7/S.scale, 4);
@@ -894,16 +1260,16 @@ hitCanvas.addEventListener('mousemove', e => {
   e.preventDefault();
   const p = toCanvas(e.clientX, e.clientY); onMove(p.x,p.y,e.clientX,e.clientY);
 });
-hitCanvas.addEventListener('mouseup',    () => onUp());
+hitCanvas.addEventListener('mouseup', () => onUp());
 hitCanvas.addEventListener('mouseleave', () => onUp());
 
 // ═══════════════════════════════════════════════════
 // TOUCH EVENTS
 // ═══════════════════════════════════════════════════
-canvasArea.addEventListener('touchstart',  onTouchStart,  {passive:false});
-canvasArea.addEventListener('touchmove',   onTouchMove,   {passive:false});
-canvasArea.addEventListener('touchend',    onTouchEnd,    {passive:false});
-canvasArea.addEventListener('touchcancel', onTouchEnd,    {passive:false});
+canvasArea.addEventListener('touchstart',  onTouchStart, {passive:false});
+canvasArea.addEventListener('touchmove',   onTouchMove,  {passive:false});
+canvasArea.addEventListener('touchend',    onTouchEnd,   {passive:false});
+canvasArea.addEventListener('touchcancel', onTouchEnd,   {passive:false});
 
 function onTouchStart(e) {
   e.preventDefault();
@@ -913,8 +1279,7 @@ function onTouchStart(e) {
     onDown(p.x,p.y,t.clientX,t.clientY);
   } else if (e.touches.length===2) {
     onUp(); S.isPinching=true;
-    S.lastTouchDist=getTouchDist(e.touches);
-    S.lastTouchMid=getTouchMid(e.touches);
+    S.lastTouchDist=getTouchDist(e.touches); S.lastTouchMid=getTouchMid(e.touches);
   }
 }
 function onTouchMove(e) {
@@ -930,8 +1295,7 @@ function onTouchMove(e) {
     const cx=(mx-S.panX)/S.scale, cy=(my-S.panY)/S.scale;
     S.panX=mx-cx*ns+(mid.x-S.lastTouchMid.x);
     S.panY=my-cy*ns+(mid.y-S.lastTouchMid.y);
-    S.scale=ns; S.lastTouchDist=dist; S.lastTouchMid=mid;
-    applyTransform();
+    S.scale=ns; S.lastTouchDist=dist; S.lastTouchMid=mid; applyTransform();
   }
 }
 function onTouchEnd(e) {
@@ -951,21 +1315,18 @@ function getTouchMid(ts){return{x:(ts[0].clientX+ts[1].clientX)/2,y:(ts[0].clien
 // ═══════════════════════════════════════════════════
 function onDown(x,y,screenX,screenY) {
   S.lastX=x; S.lastY=y;
-
   if (S.tool==='scroll') {
     S.isPanning=true; S.panStartX=screenX; S.panStartY=screenY;
     S.panStartPanX=S.panX; S.panStartPanY=S.panY;
     hitCanvas.style.cursor='grabbing'; return;
   }
-
   if (S.tool==='move') {
     const selC = S.circles.find(c=>c.id===S.selectedId);
     if (selC) {
       const handle=hitResizeHandle(x,y,selC);
       if (handle) {
         S.resizingId=selC.id; S.resizeHandle=handle;
-        S.resizeStartX=x; S.resizeStartY=y;
-        S.resizeOrigCircle={...selC};
+        S.resizeStartX=x; S.resizeStartY=y; S.resizeOrigCircle={...selC};
         hitCanvas.style.cursor='nwse-resize'; return;
       }
       const dx=x-selC.cx, dy=y-selC.cy;
@@ -983,7 +1344,6 @@ function onDown(x,y,screenX,screenY) {
     } else { S.selectedId=null; S.draggingId=null; }
     renderCircles(); updateSelectionUI(); return;
   }
-
   S.isDrawing=true;
   if (S.tool==='circle') { S.circleStart={x,y}; return; }
   applyPenStyle();
@@ -1043,9 +1403,7 @@ function onUp() {
   if (S.tool==='circle'&&S.circleStart) {
     const x1=S.circleStart.x,y1=S.circleStart.y,x2=S.lastX,y2=S.lastY;
     const rx=Math.abs(x2-x1)/2, ry=Math.abs(y2-y1)/2;
-    if (rx>3||ry>3) {
-      S.circles.push({id:S.nextId++,cx:(x1+x2)/2,cy:(y1+y2)/2,rx,ry,color:S.color,size:S.size});
-    }
+    if (rx>3||ry>3) S.circles.push({id:S.nextId++,cx:(x1+x2)/2,cy:(y1+y2)/2,rx,ry,color:S.color,size:S.size});
     S.circleStart=null; renderCircles(); saveHistory();
   } else if (S.tool!=='circle') { saveHistory(); }
 }
@@ -1066,21 +1424,11 @@ function applyPenStyle() {
 // ═══════════════════════════════════════════════════
 function saveHistory() {
   S.history=S.history.slice(0,S.histIdx+1);
-  S.history.push({
-    penSnap: drawCtx.getImageData(0,0,drawCanvas.width,drawCanvas.height),
-    circles: JSON.parse(JSON.stringify(S.circles)),
-  });
-  S.histIdx=S.history.length-1;
-  updateHistoryBtns();
+  S.history.push({ penSnap: drawCtx.getImageData(0,0,drawCanvas.width,drawCanvas.height), circles: JSON.parse(JSON.stringify(S.circles)) });
+  S.histIdx=S.history.length-1; updateHistoryBtns();
 }
-function undo() {
-  if (S.histIdx<=0){showToast('⚠️ Không còn gì để Undo');return;}
-  S.histIdx--; restore(S.history[S.histIdx]);
-}
-function redo() {
-  if (S.histIdx>=S.history.length-1){showToast('⚠️ Không còn gì để Redo');return;}
-  S.histIdx++; restore(S.history[S.histIdx]);
-}
+function undo() { if (S.histIdx<=0){showToast('⚠️ Không còn gì để Undo');return;} S.histIdx--; restore(S.history[S.histIdx]); }
+function redo() { if (S.histIdx>=S.history.length-1){showToast('⚠️ Không còn gì để Redo');return;} S.histIdx++; restore(S.history[S.histIdx]); }
 function restore(h) {
   drawCtx.putImageData(h.penSnap,0,0);
   S.circles=JSON.parse(JSON.stringify(h.circles));
@@ -1092,7 +1440,7 @@ function updateHistoryBtns() {
 }
 
 // ═══════════════════════════════════════════════════
-// CLEAR / SAVE / HOME
+// CLEAR / HOME
 // ═══════════════════════════════════════════════════
 function clearCanvas() {
   if (!confirm('Xóa toàn bộ nét vẽ và vòng tròn trang này?')) return;
@@ -1103,33 +1451,22 @@ function clearCanvas() {
 function clearPenCanvas(){ drawCtx.clearRect(0,0,drawCanvas.width,drawCanvas.height); }
 function clearCircleCanvas(){ circleCtx.clearRect(0,0,circleCanvas.width,circleCanvas.height); }
 
-function saveImage() {
-  const prevSel=S.selectedId; S.selectedId=null; renderCircles();
-  const out=document.createElement('canvas');
-  out.width=S.canvasW; out.height=S.canvasH;
-  const ctx=out.getContext('2d');
-  ctx.drawImage(bgCanvas,0,0); ctx.drawImage(drawCanvas,0,0); ctx.drawImage(circleCanvas,0,0);
-  const link=document.createElement('a');
-  link.download=`exam_p${S.currentPage}_${Date.now()}.png`;
-  link.href=out.toDataURL('image/png'); link.click();
-  S.selectedId=prevSel; renderCircles();
-  showToast('💾 Đã lưu ảnh trang ' + S.currentPage);
-}
-
 function goHome() {
   if (!confirm('Về trang chủ? Bài làm chưa lưu sẽ mất.')) return;
   S.pdfDoc=null; S.pages=[]; S.pageStates={};
   clearPenCanvas(); clearCircleCanvas();
   bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height);
   S.circles=[]; S.history=[]; S.histIdx=-1; S.selectedId=null;
-  stagedFiles=[];
-  fileInput.value='';
+  stagedFiles=[]; fileInput.value='';
   pageNav.classList.remove('visible');
   app.classList.remove('active');
   uploadScreen.style.display='flex';
   document.getElementById('preview-strip').classList.remove('has-files');
   document.getElementById('preview-list').innerHTML='';
   document.getElementById('start-btn').style.display='none';
+  // Clear gallery
+  Object.keys(galleryData).forEach(k => delete galleryData[k]);
+  closeGallery();
   updateSelectionUI();
 }
 
@@ -1139,8 +1476,7 @@ function goHome() {
 function showToast(msg) {
   const t=document.getElementById('toast');
   t.textContent=msg; t.classList.add('show');
-  clearTimeout(window._tt);
-  window._tt=setTimeout(()=>t.classList.remove('show'),2200);
+  clearTimeout(window._tt); window._tt=setTimeout(()=>t.classList.remove('show'),2200);
 }
 
 // ═══════════════════════════════════════════════════
@@ -1154,6 +1490,11 @@ document.addEventListener('contextmenu',e=>e.preventDefault());
 document.addEventListener('touchmove',e=>{
   if(canvasArea.contains(e.target))e.preventDefault();
 },{passive:false});
+
+// Close gallery/lightbox on Escape
+document.addEventListener('keydown', e => {
+  if (e.key==='Escape') { closeLightbox(); closeGallery(); }
+});
 </script>
 </body>
 </html>
