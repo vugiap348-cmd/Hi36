@@ -79,7 +79,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
 .sp-btn.new{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
 .sp-hint{font-size:11px;color:var(--muted);line-height:1.5}
 
-/* HISTORY PANEL */
 #history-panel{width:100%;max-width:400px;background:var(--surface);
   border:1px solid rgba(245,158,11,0.3);border-radius:16px;padding:14px 16px;
   display:flex;flex-direction:column;gap:10px;}
@@ -348,7 +347,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
 .share-btn.copy{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
 .share-btn.close{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
 
-/* CONFIRM DIALOG */
 #confirm-dialog{display:none;position:fixed;inset:0;z-index:950;
   background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);
   align-items:center;justify-content:center;padding:20px;}
@@ -395,7 +393,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
     <div class="sp-hint">📌 Mỗi phiên có mã 6 ký tự. Dùng cùng mã để tiếp tục từ thiết bị khác.</div>
   </div>
 
-  <!-- HISTORY PANEL -->
   <div id="history-panel">
     <div class="hp-header">
       <div class="hp-title">📚 LỊCH SỬ BÀI LÀM</div>
@@ -590,7 +587,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
   </div>
 </div>
 
-<!-- CONFIRM DIALOG -->
 <div id="confirm-dialog">
   <div class="confirm-box">
     <div class="confirm-icon" id="confirm-icon">⚠️</div>
@@ -634,7 +630,63 @@ updateCloudStatus('connected', '✅ Firebase kết nối thành công');
 checkLocalSession();
 loadHistoryList();
 
-// ─── CLOUD SAVE/LOAD ───────────────────────────────────
+// ═══════════════════════════════════════════════════════════
+// FIX: Nén ảnh xuống ≤ 800px và quality 0.45 — giảm từ ~3MB → ~150KB/trang
+// ═══════════════════════════════════════════════════════════
+async function compressDataURL(dataURL, quality, maxSize) {
+  return new Promise(res => {
+    const img = new Image();
+    img.onload = () => {
+      let w = img.width, h = img.height;
+      const MAX = maxSize || 800; // Giới hạn max dimension
+      if (w > MAX || h > MAX) {
+        const ratio = Math.min(MAX / w, MAX / h);
+        w = Math.round(w * ratio);
+        h = Math.round(h * ratio);
+      }
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      res(c.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = () => res(dataURL);
+    img.src = dataURL;
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+// FIX: Lưu ảnh nền riêng tại /images/{sessionId}/page_{n}
+// Giới hạn Firebase node là ~10MB — ảnh nén ~150KB/trang hoàn toàn OK
+// ═══════════════════════════════════════════════════════════
+window.cloudSaveBgImage = async function(sessionId, pageNum, imgUrl) {
+  try {
+    // Nén mạnh: max 900px, quality 0.45 → ~100-200KB
+    const compressed = await compressDataURL(imgUrl, 0.45, 900);
+    const sizeKB = Math.round(compressed.length * 0.75 / 1024);
+    console.log(`[CloudSave] Ảnh trang ${pageNum}: ${sizeKB}KB sau nén`);
+    const r = ref(db, `images/${sessionId}/page_${pageNum}`);
+    await set(r, { dataURL: compressed, pageNum, savedAt: Date.now() });
+    return true;
+  } catch(e) {
+    console.error('cloudSaveBgImage error:', e);
+    showToast('⚠️ Lỗi lưu ảnh: ' + e.message);
+    return false;
+  }
+};
+
+window.cloudLoadBgImages = async function(sessionId) {
+  try {
+    const r = ref(db, `images/${sessionId}`);
+    const snap = await get(r);
+    if (snap.exists()) return snap.val();
+    return {};
+  } catch(e) {
+    console.error('cloudLoadBgImages error:', e);
+    return {};
+  }
+};
+
+// ─── CLOUD SAVE/LOAD ───────────────────────────────────────
 let cloudSaveTimer = null;
 
 window.cloudSave = async function(data) {
@@ -644,9 +696,9 @@ window.cloudSave = async function(data) {
   cloudSaveTimer = setTimeout(async () => {
     try {
       const r = ref(db, `sessions/${window._currentSessionId}`);
+      // FIX: Không lưu imgUrl vào session (quá lớn) — đã lưu riêng tại /images/
       await set(r, { ...data, updatedAt: Date.now() });
       setCloudIndicator('saved');
-      // Update local history metadata
       updateHistoryMeta(window._currentSessionId, data);
     } catch(e) {
       console.error('Cloud save error:', e);
@@ -668,11 +720,11 @@ window.cloudLoad = async function(sessionId) {
   }
 };
 
-// Delete a session from Firebase completely
 window.cloudDeleteSession = async function(sessionId) {
   try {
     await remove(ref(db, `sessions/${sessionId}`));
     await remove(ref(db, `galleries/${sessionId}`));
+    await remove(ref(db, `images/${sessionId}`));  // FIX: Xóa cả ảnh nền
   } catch(e) {
     console.error('Delete error:', e);
   }
@@ -681,7 +733,7 @@ window.cloudDeleteSession = async function(sessionId) {
 window.cloudSaveGallery = async function(pageNum, dataURL, label) {
   if (!window._currentSessionId) return;
   try {
-    const compressed = await compressDataURL(dataURL, 0.65);
+    const compressed = await compressDataURL(dataURL, 0.65, 1200);
     const r = ref(db, `galleries/${window._currentSessionId}/page_${pageNum}`);
     await set(r, { dataURL: compressed, pageNum, label, savedAt: Date.now() });
   } catch(e) {
@@ -699,29 +751,8 @@ window.cloudLoadGallery = async function(sessionId) {
   } catch(e) { return {}; }
 };
 
-async function compressDataURL(dataURL, quality) {
-  return new Promise(res => {
-    const img = new Image();
-    img.onload = () => {
-      // Scale down if too large
-      let w = img.width, h = img.height;
-      const MAX = 1200;
-      if (w > MAX || h > MAX) {
-        const ratio = Math.min(MAX/w, MAX/h);
-        w = Math.round(w * ratio); h = Math.round(h * ratio);
-      }
-      const c = document.createElement('canvas');
-      c.width = w; c.height = h;
-      c.getContext('2d').drawImage(img, 0, 0, w, h);
-      res(c.toDataURL('image/jpeg', quality));
-    };
-    img.onerror = () => res(dataURL);
-    img.src = dataURL;
-  });
-}
-
-// ─── LOCAL HISTORY (max 10 sessions) ──────────────────
-const HISTORY_KEY = 'examdraw_history'; // [{id, updatedAt, pages, label}]
+// ─── LOCAL HISTORY ─────────────────────────────────────────
+const HISTORY_KEY = 'examdraw_history';
 const MAX_HISTORY = 10;
 
 function getLocalHistory() {
@@ -755,13 +786,12 @@ window.loadHistoryList = function() {
   const count = document.getElementById('hp-count');
   if (!list) return;
   count.textContent = `${hist.length}/${MAX_HISTORY}`;
-  // Estimate storage usage
   let totalSize = 0;
   try { for(const k in localStorage) { if(localStorage.hasOwnProperty(k)) totalSize += localStorage.getItem(k).length * 2; } } catch(e){}
   const sizeKB = Math.round(totalSize / 1024);
   const sizeMB = (sizeKB / 1024).toFixed(1);
   document.getElementById('hp-size-label').textContent = sizeKB > 1024 ? `${sizeMB} MB` : `${sizeKB} KB`;
-  const pct = Math.min(100, (sizeKB / (5 * 1024)) * 100); // 5MB localStorage limit
+  const pct = Math.min(100, (sizeKB / (5 * 1024)) * 100);
   document.getElementById('hp-storage-fill').style.width = pct + '%';
 
   if (!hist.length) {
@@ -830,7 +860,6 @@ async function deleteSession(sid) {
   showToast('✅ Đã xóa phiên ' + sid);
 }
 
-// expose
 window.updateHistoryMeta = updateHistoryMeta;
 window.getLocalHistory = getLocalHistory;
 </script>
@@ -865,8 +894,13 @@ function setCloudIndicator(state) {
   const txt = document.getElementById('cloud-text');
   if (!el) return;
   el.className = state;
-  const labels = { saving:'☁️ Lưu...', saved:'☁️ Đã lưu', error:'⚠️ Lỗi' };
+  const labels = { saving:'☁️ Lưu...', saved:'☁️ Đã lưu', error:'⚠️ Lỗi lưu!' };
   txt.textContent = labels[state] || 'Cloud';
+  // FIX: Hiện rõ lỗi cho user
+  if (state === 'error') {
+    el.style.borderColor = 'rgba(239,68,68,0.6)';
+    setTimeout(() => { el.style.borderColor = ''; }, 5000);
+  }
 }
 
 function checkLocalSession() {
@@ -956,6 +990,11 @@ function scheduleAutosave() {
   clearTimeout(autosaveTimer);
   autosaveTimer = setTimeout(() => saveToCloud(), 2000);
 }
+
+// ═══════════════════════════════════════════════════════════
+// FIX CHÍNH: saveToCloud không lưu imgUrl vào session
+// imgUrl đã được lưu riêng khi load ảnh (cloudSaveBgImage)
+// ═══════════════════════════════════════════════════════════
 async function saveToCloud() {
   if (!window._currentSessionId) window.newSession();
   savePageState(S.currentPage);
@@ -963,9 +1002,10 @@ async function saveToCloud() {
     mode: S.mode, currentPage: S.currentPage,
     pages: S.pages.map(pg => ({
       type: pg.type,
-      // ✅ FIX: Save full image dataURL so it can be restored
-      imgUrl: pg.type === 'image' ? pg.imgUrl : null,
-      imgW: pg.imgW || null, imgH: pg.imgH || null, pdfPage: pg.pdfPage || null
+      // FIX: KHÔNG lưu imgUrl full base64 vào đây — đã lưu tại /images/
+      // Chỉ lưu metadata kích thước để khôi phục layout
+      imgW: pg.imgW || null, imgH: pg.imgH || null,
+      pdfPage: pg.pdfPage || null
     })),
     pageStates: {},
     tool: S.tool, color: S.color, size: S.size,
@@ -1016,7 +1056,9 @@ const uploadScreen= document.getElementById('upload-screen');
 const pageNav     = document.getElementById('page-nav');
 const modeHint    = document.getElementById('mode-hint');
 
-// ─── RESUME ──────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════
+// FIX: Resume tải ảnh nền từ /images/ thay vì session data
+// ═══════════════════════════════════════════════════════════
 window.resumeSession = async function() {
   const sid = window._currentSessionId;
   if (!sid) return;
@@ -1027,16 +1069,34 @@ window.resumeSession = async function() {
     if (!data || !data.pages) throw new Error('Không có dữ liệu');
     if (data.mode === 'images') {
       S.mode = 'images'; S.pages = []; S.pageStates = {}; S.pdfDoc = null;
-      for (const pg of data.pages) {
-        if (pg.type === 'image' && pg.imgUrl) {
-          // imgUrl is now a full dataURL (base64), use directly
-          let imgUrl = pg.imgUrl;
-          const dim = pg.imgW && pg.imgH ? { w: pg.imgW, h: pg.imgH } : await getImageDimensions(imgUrl);
-          S.pages.push({ type: 'image', imgUrl, imgW: dim.w, imgH: dim.h });
+
+      // FIX: Tải ảnh nền từ /images/{sessionId}/
+      showLoading('Đang tải ảnh nền từ cloud...');
+      const bgImages = await window.cloudLoadBgImages(sid);
+      const bgKeys = Object.keys(bgImages).sort((a, b) => {
+        const na = parseInt(a.replace('page_', ''));
+        const nb = parseInt(b.replace('page_', ''));
+        return na - nb;
+      });
+
+      if (!bgKeys.length) throw new Error('Không tìm thấy ảnh đề thi. File ảnh cần upload lại.');
+
+      for (let i = 0; i < data.pages.length; i++) {
+        const pg = data.pages[i];
+        const bgKey = `page_${i + 1}`;
+        const bgEntry = bgImages[bgKey];
+        if (!bgEntry || !bgEntry.dataURL) {
+          console.warn(`Thiếu ảnh trang ${i+1}`);
+          continue;
         }
+        const imgUrl = bgEntry.dataURL;
+        const dim = (pg.imgW && pg.imgH) ? { w: pg.imgW, h: pg.imgH } : await getImageDimensions(imgUrl);
+        S.pages.push({ type: 'image', imgUrl, imgW: dim.w, imgH: dim.h });
       }
-      if (!S.pages.length) throw new Error('Không tìm thấy ảnh');
+
+      if (!S.pages.length) throw new Error('Không khôi phục được ảnh đề thi');
       S.currentPage = Math.min(data.currentPage || 1, S.pages.length);
+
       for (const [n, st] of Object.entries(data.pageStates || {})) {
         if (!st) continue;
         S.pageStates[n] = { penDataURL: st.penDataURL || null, penSnap: null, shapes: st.shapes || [], nextId: st.nextId || 1 };
@@ -1062,6 +1122,7 @@ window.resumeSession = async function() {
     }
   } catch(err) {
     showToast('❌ Lỗi: ' + err.message);
+    setCloudIndicator('error');
   }
   hideLoading(); updateSelectionUI(); updateHistoryBtns();
 };
@@ -1372,10 +1433,10 @@ function renderPreviewStrip() {
   });
 }
 function removeStagedFile(i){stagedFiles.splice(i,1);renderPreviewStrip();}
+
 async function startExam() {
   if(!stagedFiles.length) return;
   if(!window._currentSessionId) window.newSession();
-  // Check history limit
   if(window.getLocalHistory){
     const hist=window.getLocalHistory();
     if(hist.length>=10&&!hist.find(h=>h.id===window._currentSessionId)){
@@ -1384,9 +1445,33 @@ async function startExam() {
     }
   }
   showLoading('Đang tải ảnh...');
-  try{await loadMultiImages(stagedFiles);showApp();scheduleAutosave();}catch(e){showToast('❌ '+e.message);}
+  try{
+    await loadMultiImages(stagedFiles);
+    showApp();
+    // FIX: Lưu ảnh nền lên cloud ngay sau khi load
+    showLoading('Đang lưu ảnh lên cloud...');
+    await saveAllBgImages();
+    scheduleAutosave();
+  }catch(e){showToast('❌ '+e.message);}
   hideLoading();
 }
+
+// ═══════════════════════════════════════════════════════════
+// FIX: Lưu tất cả ảnh nền lên /images/ khi bắt đầu làm bài
+// ═══════════════════════════════════════════════════════════
+async function saveAllBgImages() {
+  if (!window._currentSessionId || !window.cloudSaveBgImage) return;
+  const total = S.pages.length;
+  for (let i = 0; i < total; i++) {
+    const pg = S.pages[i];
+    if (pg.type === 'image' && pg.imgUrl) {
+      showLoading(`Đang lưu ảnh ${i+1}/${total} lên cloud...`);
+      const ok = await window.cloudSaveBgImage(window._currentSessionId, i + 1, pg.imgUrl);
+      if (!ok) showToast(`⚠️ Lỗi lưu ảnh trang ${i+1}`);
+    }
+  }
+}
+
 async function loadAndStartPDF(file) {
   if(!window._currentSessionId) window.newSession();
   showLoading('Đang tải PDF...');
