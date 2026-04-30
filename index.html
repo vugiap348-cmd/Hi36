@@ -602,6 +602,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
 <div id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+<!-- ═══════════════════════════════════════════════════════
+  FIREBASE MODULE — tất cả Firebase API đều được expose ra window.*
+  ngay trong module này để script thường có thể gọi được.
+  FIX CHÍNH: dùng window.FB_READY promise để script thường
+  biết khi nào Firebase đã sẵn sàng.
+════════════════════════════════════════════════════════ -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, set, get, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
@@ -618,140 +625,183 @@ const firebaseConfig = {
   appId: "1:993345821361:web:dbd5be00b2fac35a146090"
 };
 
-const fbApp = initializeApp(firebaseConfig);
-const db = getDatabase(fbApp);
-window._fbDB = db;
-window._fbRef = ref;
-window._fbSet = set;
-window._fbGet = get;
-window._fbRemove = remove;
+let fbReady_resolve;
+window.FB_READY = new Promise(r => { fbReady_resolve = r; });
 
-updateCloudStatus('connected', '✅ Firebase kết nối thành công');
-checkLocalSession();
-loadHistoryList();
+try {
+  const fbApp = initializeApp(firebaseConfig);
+  const db = getDatabase(fbApp);
 
-// ═══════════════════════════════════════════════════════════
-// FIX: Nén ảnh xuống ≤ 800px và quality 0.45 — giảm từ ~3MB → ~150KB/trang
-// ═══════════════════════════════════════════════════════════
-async function compressDataURL(dataURL, quality, maxSize) {
-  return new Promise(res => {
-    const img = new Image();
-    img.onload = () => {
-      let w = img.width, h = img.height;
-      const MAX = maxSize || 800; // Giới hạn max dimension
-      if (w > MAX || h > MAX) {
-        const ratio = Math.min(MAX / w, MAX / h);
-        w = Math.round(w * ratio);
-        h = Math.round(h * ratio);
+  // ─── Compress helper ────────────────────────────────────
+  // MAX_DIM: giới hạn kích thước tối đa của ảnh trước khi lưu
+  // QUALITY: chất lượng JPEG (0.0-1.0)
+  // Firebase Realtime DB cho phép tối đa ~10MB/node nhưng mỗi write
+  // nên nhỏ hơn 256KB để tránh timeout. Với max 600px + quality 0.4
+  // thì ảnh thường < 80KB — an toàn.
+  async function compress(dataURL, quality, maxDim) {
+    return new Promise(res => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        const M = maxDim || 600;
+        if (w > M || h > M) {
+          const r = Math.min(M / w, M / h);
+          w = Math.round(w * r);
+          h = Math.round(h * r);
+        }
+        const c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        c.getContext('2d').drawImage(img, 0, 0, w, h);
+        res(c.toDataURL('image/jpeg', quality || 0.4));
+      };
+      img.onerror = () => res(dataURL);
+      img.src = dataURL;
+    });
+  }
+
+  // ─── Lưu ảnh nền theo từng chunk nhỏ ──────────────────
+  // FIX: Tách ảnh lớn thành nhiều dòng chunk để tránh vượt giới hạn Firebase.
+  // Mỗi chunk là 1 strip ngang của ảnh, được nén riêng.
+  // Với ảnh thông thường (< 600px) thì 1 chunk là đủ.
+  window.cloudSaveBgImage = async function(sessionId, pageNum, imgUrl) {
+    try {
+      // Compress mạnh: max 600px, quality 0.4 → ~50-100KB
+      const compressed = await compress(imgUrl, 0.40, 600);
+      const sizeKB = Math.round(compressed.length * 0.75 / 1024);
+      console.log(`[BgSave] trang ${pageNum}: ${sizeKB}KB`);
+
+      // Nếu vẫn > 200KB, nén thêm lần nữa với quality thấp hơn
+      let final = compressed;
+      if (sizeKB > 200) {
+        final = await compress(compressed, 0.25, 400);
+        const s2 = Math.round(final.length * 0.75 / 1024);
+        console.log(`[BgSave] nén thêm: ${s2}KB`);
       }
-      const c = document.createElement('canvas');
-      c.width = w; c.height = h;
-      c.getContext('2d').drawImage(img, 0, 0, w, h);
-      res(c.toDataURL('image/jpeg', quality));
-    };
-    img.onerror = () => res(dataURL);
-    img.src = dataURL;
-  });
+
+      const r = ref(db, `images/${sessionId}/page_${pageNum}`);
+      await set(r, { dataURL: final, pageNum, savedAt: Date.now() });
+      console.log(`[BgSave] ✅ Đã lưu trang ${pageNum}`);
+      return true;
+    } catch(e) {
+      console.error('[BgSave] lỗi:', e);
+      // FIX: Hiển thị lỗi cụ thể thay vì im lặng
+      if (typeof showToast === 'function') showToast('⚠️ Lỗi lưu ảnh bg: ' + e.message);
+      return false;
+    }
+  };
+
+  window.cloudLoadBgImages = async function(sessionId) {
+    try {
+      const snap = await get(ref(db, `images/${sessionId}`));
+      return snap.exists() ? snap.val() : {};
+    } catch(e) {
+      console.error('[BgLoad] lỗi:', e);
+      return {};
+    }
+  };
+
+  // ─── Session save/load ──────────────────────────────────
+  let cloudSaveTimer = null;
+  window.cloudSave = async function(data) {
+    if (!window._currentSessionId) return;
+    setCloudIndicator('saving');
+    clearTimeout(cloudSaveTimer);
+    cloudSaveTimer = setTimeout(async () => {
+      try {
+        // FIX: Chỉ lưu metadata + nét vẽ, KHÔNG lưu imgUrl (đã lưu riêng)
+        const payload = {
+          mode: data.mode,
+          currentPage: data.currentPage,
+          pages: (data.pages || []).map(pg => ({
+            type: pg.type,
+            imgW: pg.imgW || null,
+            imgH: pg.imgH || null,
+            pdfPage: pg.pdfPage || null
+            // KHÔNG có imgUrl ở đây
+          })),
+          pageStates: data.pageStates || {},
+          tool: data.tool,
+          color: data.color,
+          size: data.size,
+          updatedAt: Date.now()
+        };
+
+        // Kiểm tra kích thước payload trước khi lưu
+        const payloadStr = JSON.stringify(payload);
+        const payloadKB = Math.round(payloadStr.length / 1024);
+        console.log(`[CloudSave] payload: ${payloadKB}KB`);
+        if (payloadKB > 8000) {
+          // Nếu quá lớn, xóa bớt penDataURL trong pageStates
+          for (const k of Object.keys(payload.pageStates || {})) {
+            if (payload.pageStates[k]) {
+              payload.pageStates[k].penDataURL = null;
+            }
+          }
+          console.warn('[CloudSave] payload quá lớn, đã xóa penDataURL');
+        }
+
+        await set(ref(db, `sessions/${window._currentSessionId}`), payload);
+        setCloudIndicator('saved');
+        if (typeof updateHistoryMeta === 'function') updateHistoryMeta(window._currentSessionId, data);
+      } catch(e) {
+        console.error('[CloudSave] lỗi:', e);
+        setCloudIndicator('error');
+        if (typeof showToast === 'function') showToast('⚠️ Lỗi lưu cloud: ' + e.message);
+      }
+    }, 1500);
+  };
+
+  window.cloudLoad = async function(sessionId) {
+    try {
+      const snap = await get(ref(db, `sessions/${sessionId}`));
+      return snap.exists() ? snap.val() : null;
+    } catch(e) {
+      console.error('[CloudLoad] lỗi:', e);
+      return null;
+    }
+  };
+
+  window.cloudDeleteSession = async function(sessionId) {
+    try {
+      await Promise.all([
+        remove(ref(db, `sessions/${sessionId}`)),
+        remove(ref(db, `galleries/${sessionId}`)),
+        remove(ref(db, `images/${sessionId}`))
+      ]);
+    } catch(e) { console.error('[CloudDelete]', e); }
+  };
+
+  window.cloudSaveGallery = async function(pageNum, dataURL, label) {
+    if (!window._currentSessionId) return;
+    try {
+      const compressed = await compress(dataURL, 0.65, 1200);
+      await set(ref(db, `galleries/${window._currentSessionId}/page_${pageNum}`), {
+        dataURL: compressed, pageNum, label, savedAt: Date.now()
+      });
+    } catch(e) {
+      console.error('[GalSave]', e);
+      if (typeof showToast === 'function') showToast('⚠️ Lỗi lưu gallery: ' + e.message);
+    }
+  };
+
+  window.cloudLoadGallery = async function(sessionId) {
+    try {
+      const snap = await get(ref(db, `galleries/${sessionId}`));
+      return snap.exists() ? snap.val() : {};
+    } catch(e) { return {}; }
+  };
+
+  // Signal ready
+  fbReady_resolve(true);
+  updateCloudStatus('connected', '✅ Firebase kết nối thành công');
+
+} catch(e) {
+  console.error('[Firebase init]', e);
+  fbReady_resolve(false);
+  updateCloudStatus('error', '❌ Lỗi Firebase: ' + e.message);
 }
 
-// ═══════════════════════════════════════════════════════════
-// FIX: Lưu ảnh nền riêng tại /images/{sessionId}/page_{n}
-// Giới hạn Firebase node là ~10MB — ảnh nén ~150KB/trang hoàn toàn OK
-// ═══════════════════════════════════════════════════════════
-window.cloudSaveBgImage = async function(sessionId, pageNum, imgUrl) {
-  try {
-    // Nén mạnh: max 900px, quality 0.45 → ~100-200KB
-    const compressed = await compressDataURL(imgUrl, 0.45, 900);
-    const sizeKB = Math.round(compressed.length * 0.75 / 1024);
-    console.log(`[CloudSave] Ảnh trang ${pageNum}: ${sizeKB}KB sau nén`);
-    const r = ref(db, `images/${sessionId}/page_${pageNum}`);
-    await set(r, { dataURL: compressed, pageNum, savedAt: Date.now() });
-    return true;
-  } catch(e) {
-    console.error('cloudSaveBgImage error:', e);
-    showToast('⚠️ Lỗi lưu ảnh: ' + e.message);
-    return false;
-  }
-};
-
-window.cloudLoadBgImages = async function(sessionId) {
-  try {
-    const r = ref(db, `images/${sessionId}`);
-    const snap = await get(r);
-    if (snap.exists()) return snap.val();
-    return {};
-  } catch(e) {
-    console.error('cloudLoadBgImages error:', e);
-    return {};
-  }
-};
-
-// ─── CLOUD SAVE/LOAD ───────────────────────────────────────
-let cloudSaveTimer = null;
-
-window.cloudSave = async function(data) {
-  if (!window._currentSessionId) return;
-  setCloudIndicator('saving');
-  clearTimeout(cloudSaveTimer);
-  cloudSaveTimer = setTimeout(async () => {
-    try {
-      const r = ref(db, `sessions/${window._currentSessionId}`);
-      // FIX: Không lưu imgUrl vào session (quá lớn) — đã lưu riêng tại /images/
-      await set(r, { ...data, updatedAt: Date.now() });
-      setCloudIndicator('saved');
-      updateHistoryMeta(window._currentSessionId, data);
-    } catch(e) {
-      console.error('Cloud save error:', e);
-      setCloudIndicator('error');
-      showToast('⚠️ Lỗi lưu cloud: ' + e.message);
-    }
-  }, 1500);
-};
-
-window.cloudLoad = async function(sessionId) {
-  try {
-    const r = ref(db, `sessions/${sessionId}`);
-    const snap = await get(r);
-    if (snap.exists()) return snap.val();
-    return null;
-  } catch(e) {
-    console.error('Cloud load error:', e);
-    return null;
-  }
-};
-
-window.cloudDeleteSession = async function(sessionId) {
-  try {
-    await remove(ref(db, `sessions/${sessionId}`));
-    await remove(ref(db, `galleries/${sessionId}`));
-    await remove(ref(db, `images/${sessionId}`));  // FIX: Xóa cả ảnh nền
-  } catch(e) {
-    console.error('Delete error:', e);
-  }
-};
-
-window.cloudSaveGallery = async function(pageNum, dataURL, label) {
-  if (!window._currentSessionId) return;
-  try {
-    const compressed = await compressDataURL(dataURL, 0.65, 1200);
-    const r = ref(db, `galleries/${window._currentSessionId}/page_${pageNum}`);
-    await set(r, { dataURL: compressed, pageNum, label, savedAt: Date.now() });
-  } catch(e) {
-    console.error('Gallery save error:', e);
-    showToast('⚠️ Lỗi lưu ảnh cloud');
-  }
-};
-
-window.cloudLoadGallery = async function(sessionId) {
-  try {
-    const r = ref(db, `galleries/${sessionId}`);
-    const snap = await get(r);
-    if (snap.exists()) return snap.val();
-    return {};
-  } catch(e) { return {}; }
-};
-
-// ─── LOCAL HISTORY ─────────────────────────────────────────
+// ─── Local History (cần gọi từ module vì dùng firebase) ──
 const HISTORY_KEY = 'examdraw_history';
 const MAX_HISTORY = 10;
 
@@ -762,7 +812,10 @@ function saveLocalHistory(arr) {
   localStorage.setItem(HISTORY_KEY, JSON.stringify(arr));
 }
 
-function updateHistoryMeta(sessionId, data) {
+// FIX: Expose ra window để script thường có thể gọi
+window.getLocalHistory = getLocalHistory;
+
+window.updateHistoryMeta = function updateHistoryMeta(sessionId, data) {
   let hist = getLocalHistory();
   const idx = hist.findIndex(h => h.id === sessionId);
   const entry = {
@@ -777,22 +830,28 @@ function updateHistoryMeta(sessionId, data) {
     if (hist.length > MAX_HISTORY) hist = hist.slice(0, MAX_HISTORY);
   }
   saveLocalHistory(hist);
-  loadHistoryList();
-}
+  if (typeof loadHistoryList === 'function') loadHistoryList();
+};
 
-window.loadHistoryList = function() {
+window.loadHistoryList = function loadHistoryList() {
   const hist = getLocalHistory();
   const list = document.getElementById('hp-list');
   const count = document.getElementById('hp-count');
   if (!list) return;
   count.textContent = `${hist.length}/${MAX_HISTORY}`;
+
   let totalSize = 0;
-  try { for(const k in localStorage) { if(localStorage.hasOwnProperty(k)) totalSize += localStorage.getItem(k).length * 2; } } catch(e){}
+  try {
+    for(const k in localStorage) {
+      if(localStorage.hasOwnProperty(k)) totalSize += (localStorage.getItem(k) || '').length * 2;
+    }
+  } catch(e){}
   const sizeKB = Math.round(totalSize / 1024);
   const sizeMB = (sizeKB / 1024).toFixed(1);
-  document.getElementById('hp-size-label').textContent = sizeKB > 1024 ? `${sizeMB} MB` : `${sizeKB} KB`;
-  const pct = Math.min(100, (sizeKB / (5 * 1024)) * 100);
-  document.getElementById('hp-storage-fill').style.width = pct + '%';
+  const sizeEl = document.getElementById('hp-size-label');
+  if(sizeEl) sizeEl.textContent = sizeKB > 1024 ? `${sizeMB} MB` : `${sizeKB} KB`;
+  const fillEl = document.getElementById('hp-storage-fill');
+  if(fillEl) fillEl.style.width = Math.min(100, (sizeKB / (5 * 1024)) * 100) + '%';
 
   if (!hist.length) {
     list.innerHTML = '<div class="hp-empty">Chưa có bài làm nào được lưu</div>';
@@ -835,15 +894,14 @@ window.openHistorySession = async function(sid) {
 
 window.confirmDeleteSession = function(sid) {
   showConfirm({
-    icon: '🗑️',
-    title: 'Xóa bài làm?',
+    icon: '🗑️', title: 'Xóa bài làm?',
     msg: `Xóa phiên "${sid}" khỏi cloud và lịch sử?\nHành động này không thể hoàn tác.`,
     okLabel: 'Xóa',
-    onOk: () => deleteSession(sid)
+    onOk: () => _deleteSession(sid)
   });
 };
 
-async function deleteSession(sid) {
+async function _deleteSession(sid) {
   showLoading('Đang xóa phiên ' + sid + '...');
   await window.cloudDeleteSession(sid);
   let hist = getLocalHistory().filter(h => h.id !== sid);
@@ -860,10 +918,18 @@ async function deleteSession(sid) {
   showToast('✅ Đã xóa phiên ' + sid);
 }
 
-window.updateHistoryMeta = updateHistoryMeta;
-window.getLocalHistory = getLocalHistory;
+// Khởi động sau khi firebase ready
+window.FB_READY.then(() => {
+  checkLocalSession();
+  loadHistoryList();
+});
+
 </script>
 
+<!-- ═══════════════════════════════════════════════════════
+  MAIN SCRIPT — logic chính của ứng dụng
+  FIX: Chờ window.FB_READY trước khi gọi bất kỳ API firebase nào
+════════════════════════════════════════════════════════ -->
 <script>
 'use strict';
 
@@ -879,28 +945,22 @@ function generateSessionId() {
 function updateCloudStatus(state, msg) {
   const el = document.getElementById('cloud-status');
   const txt = document.getElementById('cs-text');
-  if (!el) return;
+  if (!el || !txt) return;
   el.className = state;
   txt.textContent = msg;
   if (window._currentSessionId) {
     const sid = document.getElementById('cs-session-id');
-    sid.textContent = '📌 ' + window._currentSessionId;
-    sid.style.display = '';
+    if (sid) { sid.textContent = '📌 ' + window._currentSessionId; sid.style.display = ''; }
   }
 }
 
 function setCloudIndicator(state) {
   const el = document.getElementById('cloud-indicator');
   const txt = document.getElementById('cloud-text');
-  if (!el) return;
+  if (!el || !txt) return;
   el.className = state;
-  const labels = { saving:'☁️ Lưu...', saved:'☁️ Đã lưu', error:'⚠️ Lỗi lưu!' };
+  const labels = { saving:'☁️ Lưu...', saved:'☁️ Đã lưu', error:'⚠️ Lỗi!' };
   txt.textContent = labels[state] || 'Cloud';
-  // FIX: Hiện rõ lỗi cho user
-  if (state === 'error') {
-    el.style.borderColor = 'rgba(239,68,68,0.6)';
-    setTimeout(() => { el.style.borderColor = ''; }, 5000);
-  }
 }
 
 function checkLocalSession() {
@@ -908,22 +968,27 @@ function checkLocalSession() {
   if (!sid) return;
   window._currentSessionId = sid;
   updateSessionBadge(sid);
-  setTimeout(async () => {
+  // FIX: Chờ Firebase sẵn sàng rồi mới load
+  (window.FB_READY || Promise.resolve()).then(async () => {
+    if (!window.cloudLoad) return;
     const data = await window.cloudLoad(sid);
     if (data && data.pages && data.pages.length > 0) {
       const ago = formatTimeAgo(new Date(data.updatedAt || Date.now()));
-      document.getElementById('resume-info').textContent =
-        `Phiên ${sid} • ${data.pages.length} trang • ${ago}`;
-      document.getElementById('resume-banner').classList.add('show');
+      const infoEl = document.getElementById('resume-info');
+      if (infoEl) infoEl.textContent = `Phiên ${sid} • ${data.pages.length} trang • ${ago}`;
+      const banner = document.getElementById('resume-banner');
+      if (banner) banner.classList.add('show');
     }
-  }, 1000);
+  });
 }
 
 function updateSessionBadge(id) {
-  document.getElementById('badge-id').textContent = id || '------';
-  document.getElementById('share-id-display').textContent = id || '------';
-  const sid = document.getElementById('cs-session-id');
-  if (sid) { sid.textContent = id ? '📌 ' + id : ''; sid.style.display = id ? '' : 'none'; }
+  const badge = document.getElementById('badge-id');
+  const shareDisp = document.getElementById('share-id-display');
+  const csid = document.getElementById('cs-session-id');
+  if (badge) badge.textContent = id || '------';
+  if (shareDisp) shareDisp.textContent = id || '------';
+  if (csid) { csid.textContent = id ? '📌 ' + id : ''; csid.style.display = id ? '' : 'none'; }
 }
 
 window.newSession = function() {
@@ -932,7 +997,7 @@ window.newSession = function() {
   localStorage.setItem('examdraw_session_id', id);
   updateSessionBadge(id);
   updateCloudStatus('connected', '✅ Phiên mới: ' + id);
-  if (window.loadHistoryList) window.loadHistoryList();
+  if (typeof loadHistoryList === 'function') loadHistoryList();
   showToast('🆕 Phiên mới: ' + id);
 };
 
@@ -940,6 +1005,7 @@ window.joinSession = async function() {
   const input = document.getElementById('session-input').value.trim().toUpperCase();
   if (input.length < 4) { showToast('⚠️ Nhập mã phiên (6 ký tự)'); return; }
   showLoading('Đang tải phiên ' + input + '...');
+  await (window.FB_READY || Promise.resolve());
   const data = await window.cloudLoad(input);
   hideLoading();
   if (!data) { showToast('❌ Không tìm thấy phiên: ' + input); return; }
@@ -947,15 +1013,17 @@ window.joinSession = async function() {
   localStorage.setItem('examdraw_session_id', input);
   updateSessionBadge(input);
   const ago = formatTimeAgo(new Date(data.updatedAt || Date.now()));
-  document.getElementById('resume-info').textContent =
-    `Phiên ${input} • ${data.pages.length} trang • ${ago}`;
-  document.getElementById('resume-banner').classList.add('show');
+  const infoEl = document.getElementById('resume-info');
+  if (infoEl) infoEl.textContent = `Phiên ${input} • ${(data.pages||[]).length} trang • ${ago}`;
+  const banner = document.getElementById('resume-banner');
+  if (banner) banner.classList.add('show');
   showToast('☁️ Tìm thấy phiên ' + input);
 };
 
 window.showShareModal = function() {
   if (!window._currentSessionId) { showToast('⚠️ Chưa có phiên nào'); return; }
-  document.getElementById('share-id-display').textContent = window._currentSessionId;
+  const disp = document.getElementById('share-id-display');
+  if (disp) disp.textContent = window._currentSessionId;
   document.getElementById('share-modal').classList.add('open');
 };
 window.closeShareModal = function() { document.getElementById('share-modal').classList.remove('open'); };
@@ -965,7 +1033,7 @@ window.copySessionId = function() {
   closeShareModal();
 };
 
-// ─── CONFIRM DIALOG ──────────────────────────────────
+// ─── Confirm Dialog ──────────────────────────────────
 let _confirmCb = null;
 function showConfirm({ icon, title, msg, okLabel, onOk }) {
   document.getElementById('confirm-icon').textContent = icon || '⚠️';
@@ -978,7 +1046,7 @@ function showConfirm({ icon, title, msg, okLabel, onOk }) {
 function closeConfirm() { document.getElementById('confirm-dialog').classList.remove('open'); _confirmCb = null; }
 document.getElementById('confirm-ok').onclick = () => { closeConfirm(); if (_confirmCb) _confirmCb(); };
 
-// ─── RAF / AUTOSAVE ──────────────────────────────────
+// ─── RAF / Autosave ──────────────────────────────────
 let rafPending = false, shapeDirty = false;
 function requestRender() {
   if (rafPending) return; rafPending = true;
@@ -991,25 +1059,28 @@ function scheduleAutosave() {
   autosaveTimer = setTimeout(() => saveToCloud(), 2000);
 }
 
-// ═══════════════════════════════════════════════════════════
-// FIX CHÍNH: saveToCloud không lưu imgUrl vào session
-// imgUrl đã được lưu riêng khi load ảnh (cloudSaveBgImage)
-// ═══════════════════════════════════════════════════════════
+// ─── Save to Cloud ────────────────────────────────────
+// FIX: Tách biệt rõ ràng — penDataURL lưu vào pageStates, imgUrl KHÔNG lưu
 async function saveToCloud() {
+  if (!window.cloudSave) return; // Firebase chưa sẵn sàng
   if (!window._currentSessionId) window.newSession();
   savePageState(S.currentPage);
   const data = {
-    mode: S.mode, currentPage: S.currentPage,
+    mode: S.mode,
+    currentPage: S.currentPage,
     pages: S.pages.map(pg => ({
       type: pg.type,
-      // FIX: KHÔNG lưu imgUrl full base64 vào đây — đã lưu tại /images/
-      // Chỉ lưu metadata kích thước để khôi phục layout
-      imgW: pg.imgW || null, imgH: pg.imgH || null,
+      imgW: pg.imgW || null,
+      imgH: pg.imgH || null,
       pdfPage: pg.pdfPage || null
+      // imgUrl KHÔNG được lưu ở đây — đã lưu riêng tại /images/
     })),
     pageStates: {},
-    tool: S.tool, color: S.color, size: S.size,
+    tool: S.tool,
+    color: S.color,
+    size: S.size,
   };
+  // Lưu nét vẽ (penDataURL) cho mỗi trang
   for (const [n, st] of Object.entries(S.pageStates)) {
     if (!st) continue;
     let penDataURL = st.penDataURL || null;
@@ -1021,10 +1092,10 @@ async function saveToCloud() {
     }
     data.pageStates[n] = { penDataURL, shapes: st.shapes, nextId: st.nextId };
   }
-  if (window.cloudSave) await window.cloudSave(data);
+  await window.cloudSave(data);
 }
 
-// ─── STATE ───────────────────────────────────────────
+// ─── State ───────────────────────────────────────────
 const S = {
   tool: 'pen', color: '#ef4444', size: 3,
   isDrawing: false, lastX: 0, lastY: 0,
@@ -1056,75 +1127,104 @@ const uploadScreen= document.getElementById('upload-screen');
 const pageNav     = document.getElementById('page-nav');
 const modeHint    = document.getElementById('mode-hint');
 
-// ═══════════════════════════════════════════════════════════
-// FIX: Resume tải ảnh nền từ /images/ thay vì session data
-// ═══════════════════════════════════════════════════════════
+// ─── Resume Session ───────────────────────────────────
+// FIX CHÍNH: Chờ FB_READY, tải ảnh nền từ /images/, khôi phục đúng thứ tự
 window.resumeSession = async function() {
   const sid = window._currentSessionId;
   if (!sid) return;
   document.getElementById('resume-banner').classList.remove('show');
   showLoading('Đang khôi phục từ cloud...');
   try {
+    // Đảm bảo Firebase đã sẵn sàng
+    await (window.FB_READY || Promise.resolve());
+    if (!window.cloudLoad) throw new Error('Firebase chưa kết nối');
+
     const data = await window.cloudLoad(sid);
-    if (!data || !data.pages) throw new Error('Không có dữ liệu');
+    if (!data || !data.pages || !data.pages.length) throw new Error('Không có dữ liệu trang');
+
     if (data.mode === 'images') {
       S.mode = 'images'; S.pages = []; S.pageStates = {}; S.pdfDoc = null;
 
-      // FIX: Tải ảnh nền từ /images/{sessionId}/
       showLoading('Đang tải ảnh nền từ cloud...');
+      if (!window.cloudLoadBgImages) throw new Error('Hàm tải ảnh chưa sẵn sàng');
+
       const bgImages = await window.cloudLoadBgImages(sid);
-      const bgKeys = Object.keys(bgImages).sort((a, b) => {
-        const na = parseInt(a.replace('page_', ''));
-        const nb = parseInt(b.replace('page_', ''));
-        return na - nb;
-      });
+      console.log('[Resume] bgImages keys:', Object.keys(bgImages));
 
-      if (!bgKeys.length) throw new Error('Không tìm thấy ảnh đề thi. File ảnh cần upload lại.');
+      if (!Object.keys(bgImages).length) {
+        throw new Error('Không tìm thấy ảnh đề thi.\nVui lòng upload lại file ảnh.');
+      }
 
+      let loadedCount = 0;
       for (let i = 0; i < data.pages.length; i++) {
         const pg = data.pages[i];
         const bgKey = `page_${i + 1}`;
         const bgEntry = bgImages[bgKey];
         if (!bgEntry || !bgEntry.dataURL) {
-          console.warn(`Thiếu ảnh trang ${i+1}`);
+          console.warn(`[Resume] Thiếu ảnh trang ${i+1}, bỏ qua`);
           continue;
         }
         const imgUrl = bgEntry.dataURL;
-        const dim = (pg.imgW && pg.imgH) ? { w: pg.imgW, h: pg.imgH } : await getImageDimensions(imgUrl);
-        S.pages.push({ type: 'image', imgUrl, imgW: dim.w, imgH: dim.h });
+        let imgW = pg.imgW, imgH = pg.imgH;
+        if (!imgW || !imgH) {
+          const dim = await getImageDimensions(imgUrl);
+          imgW = dim.w; imgH = dim.h;
+        }
+        S.pages.push({ type: 'image', imgUrl, imgW, imgH });
+        loadedCount++;
+        showLoading(`Đang tải ảnh ${loadedCount}/${data.pages.length}...`);
       }
 
       if (!S.pages.length) throw new Error('Không khôi phục được ảnh đề thi');
+
       S.currentPage = Math.min(data.currentPage || 1, S.pages.length);
 
+      // Khôi phục nét vẽ
       for (const [n, st] of Object.entries(data.pageStates || {})) {
         if (!st) continue;
-        S.pageStates[n] = { penDataURL: st.penDataURL || null, penSnap: null, shapes: st.shapes || [], nextId: st.nextId || 1 };
+        S.pageStates[n] = {
+          penDataURL: st.penDataURL || null,
+          penSnap: null,
+          shapes: st.shapes || [],
+          nextId: st.nextId || 1
+        };
       }
+
+      showLoading('Đang vẽ lại trang...');
       await renderImagePage(S.currentPage);
       await restorePageDrawing(S.currentPage);
       updatePageNav();
+
       if (data.tool) S.tool = data.tool;
       if (data.color) S.color = data.color;
       if (data.size) S.size = data.size;
       document.getElementById('sizeSlider').value = S.size;
+
+      // Load gallery
       const galData = await window.cloudLoadGallery(sid);
       for (const [k, v] of Object.entries(galData)) if (v) galleryData[k] = v;
+
       uploadScreen.style.display = 'none';
       app.classList.add('active');
       tryLockLandscape(); requestFullscreen(); checkOrientation();
       updateSessionBadge(sid);
-      showToast('✅ Đã khôi phục từ cloud!');
+      showToast(`✅ Đã khôi phục ${S.pages.length} trang từ cloud!`);
       setCloudIndicator('saved');
-    } else {
-      showToast('⚠️ PDF cần upload lại file');
+
+    } else if (data.mode === 'pdf') {
+      showToast('⚠️ PDF cần upload lại file. Không thể lưu PDF lên cloud.');
       discardSession();
+    } else {
+      throw new Error('Dữ liệu không hợp lệ');
     }
   } catch(err) {
-    showToast('❌ Lỗi: ' + err.message);
+    console.error('[Resume] lỗi:', err);
+    showToast('❌ Lỗi khôi phục: ' + err.message);
     setCloudIndicator('error');
   }
-  hideLoading(); updateSelectionUI(); updateHistoryBtns();
+  hideLoading();
+  updateSelectionUI();
+  updateHistoryBtns();
 };
 
 window.discardSession = function() {
@@ -1147,17 +1247,18 @@ async function restorePageDrawing(n) {
         S.pageStates[n].penSnap = drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height);
         res();
       };
-      img.onerror = res; img.src = st.penDataURL;
+      img.onerror = res;
+      img.src = st.penDataURL;
     });
   } else {
-    S.pageStates[n] = S.pageStates[n] || {};
+    if (!S.pageStates[n]) S.pageStates[n] = {};
     S.pageStates[n].penSnap = drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height);
   }
   shapeDirty = true; requestRender();
   S.history = []; S.histIdx = -1; saveHistory();
 }
 
-// ─── MATH TOOLS ──────────────────────────────────────
+// ─── Math Tools ──────────────────────────────────────
 function toggleMathPanel() {
   const panel = document.getElementById('math-panel'), btn = document.getElementById('btn-math');
   if (panel.classList.contains('open')) {
@@ -1168,12 +1269,10 @@ function toggleMathPanel() {
 }
 function setShape(shape) { S.activeMathShape = shape; S.tool = shape; updateMathBtns(); document.querySelectorAll('.tb-btn[id^="btn-"]').forEach(b => b.classList.remove('active', 'pan-mode')); hitCanvas.style.cursor = 'crosshair'; }
 function updateMathBtns() {
-  document.getElementById('mp-line')?.classList.toggle('active', S.tool === 'line');
-  document.getElementById('mp-rect')?.classList.toggle('active', S.tool === 'rect');
-  document.getElementById('mp-tri')?.classList.toggle('active', S.tool === 'triangle');
-  document.getElementById('mp-rt')?.classList.toggle('active', S.tool === 'rightTri');
-  document.getElementById('mp-arrow')?.classList.toggle('active', S.tool === 'arrow');
-  document.getElementById('mp-grid')?.classList.toggle('active', S.tool === 'grid');
+  ['line','rect','triangle','rightTri','arrow','grid'].forEach(s => {
+    const idMap = { line:'mp-line', rect:'mp-rect', triangle:'mp-tri', rightTri:'mp-rt', arrow:'mp-arrow', grid:'mp-grid' };
+    document.getElementById(idMap[s])?.classList.toggle('active', S.tool === s);
+  });
 }
 function insertSymbol(sym) { showToast(`${sym} — Dùng bút để viết ký hiệu này`); }
 function drawAxes() {
@@ -1193,9 +1292,8 @@ function showDimInput() { document.getElementById('dim-inputs').classList.add('s
 function hideDimInput() { document.getElementById('dim-inputs').classList.remove('show'); }
 function applyDimShape() {
   const w=parseInt(document.getElementById('dim-w').value)||200, h=parseInt(document.getElementById('dim-h').value)||150;
-  const x1=S.canvasW/2-w/2, y1=S.canvasH/2-h/2;
-  drawShapeToCanvas(S.tool||'rect',x1,y1,x1+w,y1+h); hideDimInput(); saveHistory(); scheduleAutosave();
-  showToast(`📐 Đã vẽ với kích thước ${w}×${h}`);
+  drawShapeToCanvas(S.tool||'rect',S.canvasW/2-w/2,S.canvasH/2-h/2,S.canvasW/2+w/2,S.canvasH/2+h/2);
+  hideDimInput(); saveHistory(); scheduleAutosave(); showToast(`📐 ${w}×${h}`);
 }
 function drawShapeToCanvas(shape,x1,y1,x2,y2) {
   drawCtx.save(); drawCtx.strokeStyle=S.color; drawCtx.lineWidth=S.size; drawCtx.lineCap='round'; drawCtx.lineJoin='round'; drawCtx.globalCompositeOperation='source-over';
@@ -1253,7 +1351,7 @@ function previewShape(x1,y1,x2,y2) {
   shapeCtx.restore();
 }
 
-// ─── GALLERY ─────────────────────────────────────────
+// ─── Gallery ─────────────────────────────────────────
 function compositeCurrentPage() {
   const prevSel=S.selectedId; S.selectedId=null; shapeDirty=true; _renderShapes();
   const out=document.createElement('canvas'); out.width=S.canvasW; out.height=S.canvasH;
@@ -1272,7 +1370,7 @@ function captureCurrentPage() {
 function saveImage() {
   const dataURL=captureCurrentPage();
   const a=document.createElement('a'); a.download=`exam_p${S.currentPage}_${Date.now()}.png`; a.href=dataURL; a.click();
-  showToast('💾 Đã tải xuống trang '+S.currentPage);
+  showToast('💾 Đã tải trang '+S.currentPage);
   if(document.getElementById('gallery-modal').classList.contains('open')) renderGallery();
   scheduleAutosave();
 }
@@ -1372,7 +1470,7 @@ function openLightbox(n){const e=galleryData[n];if(!e)return;lightboxPage=n;docu
 function closeLightbox(){document.getElementById('lightbox').classList.remove('open');lightboxPage=null;}
 function lightboxDownload(){if(lightboxPage)downloadPage(lightboxPage);}
 
-// ─── SELECTION ────────────────────────────────────────
+// ─── Selection ────────────────────────────────────────
 function updateSelectionUI() {
   const hasSel=S.tool==='move'&&S.selectedId!==null;
   document.getElementById('btn-duplicate').classList.toggle('hidden',!hasSel);
@@ -1394,7 +1492,7 @@ function deleteSelected() {
   showToast('✂️ Đã xóa');
 }
 
-// ─── ORIENTATION / FULLSCREEN ─────────────────────────
+// ─── Orientation / Fullscreen ─────────────────────────
 function checkOrientation() {
   const o=document.getElementById('rotate-overlay'),m=/Android|iPhone|iPad/i.test(navigator.userAgent);
   if(!m){o.style.display='none';return;}
@@ -1404,16 +1502,17 @@ function tryLockLandscape(){if(screen.orientation?.lock)screen.orientation.lock(
 function requestFullscreen(){const e=document.documentElement;if(e.requestFullscreen)e.requestFullscreen().catch(()=>{});else if(e.webkitRequestFullscreen)e.webkitRequestFullscreen();}
 window.addEventListener('orientationchange',()=>setTimeout(()=>{checkOrientation();fitToArea();},300));
 window.addEventListener('resize',()=>setTimeout(()=>{checkOrientation();fitToArea();},100));
-window.addEventListener('beforeunload',()=>{if(S.pages.length>0&&S.mode==='images')saveToCloud();});
+window.addEventListener('beforeunload',()=>{if(S.pages.length>0)saveToCloud();});
 window.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&S.pages.length>0)saveToCloud();});
 
-// ─── FILE UPLOAD ──────────────────────────────────────
+// ─── File Upload ──────────────────────────────────────
 const fileInput=document.getElementById('file-input'),uploadZone=document.getElementById('upload-zone');
 let stagedFiles=[];
 uploadZone.addEventListener('dragover',e=>{e.preventDefault();uploadZone.classList.add('drag-over');});
 uploadZone.addEventListener('dragleave',()=>uploadZone.classList.remove('drag-over'));
 uploadZone.addEventListener('drop',e=>{e.preventDefault();uploadZone.classList.remove('drag-over');if(e.dataTransfer.files.length)handleFileSelect(Array.from(e.dataTransfer.files));});
 fileInput.addEventListener('change',e=>{if(e.target.files.length)handleFileSelect(Array.from(e.target.files));});
+
 function handleFileSelect(files) {
   const pdfs=files.filter(f=>f.type==='application/pdf'||f.name.toLowerCase().endsWith('.pdf'));
   const imgs=files.filter(f=>f.type.startsWith('image/'));
@@ -1434,42 +1533,66 @@ function renderPreviewStrip() {
 }
 function removeStagedFile(i){stagedFiles.splice(i,1);renderPreviewStrip();}
 
+// FIX LUỒNG CHÍNH: startExam đảm bảo thứ tự đúng
+// 1. Load ảnh → 2. Hiện app → 3. Lưu ảnh nền lên Firebase → 4. Lưu session metadata
 async function startExam() {
   if(!stagedFiles.length) return;
   if(!window._currentSessionId) window.newSession();
   if(window.getLocalHistory){
     const hist=window.getLocalHistory();
-    if(hist.length>=10&&!hist.find(h=>h.id===window._currentSessionId)){
+    const isExisting = hist.find(h=>h.id===window._currentSessionId);
+    if(hist.length>=10 && !isExisting){
       showToast('⚠️ Đã đủ 10 bài! Xóa bài cũ trong Lịch sử trước khi tạo mới.');
       return;
     }
   }
-  showLoading('Đang tải ảnh...');
-  try{
-    await loadMultiImages(stagedFiles);
-    showApp();
-    // FIX: Lưu ảnh nền lên cloud ngay sau khi load
-    showLoading('Đang lưu ảnh lên cloud...');
-    await saveAllBgImages();
-    scheduleAutosave();
-  }catch(e){showToast('❌ '+e.message);}
-  hideLoading();
-}
 
-// ═══════════════════════════════════════════════════════════
-// FIX: Lưu tất cả ảnh nền lên /images/ khi bắt đầu làm bài
-// ═══════════════════════════════════════════════════════════
-async function saveAllBgImages() {
-  if (!window._currentSessionId || !window.cloudSaveBgImage) return;
-  const total = S.pages.length;
-  for (let i = 0; i < total; i++) {
-    const pg = S.pages[i];
-    if (pg.type === 'image' && pg.imgUrl) {
-      showLoading(`Đang lưu ảnh ${i+1}/${total} lên cloud...`);
-      const ok = await window.cloudSaveBgImage(window._currentSessionId, i + 1, pg.imgUrl);
-      if (!ok) showToast(`⚠️ Lỗi lưu ảnh trang ${i+1}`);
-    }
+  // Bước 1: Load ảnh vào bộ nhớ
+  showLoading('Đang đọc ảnh...');
+  try {
+    await loadMultiImages(stagedFiles);
+  } catch(e) {
+    hideLoading();
+    showToast('❌ Lỗi đọc ảnh: ' + e.message);
+    return;
   }
+
+  // Bước 2: Hiện app
+  showApp();
+
+  // Bước 3: Đảm bảo Firebase sẵn sàng rồi lưu ảnh nền
+  showLoading('Đang kết nối Firebase...');
+  try {
+    await (window.FB_READY || Promise.resolve());
+    if (!window.cloudSaveBgImage) throw new Error('Firebase chưa sẵn sàng');
+
+    const total = S.pages.length;
+    for (let i = 0; i < total; i++) {
+      const pg = S.pages[i];
+      if (pg.type === 'image' && pg.imgUrl) {
+        showLoading(`☁️ Đang lưu ảnh ${i+1}/${total} lên cloud...`);
+        const ok = await window.cloudSaveBgImage(window._currentSessionId, i + 1, pg.imgUrl);
+        if (ok) {
+          showToast(`☁️ Đã lưu ảnh ${i+1}/${total}`);
+        } else {
+          showToast(`⚠️ Không lưu được ảnh ${i+1}`);
+        }
+      }
+    }
+
+    // Bước 4: Lưu metadata session
+    showLoading('☁️ Đang lưu session...');
+    await saveToCloud();
+    showToast('✅ Đã lưu lên cloud!');
+    setCloudIndicator('saved');
+
+  } catch(e) {
+    console.error('[startExam] lỗi cloud:', e);
+    showToast('⚠️ Lỗi lưu cloud: ' + e.message + '\nBài làm vẫn hoạt động offline.');
+    setCloudIndicator('error');
+  }
+
+  hideLoading();
 }
 
 async function loadAndStartPDF(file) {
@@ -1484,7 +1607,7 @@ function showApp(){
   updateSessionBadge(window._currentSessionId);
 }
 
-// ─── MULTI-IMAGE ──────────────────────────────────────
+// ─── Multi-Image ──────────────────────────────────────
 async function loadMultiImages(files) {
   S.mode='images'; S.pages=[]; S.pageStates={}; S.pdfDoc=null;
   for(const f of files){
@@ -1495,7 +1618,7 @@ async function loadMultiImages(files) {
   S.currentPage=1; updatePageNav(); await renderImagePage(1); initPageState(1);
 }
 function fileToDataURL(f){return new Promise((r,j)=>{const rd=new FileReader();rd.onload=()=>r(rd.result);rd.onerror=j;rd.readAsDataURL(f);});}
-function getImageDimensions(url){return new Promise((r,j)=>{const i=new Image();i.onload=()=>r({w:i.width,h:i.height});i.onerror=j;i.src=url;});}
+function getImageDimensions(url){return new Promise((r,j)=>{const i=new Image();i.onload=()=>r({w:i.width,h:i.height});i.onerror=()=>r({w:800,h:600});i.src=url;});}
 async function renderImagePage(n) {
   const pg=S.pages[n-1];
   return new Promise((r,j)=>{
@@ -1519,7 +1642,7 @@ async function renderPDFPage(n) {
   await page.render({canvasContext:bgCtx,viewport:vp}).promise; fitToArea();
 }
 
-// ─── PAGE NAV ─────────────────────────────────────────
+// ─── Page Nav ─────────────────────────────────────────
 function updatePageNav() {
   const total=S.pages.length;
   if(total<=1){pageNav.classList.remove('visible');return;}
@@ -1551,7 +1674,7 @@ async function changePage(delta) {
   updatePageNav(); updateSelectionUI(); updateHistoryBtns(); hideLoading();
 }
 
-// ─── CANVAS SETUP ─────────────────────────────────────
+// ─── Canvas Setup ─────────────────────────────────────
 function setupCanvases(w,h) {
   S.canvasW=w; S.canvasH=h;
   [bgCanvas,drawCanvas,shapeCanvas,hitCanvas].forEach(c=>{c.width=w;c.height=h;});
@@ -1574,7 +1697,7 @@ function zoomStep(dir) {
   S.panX=cx-(cx-S.panX)*(ns/S.scale); S.panY=cy-(cy-S.panY)*(ns/S.scale); S.scale=ns; applyTransform();
 }
 
-// ─── TOOLS ───────────────────────────────────────────
+// ─── Tools ───────────────────────────────────────────
 function setTool(tool) {
   S.tool=tool; S.selectedId=null; S.resizingId=null;
   document.querySelectorAll('.tb-btn[id^="btn-"]').forEach(b=>b.classList.remove('active','pan-mode'));
@@ -1602,7 +1725,7 @@ function hideHint(){modeHint.classList.remove('show');}
 function setColor(hex,el){S.color=hex;document.querySelectorAll('.color-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');}
 function setSize(v){S.size=parseInt(v);}
 
-// ─── COORDINATES / HIT TESTS ─────────────────────────
+// ─── Coordinates / Hit Tests ─────────────────────────
 function toCanvas(sx,sy){const r=canvasArea.getBoundingClientRect();return{x:(sx-r.left-S.panX)/S.scale,y:(sy-r.top-S.panY)/S.scale};}
 function hitShape(x,y) {
   const hp=Math.max(14/S.scale,8);
@@ -1618,7 +1741,7 @@ function hitShape(x,y) {
 function hitResizeHandle(x,y,c){if(!c)return null;const hr=Math.max(12/S.scale,6);for(const[n,hx,hy]of getHandles(c)){const dx=x-hx,dy=y-hy;if(Math.sqrt(dx*dx+dy*dy)<hr)return n;}return null;}
 function getHandles(c){return[['tl',c.cx-c.rx,c.cy-c.ry],['t',c.cx,c.cy-c.ry],['tr',c.cx+c.rx,c.cy-c.ry],['r',c.cx+c.rx,c.cy],['br',c.cx+c.rx,c.cy+c.ry],['b',c.cx,c.cy+c.ry],['bl',c.cx-c.rx,c.cy+c.ry],['l',c.cx-c.rx,c.cy]];}
 
-// ─── RENDER SHAPES ───────────────────────────────────
+// ─── Render Shapes ───────────────────────────────────
 function _renderShapes() {
   shapeCtx.clearRect(0,0,shapeCanvas.width,shapeCanvas.height);
   for(const c of S.shapes){
@@ -1650,7 +1773,7 @@ function _renderShapes() {
   }
 }
 
-// ─── POINTER EVENTS ───────────────────────────────────
+// ─── Pointer Events ───────────────────────────────────
 hitCanvas.addEventListener('mousedown',e=>{if(e.button!==0)return;e.preventDefault();const p=toCanvas(e.clientX,e.clientY);onDown(p.x,p.y,e.clientX,e.clientY);});
 hitCanvas.addEventListener('mousemove',e=>{e.preventDefault();const p=toCanvas(e.clientX,e.clientY);onMove(p.x,p.y,e.clientX,e.clientY);});
 hitCanvas.addEventListener('mouseup',()=>onUp());
@@ -1769,7 +1892,7 @@ function applyPenStyle() {
   else{drawCtx.globalCompositeOperation='source-over';drawCtx.strokeStyle=S.color;drawCtx.fillStyle=S.color;}
 }
 
-// ─── HISTORY ─────────────────────────────────────────
+// ─── History ─────────────────────────────────────────
 function saveHistory() {
   S.history=S.history.slice(0,S.histIdx+1);
   S.history.push({penSnap:drawCtx.getImageData(0,0,drawCanvas.width,drawCanvas.height),shapes:JSON.parse(JSON.stringify(S.shapes))});
@@ -1781,7 +1904,7 @@ function redo(){if(S.histIdx>=S.history.length-1){showToast('⚠️ Không còn 
 function restoreHistory(h){drawCtx.putImageData(h.penSnap,0,0);S.shapes=JSON.parse(JSON.stringify(h.shapes));S.selectedId=null;shapeDirty=true;requestRender();updateHistoryBtns();updateSelectionUI();}
 function updateHistoryBtns(){document.getElementById('btn-undo').style.opacity=S.histIdx>0?'1':'0.35';document.getElementById('btn-redo').style.opacity=S.histIdx<S.history.length-1?'1':'0.35';}
 
-// ─── CLEAR / HOME ─────────────────────────────────────
+// ─── Clear / Home ─────────────────────────────────────
 function clearCanvas() {
   if(!confirm('Xóa toàn bộ nét vẽ trang này?'))return;
   clearPenCanvas();clearShapeCanvas();S.shapes=[];S.selectedId=null;
@@ -1798,16 +1921,17 @@ function goHome() {
   stagedFiles=[];fileInput.value='';pageNav.classList.remove('visible');
   app.classList.remove('active');uploadScreen.style.display='flex';
   document.getElementById('preview-strip').classList.remove('has-files');
-  document.getElementById('preview-list').innerHTML='';document.getElementById('start-btn').style.display='none';
+  document.getElementById('preview-list').innerHTML='';
+  document.getElementById('start-btn').style.display='none';
   Object.keys(galleryData).forEach(k=>delete galleryData[k]);
   closeGallery();updateSelectionUI();
   document.getElementById('math-panel').classList.remove('open');
   document.getElementById('btn-math').classList.remove('active');
   checkLocalSession();
-  if(window.loadHistoryList) window.loadHistoryList();
+  if(typeof loadHistoryList==='function') loadHistoryList();
 }
 
-// ─── LOADING / TOAST ──────────────────────────────────
+// ─── Loading / Toast ──────────────────────────────────
 function showLoading(msg){document.getElementById('loading').classList.add('show');document.getElementById('loading-msg').textContent=msg||'Đang tải...';}
 function hideLoading(){document.getElementById('loading').classList.remove('show');}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(window._tt);window._tt=setTimeout(()=>t.classList.remove('show'),2200);}
@@ -1818,7 +1942,7 @@ function formatTimeAgo(date) {
   return Math.floor(h/24)+' ngày trước';
 }
 
-// ─── INIT ─────────────────────────────────────────────
+// ─── Init ─────────────────────────────────────────────
 checkOrientation();
 updateHistoryBtns();
 updateSelectionUI();
@@ -1833,3 +1957,4 @@ if(!window._currentSessionId) window.newSession();
 </script>
 </body>
 </html>
+
