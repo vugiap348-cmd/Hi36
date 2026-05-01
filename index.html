@@ -23,7 +23,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
   color:var(--text);font-family:var(--font);touch-action:none;
   user-select:none;-webkit-user-select:none;}
 
-/* ── ROTATE OVERLAY ── */
 #rotate-overlay{display:none;position:fixed;inset:0;z-index:9999;
   background:var(--bg);flex-direction:column;align-items:center;
   justify-content:center;gap:24px;text-align:center;padding:40px;}
@@ -32,13 +31,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
 #rotate-overlay h2{font-size:22px;font-weight:800;font-family:var(--font)}
 #rotate-overlay p{font-size:14px;color:var(--muted);line-height:1.6}
 
-/* ── UPLOAD SCREEN ── */
 #upload-screen{position:fixed;inset:0;z-index:100;
   background:var(--bg);
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:14px;padding:20px;overflow-y:auto;}
-
-/* bg grid */
 #upload-screen::before{content:'';position:fixed;inset:0;z-index:-1;
   background-image:linear-gradient(rgba(0,229,255,.03) 1px,transparent 1px),
     linear-gradient(90deg,rgba(0,229,255,.03) 1px,transparent 1px);
@@ -56,7 +52,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 .upload-sub{font-size:13px;color:var(--muted);text-align:center;line-height:1.7;max-width:340px}
 
-/* cloud status */
 #cloud-status{display:flex;align-items:center;gap:8px;padding:7px 14px;
   background:var(--surface);border:1px solid var(--border);
   border-radius:8px;font-size:11px;font-weight:700;width:100%;max-width:400px;
@@ -69,7 +64,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
 #cloud-status .cs-id{font-size:10px;color:var(--accent);cursor:pointer;text-decoration:underline}
 @keyframes pulse{from{opacity:.3}to{opacity:1}}
 
-/* session panel */
 #session-panel{width:100%;max-width:400px;background:var(--surface);
   border:1px solid var(--border);border-radius:12px;padding:14px 16px;
   display:flex;flex-direction:column;gap:10px;}
@@ -87,7 +81,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
 .sp-btn.new{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
 .sp-hint{font-size:11px;color:var(--muted);line-height:1.5}
 
-/* history panel */
 #history-panel{width:100%;max-width:400px;background:var(--surface);
   border:1px solid rgba(255,170,0,.2);border-radius:12px;padding:14px 16px;
   display:flex;flex-direction:column;gap:10px;}
@@ -113,7 +106,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
 .hp-storage-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--green),var(--orange));transition:width .3s}
 .hp-storage-label{font-size:10px;color:var(--muted);display:flex;justify-content:space-between}
 
-/* resume banner */
 #resume-banner{display:none;width:100%;max-width:400px;
   background:linear-gradient(135deg,rgba(0,229,255,.08),rgba(123,94,167,.08));
   border:1px solid rgba(0,229,255,.25);border-radius:12px;
@@ -127,7 +119,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
 .rb-btn.resume{background:var(--accent);color:#000}
 .rb-btn.discard{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
 
-/* upload zone */
 .upload-zone{width:100%;max-width:400px;border:1.5px dashed rgba(0,229,255,.25);
   border-radius:12px;padding:28px 20px;display:flex;flex-direction:column;
   align-items:center;gap:12px;cursor:pointer;background:rgba(0,229,255,.02);
@@ -160,11 +151,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
   padding:14px;cursor:pointer;transition:opacity .2s;font-family:var(--font)}
 .start-btn:hover{opacity:.9}
 
-/* ── APP ── */
 #app{display:none;position:fixed;inset:0;flex-direction:column;background:var(--bg)}
 #app.active{display:flex}
 
-/* ── TOOLBAR ── */
 #toolbar{position:fixed;bottom:0;left:0;right:0;height:var(--toolbar-h);
   background:rgba(8,11,20,0.97);backdrop-filter:blur(20px);
   -webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);
@@ -211,7 +200,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
 #zoom-label{font-size:10px;font-weight:700;color:var(--accent);
   min-width:34px;text-align:center;flex-shrink:0;font-family:var(--mono)}
 
-/* ── CANVAS AREA ── */
 #canvas-area{position:fixed;top:0;left:0;right:0;bottom:var(--toolbar-h);
   overflow:hidden;background:#0a0c14;touch-action:none;}
 #canvas-area::before{content:'';position:absolute;inset:0;
@@ -225,7 +213,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
 #shape-canvas{position:absolute;top:0;left:0;display:block;pointer-events:none}
 #hit-canvas{position:absolute;top:0;left:0;display:block;opacity:0}
 
-/* ── HUD ── */
 #home-btn{position:fixed;top:8px;right:8px;width:34px;height:34px;
   border-radius:8px;background:rgba(8,11,20,.92);border:1px solid var(--border);
   color:var(--muted);font-size:14px;display:flex;align-items:center;
@@ -257,7 +244,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
 #page-nav button:disabled{color:var(--muted);cursor:default}
 #page-nav span{font-size:11px;color:var(--muted);min-width:50px;text-align:center;font-family:var(--mono)}
 
-/* ── MATH PANEL ── */
 #math-panel{display:none;position:fixed;bottom:calc(var(--toolbar-h) + 5px);left:0;right:0;
   z-index:490;overflow-x:auto;padding:0 6px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
 #math-panel::-webkit-scrollbar{display:none}
@@ -292,7 +278,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
 #mode-hint.pan{background:rgba(123,94,167,.15);border:1px solid rgba(123,94,167,.35);color:#c4b5fd}
 #mode-hint.move{background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.3);color:var(--accent)}
 
-/* ── GALLERY ── */
 #gallery-modal{display:none;position:fixed;inset:0;z-index:800;
   background:rgba(5,7,13,0.97);backdrop-filter:blur(20px);flex-direction:column;}
 #gallery-modal.open{display:flex}
@@ -334,7 +319,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
 .gallery-empty .ge-icon{font-size:44px;opacity:.25}
 .gallery-empty .ge-text{font-size:13px;color:var(--muted);line-height:1.6}
 
-/* ── LIGHTBOX ── */
 #lightbox{display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,0.94);
   align-items:center;justify-content:center;flex-direction:column;gap:10px;}
 #lightbox.open{display:flex}
@@ -346,7 +330,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
 .lb-dl{border:none;border-radius:8px;padding:9px 18px;font-size:12px;font-weight:700;
   background:var(--accent);color:#000;cursor:pointer;font-family:var(--font)}
 
-/* ── LOADING ── */
 #loading{display:none;position:fixed;inset:0;z-index:200;
   background:rgba(8,11,20,.88);backdrop-filter:blur(10px);
   align-items:center;justify-content:center;flex-direction:column;gap:16px}
@@ -356,7 +339,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
 @keyframes spin{to{transform:rotate(360deg)}}
 #loading p{font-size:12px;color:var(--muted);font-family:var(--mono)}
 
-/* ── TOAST ── */
 #toast{position:fixed;bottom:calc(var(--toolbar-h) + 10px);left:50%;
   transform:translateX(-50%) translateY(10px);
   background:rgba(8,11,20,.97);border:1px solid var(--border);
@@ -365,7 +347,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
   pointer-events:none;font-family:var(--mono)}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* ── SHARE MODAL ── */
 #share-modal{display:none;position:fixed;inset:0;z-index:850;
   background:rgba(0,0,0,.75);backdrop-filter:blur(10px);
   align-items:center;justify-content:center;padding:20px;}
@@ -382,7 +363,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
 .share-btn.copy{background:var(--accent);color:#000}
 .share-btn.close{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
 
-/* ── CONFIRM ── */
 #confirm-dialog{display:none;position:fixed;inset:0;z-index:950;
   background:rgba(0,0,0,.8);backdrop-filter:blur(10px);
   align-items:center;justify-content:center;padding:20px;}
@@ -397,7 +377,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
 .confirm-btn.ok{background:var(--red);color:#fff}
 .confirm-btn.cancel{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
 
-/* ── SUPABASE SQL MODAL ── */
 #sql-modal{display:none;position:fixed;inset:0;z-index:1000;
   background:rgba(0,0,0,.9);backdrop-filter:blur(12px);
   align-items:center;justify-content:center;padding:16px;}
@@ -418,18 +397,16 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
 </head>
 <body>
 
-<!-- ROTATE -->
 <div id="rotate-overlay">
   <div class="ri">📱</div>
   <h2>Xoay ngang màn hình</h2>
   <p>Ứng dụng hoạt động tốt nhất ở chế độ ngang.<br>Vui lòng xoay điện thoại của bạn.</p>
 </div>
 
-<!-- SQL SETUP MODAL -->
 <div id="sql-modal">
   <div class="sql-box">
     <div class="sql-title">⚡ SETUP SUPABASE</div>
-    <div class="sql-desc">Lần đầu sử dụng, bạn cần chạy SQL này trong <strong>Supabase Dashboard → SQL Editor</strong> để tạo bảng lưu dữ liệu:</div>
+    <div class="sql-desc">Lần đầu sử dụng, bạn cần chạy SQL này trong <strong>Supabase Dashboard → SQL Editor</strong>:</div>
     <div class="sql-code" id="sql-code-block">-- Chạy trong Supabase SQL Editor
 create table if not exists exam_sessions (
   id text primary key,
@@ -462,7 +439,6 @@ create table if not exists exam_gallery (
   unique(session_id, page_num)
 );
 
--- Cho phép anon đọc/ghi (hoặc bật RLS tùy ý)
 alter table exam_sessions enable row level security;
 alter table exam_bg_images enable row level security;
 alter table exam_gallery enable row level security;
@@ -478,7 +454,6 @@ create policy "allow all" on exam_gallery for all using (true) with check (true)
   </div>
 </div>
 
-<!-- UPLOAD SCREEN -->
 <div id="upload-screen">
   <div class="upload-logo">✏ EXAMDRAW</div>
   <div>
@@ -543,10 +518,8 @@ create policy "allow all" on exam_gallery for all using (true) with check (true)
   <button class="start-btn" id="start-btn" style="display:none" onclick="startExam()">🚀 Bắt đầu làm bài</button>
 </div>
 
-<!-- LOADING -->
 <div id="loading"><div class="spinner"></div><p id="loading-msg">Đang tải...</p></div>
 
-<!-- APP -->
 <div id="app">
   <button id="home-btn" onclick="goHome()">🏠</button>
   <div id="cloud-indicator" onclick="showShareModal()">
@@ -572,7 +545,6 @@ create policy "allow all" on exam_gallery for all using (true) with check (true)
     </div>
   </div>
 
-  <!-- MATH PANEL -->
   <div id="math-panel">
     <div class="math-panel-inner">
       <span class="mp-label">SHAPE</span>
@@ -612,7 +584,6 @@ create policy "allow all" on exam_gallery for all using (true) with check (true)
     <button id="dim-cancel" onclick="hideDimInput()">✕</button>
   </div>
 
-  <!-- TOOLBAR -->
   <div id="toolbar">
     <div class="tb-group">
       <button class="tb-btn active" id="btn-pen" onclick="setTool('pen')">✏️<span class="lbl">BÚT</span></button>
@@ -662,7 +633,6 @@ create policy "allow all" on exam_gallery for all using (true) with check (true)
   </div>
 </div>
 
-<!-- GALLERY MODAL -->
 <div id="gallery-modal">
   <div class="gallery-header">
     <div class="gallery-title">// GALLERY</div>
@@ -680,7 +650,6 @@ create policy "allow all" on exam_gallery for all using (true) with check (true)
   <div class="gallery-body" id="gallery-body"></div>
 </div>
 
-<!-- LIGHTBOX -->
 <div id="lightbox">
   <button class="lb-close" onclick="closeLightbox()">✕</button>
   <img id="lb-img" src="" alt="">
@@ -688,7 +657,6 @@ create policy "allow all" on exam_gallery for all using (true) with check (true)
   <button class="lb-dl" onclick="lightboxDownload()">⬇️ Tải xuống</button>
 </div>
 
-<!-- SHARE MODAL -->
 <div id="share-modal">
   <div class="share-box">
     <div class="share-title">📌 Mã phiên làm việc</div>
@@ -701,7 +669,6 @@ create policy "allow all" on exam_gallery for all using (true) with check (true)
   </div>
 </div>
 
-<!-- CONFIRM -->
 <div id="confirm-dialog">
   <div class="confirm-box">
     <div class="confirm-icon" id="confirm-icon">⚠️</div>
@@ -721,9 +688,9 @@ create policy "allow all" on exam_gallery for all using (true) with check (true)
 <script>
 'use strict';
 
-/* ═══════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════
    SUPABASE CONFIG
-═══════════════════════════════════════════════════ */
+══════════════════════════════════════════════════ */
 const SB_URL = 'https://imahywrsvpxpdekgahnz.supabase.co/rest/v1';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImltYWh5d3JzdnB4cGRla2dhaG56Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2MTg2MDYsImV4cCI6MjA5MzE5NDYwNn0.abhY3wptMZiLPJ8zKR-HzHjFtrXlqjBzYc_fSgs-K9I';
 
@@ -740,7 +707,6 @@ const SB_HEADERS_RETURN = {
   'Prefer': 'return=representation'
 };
 
-/* ── Supabase helper ── */
 async function sbFetch(path, options = {}) {
   const res = await fetch(`${SB_URL}${path}`, {
     ...options,
@@ -754,8 +720,13 @@ async function sbFetch(path, options = {}) {
   return text ? JSON.parse(text) : null;
 }
 
-/* ── Compress helper ── */
-async function compress(dataURL, quality = 0.4, maxDim = 600) {
+/* ══════════════════════════════════════════════════
+   COMPRESS - FIX: nén ảnh nền ở chất lượng cao hơn
+   Ảnh đề thi: maxDim=1200, quality=0.75 (đủ đọc chữ)
+   Ảnh gallery: maxDim=1200, quality=0.8
+   Chỉ nén thêm nếu vẫn > 500KB
+══════════════════════════════════════════════════ */
+async function compress(dataURL, quality = 0.75, maxDim = 1200) {
   return new Promise(res => {
     const img = new Image();
     img.onload = () => {
@@ -774,11 +745,9 @@ async function compress(dataURL, quality = 0.4, maxDim = 600) {
   });
 }
 
-/* ═══════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════
    SUPABASE API FUNCTIONS
-═══════════════════════════════════════════════════ */
-
-// --- Sessions ---
+══════════════════════════════════════════════════ */
 async function cloudLoad(sessionId) {
   try {
     const data = await sbFetch(`/exam_sessions?id=eq.${sessionId}&select=*`, { headers: SB_HEADERS_RETURN });
@@ -788,7 +757,6 @@ async function cloudLoad(sessionId) {
 
 async function cloudSaveSession(sessionId, payload) {
   try {
-    // Upsert session
     const body = {
       id: sessionId,
       mode: payload.mode,
@@ -822,12 +790,25 @@ async function cloudDeleteSession(sessionId) {
   } catch(e) { console.error('[cloudDelete]', e); }
 }
 
-// --- Background Images ---
+/* ══════════════════════════════════════════════════
+   FIX: Lưu ảnh nền với chất lượng đủ để xem
+   Nếu ảnh > 800KB sau nén, nén thêm lần 2
+══════════════════════════════════════════════════ */
 async function cloudSaveBgImage(sessionId, pageNum, imgUrl) {
   try {
-    let compressed = await compress(imgUrl, 0.40, 600);
+    // Lần 1: nén vừa đủ để xem chữ rõ (1200px, 75%)
+    let compressed = await compress(imgUrl, 0.75, 1200);
     const sizeKB = Math.round(compressed.length * 0.75 / 1024);
-    if (sizeKB > 200) compressed = await compress(compressed, 0.25, 400);
+    // Nếu vẫn quá lớn (> 800KB), nén thêm
+    if (sizeKB > 800) {
+      compressed = await compress(compressed, 0.60, 1000);
+    }
+    // Vẫn > 600KB thì nén nữa
+    const sizeKB2 = Math.round(compressed.length * 0.75 / 1024);
+    if (sizeKB2 > 600) {
+      compressed = await compress(compressed, 0.50, 900);
+    }
+    console.log(`[BG] Trang ${pageNum}: ${Math.round(compressed.length * 0.75 / 1024)} KB`);
 
     await sbFetch('/exam_bg_images', {
       method: 'POST',
@@ -849,7 +830,7 @@ async function cloudSaveBgImage(sessionId, pageNum, imgUrl) {
 
 async function cloudLoadBgImages(sessionId) {
   try {
-    const data = await sbFetch(`/exam_bg_images?session_id=eq.${sessionId}&select=page_num,data_url`, {
+    const data = await sbFetch(`/exam_bg_images?session_id=eq.${sessionId}&select=page_num,data_url&order=page_num.asc`, {
       headers: { ...SB_HEADERS_RETURN }
     });
     const result = {};
@@ -858,10 +839,9 @@ async function cloudLoadBgImages(sessionId) {
   } catch(e) { console.error('[cloudLoadBgImages]', e); return {}; }
 }
 
-// --- Gallery ---
 async function cloudSaveGallery(sessionId, pageNum, dataURL, label) {
   try {
-    const compressed = await compress(dataURL, 0.65, 1200);
+    const compressed = await compress(dataURL, 0.80, 1400);
     await sbFetch('/exam_gallery', {
       method: 'POST',
       headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates' },
@@ -887,20 +867,15 @@ async function cloudLoadGallery(sessionId) {
   } catch(e) { return {}; }
 }
 
-/* ── Test connection ── */
 async function testConnection() {
   updateCloudStatus('connecting', 'Đang kết nối Supabase...');
   try {
-    // Quick test — just check if we can reach
-    const res = await fetch(`${SB_URL}/exam_sessions?limit=0`, {
-      headers: SB_HEADERS
-    });
+    const res = await fetch(`${SB_URL}/exam_sessions?limit=0`, { headers: SB_HEADERS });
     if (res.status === 401 || res.status === 403) {
       updateCloudStatus('error', '❌ Lỗi xác thực API key');
       return false;
     }
     if (res.status === 404 || res.status === 406) {
-      // Table doesn't exist yet
       updateCloudStatus('error', '⚠️ Chưa tạo bảng → Xem SQL Setup');
       showSQLModal();
       return false;
@@ -913,9 +888,9 @@ async function testConnection() {
   }
 }
 
-/* ═══════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════
    SQL MODAL
-═══════════════════════════════════════════════════ */
+══════════════════════════════════════════════════ */
 function showSQLModal() { document.getElementById('sql-modal').classList.add('open'); }
 function closeSQLModal(ran) {
   document.getElementById('sql-modal').classList.remove('open');
@@ -926,9 +901,9 @@ function copySQL() {
   navigator.clipboard?.writeText(txt).then(() => showToast('📋 Đã copy SQL!')).catch(() => showToast('⚠️ Không copy được'));
 }
 
-/* ═══════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════
    LOCAL HISTORY
-═══════════════════════════════════════════════════ */
+══════════════════════════════════════════════════ */
 const HISTORY_KEY = 'examdraw_history';
 const MAX_HISTORY = 10;
 
@@ -1020,9 +995,9 @@ async function _deleteSession(sid) {
   hideLoading(); loadHistoryList(); showToast('✅ Đã xóa phiên ' + sid);
 }
 
-/* ═══════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════
    SESSION MANAGEMENT
-═══════════════════════════════════════════════════ */
+══════════════════════════════════════════════════ */
 window._currentSessionId = localStorage.getItem('examdraw_session_id') || null;
 
 function generateSessionId() {
@@ -1114,7 +1089,6 @@ function copySessionId() {
   closeShareModal();
 }
 
-/* ── Confirm Dialog ── */
 let _confirmCb = null;
 function showConfirm({ icon, title, msg, okLabel, onOk }) {
   document.getElementById('confirm-icon').textContent = icon || '⚠️';
@@ -1127,9 +1101,9 @@ function showConfirm({ icon, title, msg, okLabel, onOk }) {
 function closeConfirm() { document.getElementById('confirm-dialog').classList.remove('open'); _confirmCb = null; }
 document.getElementById('confirm-ok').onclick = () => { closeConfirm(); if (_confirmCb) _confirmCb(); };
 
-/* ═══════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════
    AUTOSAVE
-═══════════════════════════════════════════════════ */
+══════════════════════════════════════════════════ */
 let rafPending = false, shapeDirty = false;
 function requestRender() {
   if (rafPending) return; rafPending = true;
@@ -1145,22 +1119,35 @@ function scheduleAutosave() {
 async function saveToCloud() {
   if (!window._currentSessionId) newSession();
   savePageState(S.currentPage);
+
+  // Build pageStates - lưu penDataURL cho mỗi trang
   const pageStates = {};
   for (const [n, st] of Object.entries(S.pageStates)) {
     if (!st) continue;
+    // Ưu tiên penDataURL đã có, nếu không thì tạo từ penSnap
     let penDataURL = st.penDataURL || null;
     if (!penDataURL && st.penSnap) {
       const tc = document.createElement('canvas');
       tc.width = drawCanvas.width; tc.height = drawCanvas.height;
       tc.getContext('2d').putImageData(st.penSnap, 0, 0);
-      penDataURL = tc.toDataURL('image/jpeg', 0.65);
+      penDataURL = tc.toDataURL('image/png'); // PNG để giữ transparency
     }
-    pageStates[n] = { penDataURL, shapes: st.shapes, nextId: st.nextId };
+    pageStates[n] = {
+      penDataURL,
+      shapes: st.shapes || [],
+      nextId: st.nextId || 1
+    };
   }
+
   const data = {
     mode: S.mode,
     currentPage: S.currentPage,
-    pages: S.pages.map(pg => ({ type: pg.type, imgW: pg.imgW||null, imgH: pg.imgH||null, pdfPage: pg.pdfPage||null })),
+    pages: S.pages.map(pg => ({
+      type: pg.type,
+      imgW: pg.imgW || null,
+      imgH: pg.imgH || null,
+      pdfPage: pg.pdfPage || null
+    })),
     pageStates,
     tool: S.tool, color: S.color, size: S.size,
   };
@@ -1174,9 +1161,9 @@ async function saveToCloud() {
   }
 }
 
-/* ═══════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════
    STATE
-═══════════════════════════════════════════════════ */
+══════════════════════════════════════════════════ */
 const S = {
   tool:'pen', color:'#ff4d6d', size:3,
   isDrawing:false, lastX:0, lastY:0,
@@ -1208,101 +1195,186 @@ const uploadScreen= document.getElementById('upload-screen');
 const pageNav     = document.getElementById('page-nav');
 const modeHint    = document.getElementById('mode-hint');
 
-/* ═══════════════════════════════════════════════════
-   RESUME SESSION
-═══════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════
+   FIX RESUME SESSION - vấn đề chính gây canvas đen
+══════════════════════════════════════════════════ */
 async function resumeSession() {
   const sid = window._currentSessionId;
   if (!sid) return;
   document.getElementById('resume-banner').classList.remove('show');
   showLoading('Đang khôi phục từ cloud...');
+
   try {
     const data = await cloudLoad(sid);
-    if (!data || !data.pages || !data.pages.length) throw new Error('Không có dữ liệu trang');
+    if (!data || !data.pages || !data.pages.length) {
+      throw new Error('Không có dữ liệu trang');
+    }
 
     if (data.mode === 'images') {
-      S.mode = 'images'; S.pages = []; S.pageStates = {}; S.pdfDoc = null;
+      S.mode = 'images';
+      S.pages = [];
+      S.pageStates = {};
+      S.pdfDoc = null;
+
       showLoading('Đang tải ảnh nền từ Supabase...');
       const bgImages = await cloudLoadBgImages(sid);
-      if (!Object.keys(bgImages).length) throw new Error('Không tìm thấy ảnh đề thi. Upload lại file ảnh.');
-      let loadedCount = 0;
+      console.log('[Resume] bgImages keys:', Object.keys(bgImages));
+
+      if (!Object.keys(bgImages).length) {
+        throw new Error('Không tìm thấy ảnh đề thi.\nHãy upload lại file ảnh.');
+      }
+
+      // Build pages từ bgImages - đảm bảo có đủ
       for (let i = 0; i < data.pages.length; i++) {
         const pg = data.pages[i];
         const bgEntry = bgImages[`page_${i+1}`];
-        if (!bgEntry?.dataURL) { console.warn(`Thiếu ảnh trang ${i+1}`); continue; }
+
+        if (!bgEntry?.dataURL) {
+          console.warn(`[Resume] Thiếu ảnh trang ${i+1}`);
+          // Vẫn thêm trang nhưng không có ảnh nền
+          S.pages.push({ type: 'image', imgUrl: null, imgW: pg.imgW || 800, imgH: pg.imgH || 1100 });
+          continue;
+        }
+
+        // FIX: lấy kích thước thực từ ảnh được load
         let imgW = pg.imgW, imgH = pg.imgH;
-        if (!imgW||!imgH) { const dim = await getImageDimensions(bgEntry.dataURL); imgW=dim.w; imgH=dim.h; }
-        S.pages.push({ type:'image', imgUrl:bgEntry.dataURL, imgW, imgH });
-        loadedCount++;
-        showLoading(`Đang tải ảnh ${loadedCount}/${data.pages.length}...`);
+        if (!imgW || !imgH) {
+          const dim = await getImageDimensions(bgEntry.dataURL);
+          imgW = dim.w; imgH = dim.h;
+        }
+
+        S.pages.push({
+          type: 'image',
+          imgUrl: bgEntry.dataURL,
+          imgW,
+          imgH
+        });
+
+        showLoading(`Đang chuẩn bị trang ${i+1}/${data.pages.length}...`);
       }
-      if (!S.pages.length) throw new Error('Không khôi phục được ảnh đề thi');
-      S.currentPage = Math.min(data.current_page || 1, S.pages.length);
-      // Restore page states
+
+      if (!S.pages.length) {
+        throw new Error('Không khôi phục được ảnh đề thi');
+      }
+
+      // Restore page states (nét vẽ + hình tròn)
       const ps = data.page_states || {};
       for (const [n, st] of Object.entries(ps)) {
         if (!st) continue;
-        S.pageStates[n] = { penDataURL:st.penDataURL||null, penSnap:null, shapes:st.shapes||[], nextId:st.nextId||1 };
+        S.pageStates[n] = {
+          penDataURL: st.penDataURL || null,
+          penSnap: null,
+          shapes: st.shapes || [],
+          nextId: st.nextId || 1
+        };
       }
-      showLoading('Đang vẽ lại trang...');
+
+      S.currentPage = Math.min(data.current_page || 1, S.pages.length);
+
+      // FIX: Render trang đầu tiên đúng cách
+      showLoading(`Đang hiển thị trang ${S.currentPage}...`);
       await renderImagePage(S.currentPage);
+
+      // FIX: Restore nét vẽ sau khi render ảnh nền
       await restorePageDrawing(S.currentPage);
+
       updatePageNav();
-      if (data.tool) S.tool = data.tool;
+
+      // Restore tool settings
+      if (data.tool) { S.tool = data.tool; setTool(data.tool); }
       if (data.color) S.color = data.color;
-      if (data.size) S.size = data.size;
-      document.getElementById('sizeSlider').value = S.size;
+      if (data.size) { S.size = data.size; document.getElementById('sizeSlider').value = S.size; }
+
       // Load gallery
+      showLoading('Đang tải gallery...');
       const galData = await cloudLoadGallery(sid);
-      for (const [k,v] of Object.entries(galData)) if (v) galleryData[k] = v;
+      for (const [k, v] of Object.entries(galData)) if (v) galleryData[k] = v;
+
+      // Show app
       uploadScreen.style.display = 'none';
       app.classList.add('active');
-      tryLockLandscape(); requestFullscreen(); checkOrientation();
+      tryLockLandscape();
+      requestFullscreen();
+      checkOrientation();
       updateSessionBadge(sid);
-      showToast(`✅ Đã khôi phục ${S.pages.length} trang!`);
       setCloudIndicator('saved');
+      showToast(`✅ Đã khôi phục ${S.pages.length} trang!`);
+
     } else if (data.mode === 'pdf') {
-      showToast('⚠️ PDF cần upload lại file'); discardSession();
-    } else { throw new Error('Dữ liệu không hợp lệ'); }
+      showToast('⚠️ PDF cần upload lại file');
+      discardSession();
+    } else {
+      throw new Error('Dữ liệu không hợp lệ: mode = ' + data.mode);
+    }
+
   } catch(err) {
     console.error('[Resume]', err);
     showToast('❌ Lỗi: ' + err.message);
     setCloudIndicator('error');
   }
-  hideLoading(); updateSelectionUI(); updateHistoryBtns();
+
+  hideLoading();
+  updateSelectionUI();
+  updateHistoryBtns();
 }
 
 function discardSession() {
   document.getElementById('resume-banner').classList.remove('show');
-  newSession(); showToast('🆕 Tạo phiên mới');
+  newSession();
+  showToast('🆕 Tạo phiên mới');
 }
 
+/* ══════════════════════════════════════════════════
+   FIX: Restore nét vẽ - dùng PNG thay JPEG để giữ transparency
+══════════════════════════════════════════════════ */
 async function restorePageDrawing(n) {
   const st = S.pageStates[n];
-  if (!st) { initPageState(n); return; }
-  S.shapes = JSON.parse(JSON.stringify(st.shapes||[]));
-  S.nextId = st.nextId||1;
+  if (!st) {
+    initPageState(n);
+    return;
+  }
+
+  // Restore shapes
+  S.shapes = JSON.parse(JSON.stringify(st.shapes || []));
+  S.nextId = st.nextId || 1;
+
+  // FIX: Restore pen drawing từ penDataURL
   if (st.penDataURL) {
     await new Promise(res => {
       const img = new Image();
       img.onload = () => {
-        drawCtx.clearRect(0,0,drawCanvas.width,drawCanvas.height);
-        drawCtx.drawImage(img,0,0);
-        S.pageStates[n].penSnap = drawCtx.getImageData(0,0,drawCanvas.width,drawCanvas.height);
+        drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+        // FIX: dùng drawImage đúng kích thước canvas
+        drawCtx.drawImage(img, 0, 0, drawCanvas.width, drawCanvas.height);
+        // Lưu lại penSnap
+        try {
+          S.pageStates[n].penSnap = drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height);
+        } catch(e) {}
         res();
       };
-      img.onerror = res; img.src = st.penDataURL;
+      img.onerror = () => {
+        console.warn('[restorePageDrawing] Không load được penDataURL trang', n);
+        res();
+      };
+      img.src = st.penDataURL;
     });
   } else {
+    // Không có nét vẽ - clear canvas
+    drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
     if (!S.pageStates[n]) S.pageStates[n] = {};
-    S.pageStates[n].penSnap = drawCtx.getImageData(0,0,drawCanvas.width,drawCanvas.height);
+    S.pageStates[n].penSnap = drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height);
   }
-  shapeDirty=true; requestRender(); S.history=[]; S.histIdx=-1; saveHistory();
+
+  shapeDirty = true;
+  requestRender();
+  S.history = [];
+  S.histIdx = -1;
+  saveHistory();
 }
 
-/* ═══════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════
    MATH TOOLS
-═══════════════════════════════════════════════════ */
+══════════════════════════════════════════════════ */
 function toggleMathPanel() {
   const panel=document.getElementById('math-panel'),btn=document.getElementById('btn-math');
   if(panel.classList.contains('open')){
@@ -1395,9 +1467,9 @@ function previewShape(x1,y1,x2,y2){
   shapeCtx.restore();
 }
 
-/* ═══════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════
    GALLERY
-═══════════════════════════════════════════════════ */
+══════════════════════════════════════════════════ */
 function compositeCurrentPage(){
   const prevSel=S.selectedId;S.selectedId=null;shapeDirty=true;_renderShapes();
   const out=document.createElement('canvas');out.width=S.canvasW;out.height=S.canvasH;
@@ -1463,8 +1535,15 @@ async function captureSinglePage(n){
 }
 async function _restoreQuick(n){
   const st=S.pageStates[n];if(!st)return;
-  if(st.penDataURL)await new Promise(r=>{const i=new Image();i.onload=()=>{drawCtx.clearRect(0,0,drawCanvas.width,drawCanvas.height);drawCtx.drawImage(i,0,0);r();};i.onerror=r;i.src=st.penDataURL;});
-  else if(st.penSnap)try{drawCtx.putImageData(st.penSnap,0,0);}catch(e){}
+  if(st.penDataURL){
+    await new Promise(r=>{
+      const i=new Image();
+      i.onload=()=>{drawCtx.clearRect(0,0,drawCanvas.width,drawCanvas.height);drawCtx.drawImage(i,0,0,drawCanvas.width,drawCanvas.height);r();};
+      i.onerror=r;i.src=st.penDataURL;
+    });
+  } else if(st.penSnap){
+    try{drawCtx.putImageData(st.penSnap,0,0);}catch(e){}
+  }
   S.shapes=JSON.parse(JSON.stringify(st.shapes||[]));S.nextId=st.nextId||1;shapeDirty=true;_renderShapes();
 }
 async function captureAllPages(){
@@ -1515,9 +1594,9 @@ function openLightbox(n){const e=galleryData[n];if(!e)return;lightboxPage=n;docu
 function closeLightbox(){document.getElementById('lightbox').classList.remove('open');lightboxPage=null;}
 function lightboxDownload(){if(lightboxPage)downloadPage(lightboxPage);}
 
-/* ═══════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════
    SELECTION
-═══════════════════════════════════════════════════ */
+══════════════════════════════════════════════════ */
 function updateSelectionUI(){
   const hasSel=S.tool==='move'&&S.selectedId!==null;
   document.getElementById('btn-duplicate').classList.toggle('hidden',!hasSel);
@@ -1539,9 +1618,9 @@ function deleteSelected(){
   showToast('✂️ Đã xóa');
 }
 
-/* ═══════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════
    ORIENTATION / FULLSCREEN
-═══════════════════════════════════════════════════ */
+══════════════════════════════════════════════════ */
 function checkOrientation(){
   const o=document.getElementById('rotate-overlay'),m=/Android|iPhone|iPad/i.test(navigator.userAgent);
   if(!m){o.style.display='none';return;}
@@ -1554,9 +1633,9 @@ window.addEventListener('resize',()=>setTimeout(()=>{checkOrientation();fitToAre
 window.addEventListener('beforeunload',()=>{if(S.pages.length>0)saveToCloud();});
 window.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&S.pages.length>0)saveToCloud();});
 
-/* ═══════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════
    FILE UPLOAD
-═══════════════════════════════════════════════════ */
+══════════════════════════════════════════════════ */
 const fileInput=document.getElementById('file-input');
 const uploadZone=document.getElementById('upload-zone');
 let stagedFiles=[];
@@ -1630,9 +1709,9 @@ function showApp(){
   updateSessionBadge(window._currentSessionId);
 }
 
-/* ═══════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════
    MULTI-IMAGE
-═══════════════════════════════════════════════════ */
+══════════════════════════════════════════════════ */
 async function loadMultiImages(files){
   S.mode='images';S.pages=[];S.pageStates={};S.pdfDoc=null;
   for(const f of files){
@@ -1644,18 +1723,67 @@ async function loadMultiImages(files){
 }
 function fileToDataURL(f){return new Promise((r,j)=>{const rd=new FileReader();rd.onload=()=>r(rd.result);rd.onerror=j;rd.readAsDataURL(f);});}
 function getImageDimensions(url){return new Promise((r)=>{const i=new Image();i.onload=()=>r({w:i.width,h:i.height});i.onerror=()=>r({w:800,h:600});i.src=url;});}
+
+/* ══════════════════════════════════════════════════
+   FIX renderImagePage - đảm bảo vẽ đúng lên bgCanvas
+══════════════════════════════════════════════════ */
 async function renderImagePage(n){
   const pg=S.pages[n-1];
-  return new Promise((r,j)=>{
-    const img=new Image();
-    img.onload=()=>{setupCanvases(img.width,img.height);bgCtx.drawImage(img,0,0);clearPenCanvas();clearShapeCanvas();fitToArea();r();};
-    img.onerror=j;img.src=pg.imgUrl;
+  if(!pg){
+    console.error('[renderImagePage] Không có trang', n);
+    return;
+  }
+
+  // FIX: nếu không có imgUrl (trang bị thiếu ảnh), vẫn setup canvas
+  if(!pg.imgUrl){
+    setupCanvases(pg.imgW || 800, pg.imgH || 1100);
+    bgCtx.fillStyle='#1a1a2e';
+    bgCtx.fillRect(0,0,S.canvasW,S.canvasH);
+    bgCtx.fillStyle='rgba(255,255,255,0.2)';
+    bgCtx.font='bold 24px sans-serif';
+    bgCtx.textAlign='center';
+    bgCtx.fillText(`⚠️ Trang ${n} - Không có ảnh nền`,S.canvasW/2,S.canvasH/2);
+    clearPenCanvas();
+    clearShapeCanvas();
+    fitToArea();
+    return;
+  }
+
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      // FIX: setup canvas với kích thước thực của ảnh
+      setupCanvases(img.width, img.height);
+      // FIX: clear bgCanvas trước khi vẽ
+      bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+      bgCtx.drawImage(img, 0, 0, img.width, img.height);
+      clearPenCanvas();
+      clearShapeCanvas();
+      fitToArea();
+      resolve();
+    };
+    img.onerror = (e) => {
+      console.error('[renderImagePage] Lỗi load ảnh trang', n, e);
+      // Vẽ placeholder thay vì crash
+      setupCanvases(pg.imgW||800, pg.imgH||1100);
+      bgCtx.fillStyle='#1a1a2e';
+      bgCtx.fillRect(0,0,S.canvasW,S.canvasH);
+      bgCtx.fillStyle='rgba(255,77,109,0.5)';
+      bgCtx.font='bold 20px sans-serif';
+      bgCtx.textAlign='center';
+      bgCtx.fillText(`❌ Lỗi tải ảnh trang ${n}`, S.canvasW/2, S.canvasH/2);
+      clearPenCanvas();
+      clearShapeCanvas();
+      fitToArea();
+      resolve(); // resolve thay vì reject để không crash
+    };
+    img.src = pg.imgUrl;
   });
 }
 
-/* ═══════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════
    PDF
-═══════════════════════════════════════════════════ */
+══════════════════════════════════════════════════ */
 async function loadPDF(file){
   pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
   const ab=await file.arrayBuffer();S.pdfDoc=await pdfjsLib.getDocument({data:ab}).promise;
@@ -1669,9 +1797,9 @@ async function renderPDFPage(n){
   await page.render({canvasContext:bgCtx,viewport:vp}).promise;fitToArea();
 }
 
-/* ═══════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════
    PAGE NAV
-═══════════════════════════════════════════════════ */
+══════════════════════════════════════════════════ */
 function updatePageNav(){
   const total=S.pages.length;
   if(total<=1){pageNav.classList.remove('visible');return;}
@@ -1680,17 +1808,25 @@ function updatePageNav(){
   document.getElementById('page-prev').disabled=S.currentPage<=1;
   document.getElementById('page-next').disabled=S.currentPage>=total;
 }
+
+/* ══════════════════════════════════════════════════
+   FIX savePageState - lưu penDataURL dạng PNG
+══════════════════════════════════════════════════ */
 function savePageState(n){
   const penSnap=drawCtx.getImageData(0,0,drawCanvas.width,drawCanvas.height);
   const tc=document.createElement('canvas');tc.width=drawCanvas.width;tc.height=drawCanvas.height;
   tc.getContext('2d').putImageData(penSnap,0,0);
-  S.pageStates[n]={penSnap,penDataURL:tc.toDataURL('image/jpeg',0.65),shapes:JSON.parse(JSON.stringify(S.shapes)),nextId:S.nextId};
+  // FIX: dùng PNG để giữ transparency (nét vẽ có viền trong suốt)
+  const penDataURL=tc.toDataURL('image/png');
+  S.pageStates[n]={penSnap,penDataURL,shapes:JSON.parse(JSON.stringify(S.shapes)),nextId:S.nextId};
 }
+
 function initPageState(n){
   if(!S.pageStates[n])S.pageStates[n]={penSnap:drawCtx.getImageData(0,0,drawCanvas.width,drawCanvas.height),penDataURL:null,shapes:[],nextId:1};
   S.shapes=JSON.parse(JSON.stringify(S.pageStates[n].shapes));S.nextId=S.pageStates[n].nextId;
   S.history=[];S.histIdx=-1;saveHistory();
 }
+
 async function changePage(delta){
   const np=S.currentPage+delta;
   if(np<1||np>S.pages.length)return;
@@ -1703,9 +1839,9 @@ async function changePage(delta){
   updatePageNav();updateSelectionUI();updateHistoryBtns();hideLoading();
 }
 
-/* ═══════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════
    CANVAS SETUP
-═══════════════════════════════════════════════════ */
+══════════════════════════════════════════════════ */
 function setupCanvases(w,h){
   S.canvasW=w;S.canvasH=h;
   [bgCanvas,drawCanvas,shapeCanvas,hitCanvas].forEach(c=>{c.width=w;c.height=h;});
@@ -1728,9 +1864,9 @@ function zoomStep(dir){
   S.panX=cx-(cx-S.panX)*(ns/S.scale);S.panY=cy-(cy-S.panY)*(ns/S.scale);S.scale=ns;applyTransform();
 }
 
-/* ═══════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════
    TOOLS
-═══════════════════════════════════════════════════ */
+══════════════════════════════════════════════════ */
 function setTool(tool){
   S.tool=tool;S.selectedId=null;S.resizingId=null;
   document.querySelectorAll('.tb-btn[id^="btn-"]').forEach(b=>b.classList.remove('active','pan-mode'));
@@ -1758,9 +1894,9 @@ function hideHint(){modeHint.classList.remove('show');}
 function setColor(hex,el){S.color=hex;document.querySelectorAll('.color-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');}
 function setSize(v){S.size=parseInt(v);}
 
-/* ═══════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════
    COORDINATES / HIT TESTS
-═══════════════════════════════════════════════════ */
+══════════════════════════════════════════════════ */
 function toCanvas(sx,sy){const r=canvasArea.getBoundingClientRect();return{x:(sx-r.left-S.panX)/S.scale,y:(sy-r.top-S.panY)/S.scale};}
 function hitShape(x,y){
   const hp=Math.max(14/S.scale,8);
@@ -1776,9 +1912,9 @@ function hitShape(x,y){
 function hitResizeHandle(x,y,c){if(!c)return null;const hr=Math.max(12/S.scale,6);for(const[n,hx,hy]of getHandles(c)){const dx=x-hx,dy=y-hy;if(Math.sqrt(dx*dx+dy*dy)<hr)return n;}return null;}
 function getHandles(c){return[['tl',c.cx-c.rx,c.cy-c.ry],['t',c.cx,c.cy-c.ry],['tr',c.cx+c.rx,c.cy-c.ry],['r',c.cx+c.rx,c.cy],['br',c.cx+c.rx,c.cy+c.ry],['b',c.cx,c.cy+c.ry],['bl',c.cx-c.rx,c.cy+c.ry],['l',c.cx-c.rx,c.cy]];}
 
-/* ═══════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════
    RENDER SHAPES
-═══════════════════════════════════════════════════ */
+══════════════════════════════════════════════════ */
 function _renderShapes(){
   shapeCtx.clearRect(0,0,shapeCanvas.width,shapeCanvas.height);
   for(const c of S.shapes){
@@ -1810,9 +1946,9 @@ function _renderShapes(){
   }
 }
 
-/* ═══════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════
    POINTER EVENTS
-═══════════════════════════════════════════════════ */
+══════════════════════════════════════════════════ */
 hitCanvas.addEventListener('mousedown',e=>{if(e.button!==0)return;e.preventDefault();const p=toCanvas(e.clientX,e.clientY);onDown(p.x,p.y,e.clientX,e.clientY);});
 hitCanvas.addEventListener('mousemove',e=>{e.preventDefault();const p=toCanvas(e.clientX,e.clientY);onMove(p.x,p.y,e.clientX,e.clientY);});
 hitCanvas.addEventListener('mouseup',()=>onUp());
@@ -1929,9 +2065,9 @@ function applyPenStyle(){
   else{drawCtx.globalCompositeOperation='source-over';drawCtx.strokeStyle=S.color;drawCtx.fillStyle=S.color;}
 }
 
-/* ═══════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════
    HISTORY
-═══════════════════════════════════════════════════ */
+══════════════════════════════════════════════════ */
 function saveHistory(){
   S.history=S.history.slice(0,S.histIdx+1);
   S.history.push({penSnap:drawCtx.getImageData(0,0,drawCanvas.width,drawCanvas.height),shapes:JSON.parse(JSON.stringify(S.shapes))});
@@ -1943,9 +2079,9 @@ function redo(){if(S.histIdx>=S.history.length-1){showToast('⚠️ Không còn 
 function restoreHistory(h){drawCtx.putImageData(h.penSnap,0,0);S.shapes=JSON.parse(JSON.stringify(h.shapes));S.selectedId=null;shapeDirty=true;requestRender();updateHistoryBtns();updateSelectionUI();}
 function updateHistoryBtns(){document.getElementById('btn-undo').style.opacity=S.histIdx>0?'1':'0.35';document.getElementById('btn-redo').style.opacity=S.histIdx<S.history.length-1?'1':'0.35';}
 
-/* ═══════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════
    CLEAR / HOME
-═══════════════════════════════════════════════════ */
+══════════════════════════════════════════════════ */
 function clearCanvas(){
   if(!confirm('Xóa toàn bộ nét vẽ trang này?'))return;
   clearPenCanvas();clearShapeCanvas();S.shapes=[];S.selectedId=null;
@@ -1971,9 +2107,9 @@ function goHome(){
   checkLocalSession();loadHistoryList();
 }
 
-/* ═══════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════
    LOADING / TOAST
-═══════════════════════════════════════════════════ */
+══════════════════════════════════════════════════ */
 function showLoading(msg){document.getElementById('loading').classList.add('show');document.getElementById('loading-msg').textContent=msg||'Đang tải...';}
 function hideLoading(){document.getElementById('loading').classList.remove('show');}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(window._tt);window._tt=setTimeout(()=>t.classList.remove('show'),2500);}
@@ -1984,9 +2120,9 @@ function formatTimeAgo(date){
   return Math.floor(h/24)+' ngày trước';
 }
 
-/* ═══════════════════════════════════════════════════
+/* ══════════════════════════════════════════════════
    INIT
-═══════════════════════════════════════════════════ */
+══════════════════════════════════════════════════ */
 checkOrientation();
 updateHistoryBtns();
 updateSelectionUI();
@@ -1999,14 +2135,12 @@ document.addEventListener('keydown',e=>{
 
 if(!window._currentSessionId)newSession();
 
-// Check SQL done flag, test connection
 if(localStorage.getItem('examdraw_sql_done')){
   testConnection().then(ok=>{
     if(ok) checkLocalSession().then(()=>loadHistoryList());
     else loadHistoryList();
   });
 } else {
-  // First visit — show SQL modal
   testConnection().then(ok=>{
     if(!ok && !localStorage.getItem('examdraw_sql_done')){
       showSQLModal();
