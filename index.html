@@ -8,398 +8,507 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>ExamDraw</title>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Outfit:wght@400;600;700;800;900&display=swap');
+
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;
-  --accent:#4f8ef7;--accent2:#7c3aed;
-  --red:#ef4444;--blue:#3b82f6;--green:#22c55e;--orange:#f59e0b;
-  --text:#e8eaf0;--muted:#6b7280;--border:rgba(255,255,255,0.08);
-  --toolbar-h:64px;--font:'Segoe UI',system-ui,sans-serif;
+  --bg:#080b14;--surface:#0f1520;--surface2:#171e2e;--surface3:#1d2640;
+  --accent:#00e5ff;--accent2:#7b5ea7;--accent3:#ff4d6d;
+  --green:#00ff9f;--orange:#ffaa00;--red:#ff4d6d;--blue:#4d9fff;
+  --text:#e2e8f8;--muted:#4a5578;--border:rgba(255,255,255,0.07);
+  --toolbar-h:64px;
+  --font:'Outfit',system-ui,sans-serif;--mono:'Space Mono',monospace;
 }
 html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
   color:var(--text);font-family:var(--font);touch-action:none;
   user-select:none;-webkit-user-select:none;}
 
+/* ── ROTATE OVERLAY ── */
 #rotate-overlay{display:none;position:fixed;inset:0;z-index:9999;
-  background:linear-gradient(135deg,#0f1117,#1a1d27);
-  flex-direction:column;align-items:center;justify-content:center;
-  gap:24px;text-align:center;padding:40px;}
+  background:var(--bg);flex-direction:column;align-items:center;
+  justify-content:center;gap:24px;text-align:center;padding:40px;}
 .ri{font-size:72px;animation:rh 2s ease-in-out infinite;}
 @keyframes rh{0%,100%{transform:rotate(0)}40%,60%{transform:rotate(-90deg)}}
-#rotate-overlay h2{font-size:22px;font-weight:700}
+#rotate-overlay h2{font-size:22px;font-weight:800;font-family:var(--font)}
 #rotate-overlay p{font-size:14px;color:var(--muted);line-height:1.6}
 
+/* ── UPLOAD SCREEN ── */
 #upload-screen{position:fixed;inset:0;z-index:100;
-  background:linear-gradient(135deg,#0f1117 0%,#1a1d27 60%,#0d0f1a 100%);
+  background:var(--bg);
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:16px;padding:24px;overflow-y:auto;}
-.upload-logo{font-size:44px;background:linear-gradient(135deg,var(--accent),var(--accent2));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  font-weight:900;letter-spacing:-2px;}
-.upload-title{font-size:24px;font-weight:800;text-align:center}
-.upload-sub{font-size:14px;color:var(--muted);text-align:center;line-height:1.6}
+  gap:14px;padding:20px;overflow-y:auto;}
 
-#cloud-status{display:flex;align-items:center;gap:8px;padding:8px 14px;
-  background:rgba(79,142,247,0.08);border:1px solid rgba(79,142,247,0.2);
-  border-radius:10px;font-size:12px;font-weight:600;width:100%;max-width:400px;}
-#cloud-status .cs-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex-shrink:0;transition:background .3s}
-#cloud-status.connected .cs-dot{background:var(--green)}
+/* bg grid */
+#upload-screen::before{content:'';position:fixed;inset:0;z-index:-1;
+  background-image:linear-gradient(rgba(0,229,255,.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,229,255,.03) 1px,transparent 1px);
+  background-size:40px 40px;pointer-events:none;}
+#upload-screen::after{content:'';position:fixed;inset:0;z-index:-1;
+  background:radial-gradient(ellipse 70% 50% at 50% 0%,rgba(0,229,255,.06) 0%,transparent 70%);
+  pointer-events:none;}
+
+.upload-logo{font-family:var(--mono);font-size:13px;font-weight:700;
+  color:var(--accent);letter-spacing:3px;text-transform:uppercase;
+  border:1px solid rgba(0,229,255,.3);padding:6px 16px;border-radius:4px;
+  background:rgba(0,229,255,.05);}
+.upload-title{font-size:28px;font-weight:900;text-align:center;letter-spacing:-1px;
+  background:linear-gradient(135deg,#e2e8f8 30%,var(--accent));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.upload-sub{font-size:13px;color:var(--muted);text-align:center;line-height:1.7;max-width:340px}
+
+/* cloud status */
+#cloud-status{display:flex;align-items:center;gap:8px;padding:7px 14px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:8px;font-size:11px;font-weight:700;width:100%;max-width:400px;
+  font-family:var(--mono);}
+#cloud-status .cs-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0;transition:background .3s}
+#cloud-status.connected .cs-dot{background:var(--green);box-shadow:0 0 6px var(--green)}
 #cloud-status.connecting .cs-dot{background:var(--orange);animation:pulse .6s infinite alternate}
 #cloud-status.error .cs-dot{background:var(--red)}
-#cloud-status .cs-text{flex:1}
+#cloud-status .cs-text{flex:1;color:var(--muted)}
 #cloud-status .cs-id{font-size:10px;color:var(--accent);cursor:pointer;text-decoration:underline}
+@keyframes pulse{from{opacity:.3}to{opacity:1}}
 
-.upload-zone{width:100%;max-width:400px;border:2px dashed rgba(79,142,247,0.4);
-  border-radius:20px;padding:36px 24px;display:flex;flex-direction:column;
-  align-items:center;gap:14px;cursor:pointer;background:rgba(79,142,247,0.04);
-  transition:all .2s;position:relative;}
-.upload-zone:hover,.upload-zone.drag-over{border-color:var(--accent);background:rgba(79,142,247,0.1)}
-.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-.upload-icon{font-size:44px}
-.uzt{font-size:15px;font-weight:600}
-.uzh{font-size:12px;color:var(--muted)}
-.upload-btn{width:100%;max-width:400px;
-  background:linear-gradient(135deg,var(--accent),var(--accent2));
-  border:none;border-radius:14px;color:#fff;font-size:16px;font-weight:700;
-  padding:16px;cursor:pointer;transition:opacity .2s;}
-.upload-btn:hover{opacity:.9}
-
+/* session panel */
 #session-panel{width:100%;max-width:400px;background:var(--surface);
-  border:1px solid var(--border);border-radius:16px;padding:14px 16px;
+  border:1px solid var(--border);border-radius:12px;padding:14px 16px;
   display:flex;flex-direction:column;gap:10px;}
-.sp-title{font-size:12px;font-weight:700;color:var(--accent);letter-spacing:.5px}
+.sp-title{font-size:10px;font-weight:700;color:var(--accent);letter-spacing:2px;font-family:var(--mono)}
 .sp-row{display:flex;gap:8px;align-items:center}
 .sp-row input{flex:1;background:var(--surface2);border:1px solid var(--border);
-  border-radius:8px;color:var(--text);font-size:13px;padding:8px 10px;font-family:monospace;}
+  border-radius:7px;color:var(--text);font-size:13px;padding:8px 10px;
+  font-family:var(--mono);outline:none;transition:border-color .2s}
+.sp-row input:focus{border-color:rgba(0,229,255,.4)}
 .sp-row input::placeholder{color:var(--muted)}
-.sp-btn{border:none;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:700;
-  cursor:pointer;white-space:nowrap;transition:all .15s}
+.sp-btn{border:none;border-radius:7px;padding:8px 12px;font-size:11px;font-weight:700;
+  cursor:pointer;white-space:nowrap;transition:all .15s;font-family:var(--font)}
 .sp-btn:active{transform:scale(.96)}
-.sp-btn.join{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+.sp-btn.join{background:var(--accent);color:#000}
 .sp-btn.new{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
 .sp-hint{font-size:11px;color:var(--muted);line-height:1.5}
 
+/* history panel */
 #history-panel{width:100%;max-width:400px;background:var(--surface);
-  border:1px solid rgba(245,158,11,0.3);border-radius:16px;padding:14px 16px;
+  border:1px solid rgba(255,170,0,.2);border-radius:12px;padding:14px 16px;
   display:flex;flex-direction:column;gap:10px;}
 .hp-header{display:flex;align-items:center;justify-content:space-between}
-.hp-title{font-size:12px;font-weight:700;color:var(--orange);letter-spacing:.5px}
-.hp-count{font-size:10px;color:var(--muted);background:var(--surface2);
-  border-radius:5px;padding:2px 7px;font-weight:600}
-.hp-list{display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto;scrollbar-width:thin}
+.hp-title{font-size:10px;font-weight:700;color:var(--orange);letter-spacing:2px;font-family:var(--mono)}
+.hp-count{font-size:9px;color:var(--muted);background:var(--surface2);
+  border-radius:4px;padding:2px 7px;font-weight:700;font-family:var(--mono)}
+.hp-list{display:flex;flex-direction:column;gap:5px;max-height:180px;overflow-y:auto;scrollbar-width:thin}
 .hp-item{display:flex;align-items:center;gap:8px;padding:8px 10px;
-  background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+  background:var(--surface2);border:1px solid var(--border);border-radius:8px;
   cursor:pointer;transition:all .15s;}
-.hp-item:hover{border-color:var(--accent);background:rgba(79,142,247,0.08)}
+.hp-item:hover{border-color:rgba(0,229,255,.3)}
 .hp-item-info{flex:1;min-width:0}
-.hp-item-id{font-size:12px;font-weight:800;color:var(--accent);font-family:monospace;letter-spacing:1px}
+.hp-item-id{font-size:11px;font-weight:700;color:var(--accent);font-family:var(--mono);letter-spacing:1px}
 .hp-item-meta{font-size:10px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hp-item-actions{display:flex;gap:4px;flex-shrink:0}
-.hp-open{border:none;border-radius:6px;padding:4px 8px;font-size:10px;font-weight:700;
-  cursor:pointer;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
-.hp-del{border:none;border-radius:6px;padding:4px 7px;font-size:10px;font-weight:700;
-  cursor:pointer;background:rgba(239,68,68,0.15);color:var(--red);border:1px solid rgba(239,68,68,0.3)}
-.hp-del:hover{background:rgba(239,68,68,0.3)}
+.hp-open{border:none;border-radius:5px;padding:4px 8px;font-size:10px;font-weight:700;
+  cursor:pointer;background:var(--accent);color:#000}
+.hp-del{border:none;border-radius:5px;padding:4px 7px;font-size:10px;font-weight:700;
+  cursor:pointer;background:rgba(255,77,109,.1);color:var(--red);border:1px solid rgba(255,77,109,.3)}
 .hp-empty{font-size:11px;color:var(--muted);text-align:center;padding:10px 0}
-.hp-storage-bar{background:var(--surface2);border-radius:6px;height:6px;overflow:hidden}
-.hp-storage-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--green),var(--orange));transition:width .3s}
+.hp-storage-bar{background:var(--surface2);border-radius:4px;height:4px;overflow:hidden}
+.hp-storage-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--green),var(--orange));transition:width .3s}
 .hp-storage-label{font-size:10px;color:var(--muted);display:flex;justify-content:space-between}
 
+/* resume banner */
 #resume-banner{display:none;width:100%;max-width:400px;
-  background:linear-gradient(135deg,rgba(79,142,247,0.15),rgba(124,58,237,0.15));
-  border:1px solid rgba(79,142,247,0.35);border-radius:16px;
-  padding:16px 18px;flex-direction:column;gap:10px;}
+  background:linear-gradient(135deg,rgba(0,229,255,.08),rgba(123,94,167,.08));
+  border:1px solid rgba(0,229,255,.25);border-radius:12px;
+  padding:14px 16px;flex-direction:column;gap:10px;}
 #resume-banner.show{display:flex}
-.rb-title{font-size:14px;font-weight:800;color:var(--accent);display:flex;align-items:center;gap:8px}
-.rb-info{font-size:12px;color:var(--muted);line-height:1.5}
+.rb-title{font-size:13px;font-weight:800;color:var(--accent);display:flex;align-items:center;gap:8px}
+.rb-info{font-size:11px;color:var(--muted);line-height:1.6}
 .rb-actions{display:flex;gap:8px}
-.rb-btn{flex:1;border:none;border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
+.rb-btn{flex:1;border:none;border-radius:8px;padding:9px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
 .rb-btn:active{transform:scale(.96)}
-.rb-btn.resume{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+.rb-btn.resume{background:var(--accent);color:#000}
 .rb-btn.discard{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
 
-#preview-strip{display:none;width:100%;max-width:400px;flex-direction:column;gap:10px;}
+/* upload zone */
+.upload-zone{width:100%;max-width:400px;border:1.5px dashed rgba(0,229,255,.25);
+  border-radius:12px;padding:28px 20px;display:flex;flex-direction:column;
+  align-items:center;gap:12px;cursor:pointer;background:rgba(0,229,255,.02);
+  transition:all .2s;position:relative;}
+.upload-zone:hover,.upload-zone.drag-over{border-color:var(--accent);background:rgba(0,229,255,.06)}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-icon{font-size:36px}
+.uzt{font-size:14px;font-weight:700}
+.uzh{font-size:11px;color:var(--muted)}
+
+.upload-btn{width:100%;max-width:400px;
+  background:var(--surface);border:1px solid rgba(0,229,255,.3);
+  border-radius:10px;color:var(--accent);font-size:14px;font-weight:700;
+  padding:13px;cursor:pointer;transition:all .2s;font-family:var(--font)}
+.upload-btn:hover{background:rgba(0,229,255,.08)}
+
+#preview-strip{display:none;width:100%;max-width:400px;flex-direction:column;gap:8px;}
 #preview-strip.has-files{display:flex}
-.preview-header{font-size:13px;font-weight:700;color:var(--accent);display:flex;align-items:center;justify-content:space-between}
-.preview-list{display:flex;gap:8px;overflow-x:auto;padding:4px 0;scrollbar-width:none}
+.preview-header{font-size:12px;font-weight:700;color:var(--accent);display:flex;align-items:center;justify-content:space-between}
+.preview-list{display:flex;gap:7px;overflow-x:auto;padding:3px 0;scrollbar-width:none}
 .preview-list::-webkit-scrollbar{display:none}
-.preview-thumb{position:relative;flex-shrink:0;width:64px;height:64px;border-radius:10px;overflow:hidden;border:2px solid var(--border);}
+.preview-thumb{position:relative;flex-shrink:0;width:60px;height:60px;border-radius:8px;overflow:hidden;border:1.5px solid var(--border);}
 .preview-thumb img{width:100%;height:100%;object-fit:cover}
-.preview-thumb .pn{position:absolute;bottom:2px;right:3px;font-size:9px;font-weight:700;background:rgba(0,0,0,.7);color:#fff;padding:1px 4px;border-radius:4px}
-.preview-thumb .px-btn{position:absolute;top:2px;right:2px;width:16px;height:16px;border-radius:50%;background:var(--red);border:none;color:#fff;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
+.preview-thumb .pn{position:absolute;bottom:2px;right:3px;font-size:9px;font-weight:700;background:rgba(0,0,0,.8);color:var(--accent);padding:1px 4px;border-radius:3px;font-family:var(--mono)}
+.preview-thumb .px-btn{position:absolute;top:2px;right:2px;width:15px;height:15px;border-radius:50%;background:var(--red);border:none;color:#fff;font-size:9px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
 .start-btn{width:100%;max-width:400px;
-  background:linear-gradient(135deg,var(--green),#16a34a);
-  border:none;border-radius:14px;color:#fff;font-size:16px;font-weight:700;
-  padding:16px;cursor:pointer;transition:opacity .2s;}
+  background:linear-gradient(135deg,var(--accent),#0099cc);
+  border:none;border-radius:10px;color:#000;font-size:15px;font-weight:800;
+  padding:14px;cursor:pointer;transition:opacity .2s;font-family:var(--font)}
 .start-btn:hover{opacity:.9}
 
+/* ── APP ── */
 #app{display:none;position:fixed;inset:0;flex-direction:column;background:var(--bg)}
 #app.active{display:flex}
 
+/* ── TOOLBAR ── */
 #toolbar{position:fixed;bottom:0;left:0;right:0;height:var(--toolbar-h);
-  background:rgba(15,17,23,0.98);backdrop-filter:blur(16px);
-  -webkit-backdrop-filter:blur(16px);border-top:1px solid var(--border);
+  background:rgba(8,11,20,0.97);backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);
   display:flex;align-items:center;padding:0 4px;gap:1px;z-index:500;
   overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
 #toolbar::-webkit-scrollbar{display:none}
-.tb-sep{width:1px;height:32px;background:var(--border);margin:0 3px;flex-shrink:0}
-.tb-btn{width:48px;height:48px;border-radius:10px;border:none;background:transparent;
+.tb-sep{width:1px;height:28px;background:var(--border);margin:0 3px;flex-shrink:0}
+.tb-btn{width:48px;height:48px;border-radius:9px;border:none;background:transparent;
   color:var(--muted);display:flex;flex-direction:column;align-items:center;
   justify-content:center;gap:1px;cursor:pointer;transition:background .12s,color .12s;
-  flex-shrink:0;font-size:17px;-webkit-tap-highlight-color:transparent;}
-.tb-btn .lbl{font-size:8px;font-weight:600;letter-spacing:.2px;color:inherit;line-height:1}
-.tb-btn:active{background:rgba(255,255,255,0.08)}
-.tb-btn.active{background:rgba(79,142,247,0.18);color:var(--accent);
-  box-shadow:0 0 0 1px rgba(79,142,247,0.4);}
-.tb-btn.pan-mode{background:rgba(124,58,237,0.18);color:#a78bfa;
-  box-shadow:0 0 0 1px rgba(124,58,237,0.5);}
+  flex-shrink:0;font-size:16px;-webkit-tap-highlight-color:transparent;}
+.tb-btn .lbl{font-size:8px;font-weight:700;letter-spacing:.3px;color:inherit;line-height:1;font-family:var(--font)}
+.tb-btn:active{background:rgba(255,255,255,.07)}
+.tb-btn.active{background:rgba(0,229,255,.12);color:var(--accent);
+  box-shadow:0 0 0 1px rgba(0,229,255,.3);}
+.tb-btn.pan-mode{background:rgba(123,94,167,.15);color:#c4b5fd;
+  box-shadow:0 0 0 1px rgba(123,94,167,.4);}
 .tb-btn.danger{color:var(--red)}
 .tb-btn.success{color:var(--green)}
-.tb-btn.gallery-btn{color:#f59e0b}
+.tb-btn.gallery-btn{color:var(--orange)}
 .tb-btn.hidden{display:none!important}
 .tb-group{display:flex;align-items:center;gap:1px;flex-shrink:0}
-.color-btn{width:26px;height:26px;border-radius:50%;border:2.5px solid transparent;
+.color-btn{width:24px;height:24px;border-radius:50%;border:2px solid transparent;
   cursor:pointer;flex-shrink:0;transition:transform .12s;}
-.color-btn.active{border-color:#fff;transform:scale(1.15)}
-.color-btn.red{background:#ef4444}
-.color-btn.blue{background:#3b82f6}
-.color-btn.black{background:#222;border-color:#555}
+.color-btn.active{border-color:#fff;transform:scale(1.18)}
+.color-btn.red{background:#ff4d6d}
+.color-btn.blue{background:#4d9fff}
+.color-btn.black{background:#1a1a2e;border-color:#444}
 .color-btn.black.active{border-color:#fff}
-.color-btn.green{background:#22c55e}
+.color-btn.green{background:#00ff9f}
 .size-wrap{display:flex;align-items:center;gap:4px;flex-shrink:0;padding:0 2px}
-.size-wrap label{font-size:8px;color:var(--muted);font-weight:600}
-#sizeSlider{-webkit-appearance:none;width:52px;height:4px;border-radius:2px;
+.size-wrap label{font-size:8px;color:var(--muted);font-weight:700;font-family:var(--mono)}
+#sizeSlider{-webkit-appearance:none;width:52px;height:3px;border-radius:2px;
   background:var(--surface2);outline:none;}
-#sizeSlider::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;
+#sizeSlider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;
   border-radius:50%;background:var(--accent);cursor:pointer;}
 .zoom-wrap{display:flex;align-items:center;gap:2px;flex-shrink:0}
-.zoom-btn{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);
-  background:var(--surface2);color:var(--text);font-size:16px;font-weight:700;
+.zoom-btn{width:30px;height:30px;border-radius:7px;border:1px solid var(--border);
+  background:var(--surface2);color:var(--text);font-size:15px;font-weight:700;
   cursor:pointer;display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;-webkit-tap-highlight-color:transparent;}
-.zoom-btn:active{background:var(--surface)}
-.zoom-btn.fit-btn{font-size:10px;width:36px}
+  flex-shrink:0;-webkit-tap-highlight-color:transparent;font-family:var(--font)}
+.zoom-btn:active{background:var(--surface3)}
+.zoom-btn.fit-btn{font-size:9px;width:34px;font-weight:700}
 #zoom-label{font-size:10px;font-weight:700;color:var(--accent);
-  min-width:34px;text-align:center;flex-shrink:0}
+  min-width:34px;text-align:center;flex-shrink:0;font-family:var(--mono)}
 
+/* ── CANVAS AREA ── */
 #canvas-area{position:fixed;top:0;left:0;right:0;bottom:var(--toolbar-h);
-  overflow:hidden;background:#181820;touch-action:none;}
+  overflow:hidden;background:#0a0c14;touch-action:none;}
 #canvas-area::before{content:'';position:absolute;inset:0;
   background-image:
-    linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
-  background-size:32px 32px;pointer-events:none;z-index:0}
+    linear-gradient(rgba(0,229,255,.015) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,229,255,.015) 1px,transparent 1px);
+  background-size:36px 36px;pointer-events:none;z-index:0}
 #transform-wrapper{position:absolute;top:0;left:0;transform-origin:0 0;will-change:transform}
 #bg-canvas{display:block}
 #draw-canvas{position:absolute;top:0;left:0;display:block;pointer-events:none}
 #shape-canvas{position:absolute;top:0;left:0;display:block;pointer-events:none}
 #hit-canvas{position:absolute;top:0;left:0;display:block;opacity:0}
 
+/* ── HUD ── */
 #home-btn{position:fixed;top:8px;right:8px;width:34px;height:34px;
-  border-radius:9px;background:rgba(26,29,39,.92);border:1px solid var(--border);
-  color:var(--muted);font-size:15px;display:flex;align-items:center;
-  justify-content:center;cursor:pointer;z-index:400;}
+  border-radius:8px;background:rgba(8,11,20,.92);border:1px solid var(--border);
+  color:var(--muted);font-size:14px;display:flex;align-items:center;
+  justify-content:center;cursor:pointer;z-index:400;transition:all .2s}
+#home-btn:hover{border-color:rgba(0,229,255,.3);color:var(--accent)}
 
 #cloud-indicator{position:fixed;top:8px;left:8px;
-  background:rgba(26,29,39,.92);border:1px solid var(--border);
-  border-radius:7px;padding:4px 8px;font-size:9px;font-weight:700;
-  color:var(--muted);z-index:400;display:flex;align-items:center;gap:4px;cursor:pointer}
+  background:rgba(8,11,20,.92);border:1px solid var(--border);
+  border-radius:7px;padding:4px 9px;font-size:9px;font-weight:700;
+  color:var(--muted);z-index:400;display:flex;align-items:center;gap:5px;cursor:pointer;
+  font-family:var(--mono)}
 #cloud-indicator .dot{width:5px;height:5px;border-radius:50%;background:var(--muted)}
 #cloud-indicator.saving .dot{background:var(--orange);animation:pulse .6s ease-in-out infinite alternate}
-#cloud-indicator.saved .dot{background:var(--green)}
+#cloud-indicator.saved .dot{background:var(--green);box-shadow:0 0 5px var(--green)}
 #cloud-indicator.error .dot{background:var(--red)}
-@keyframes pulse{from{opacity:.4}to{opacity:1}}
 
 #session-badge{position:fixed;top:48px;left:8px;
-  background:rgba(79,142,247,0.15);border:1px solid rgba(79,142,247,0.3);
-  border-radius:7px;padding:3px 8px;font-size:9px;font-weight:700;
-  color:var(--accent);z-index:400;cursor:pointer;letter-spacing:.5px;}
+  background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.2);
+  border-radius:6px;padding:3px 8px;font-size:9px;font-weight:700;
+  color:var(--accent);z-index:400;cursor:pointer;letter-spacing:1px;font-family:var(--mono)}
 
 #page-nav{display:none;position:fixed;top:8px;left:50%;
-  transform:translateX(-50%);background:rgba(26,29,39,.95);
-  border:1px solid var(--border);border-radius:10px;
+  transform:translateX(-50%);background:rgba(8,11,20,.95);
+  border:1px solid var(--border);border-radius:9px;
   padding:4px 10px;align-items:center;gap:8px;z-index:400;}
 #page-nav.visible{display:flex}
 #page-nav button{background:none;border:none;color:var(--text);font-size:16px;
   cursor:pointer;padding:2px 6px;border-radius:5px;font-weight:700}
 #page-nav button:disabled{color:var(--muted);cursor:default}
-#page-nav span{font-size:11px;color:var(--muted);min-width:50px;text-align:center}
+#page-nav span{font-size:11px;color:var(--muted);min-width:50px;text-align:center;font-family:var(--mono)}
 
-#math-panel{display:none;position:fixed;bottom:calc(var(--toolbar-h) + 6px);left:0;right:0;
+/* ── MATH PANEL ── */
+#math-panel{display:none;position:fixed;bottom:calc(var(--toolbar-h) + 5px);left:0;right:0;
   z-index:490;overflow-x:auto;padding:0 6px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
 #math-panel::-webkit-scrollbar{display:none}
 #math-panel.open{display:flex}
-.math-panel-inner{display:flex;gap:6px;align-items:center;
-  background:rgba(15,17,23,0.96);border:1px solid var(--border);
-  border-radius:12px;padding:6px 8px;white-space:nowrap;}
-.mp-label{font-size:9px;font-weight:700;color:var(--accent);letter-spacing:.5px;flex-shrink:0}
-.mp-sep{width:1px;height:28px;background:var(--border);flex-shrink:0}
-.mp-btn{border:none;border-radius:7px;background:var(--surface2);color:var(--text);
+.math-panel-inner{display:flex;gap:5px;align-items:center;
+  background:rgba(8,11,20,0.97);border:1px solid var(--border);
+  border-radius:10px;padding:6px 8px;white-space:nowrap;}
+.mp-label{font-size:9px;font-weight:700;color:var(--accent);letter-spacing:1px;flex-shrink:0;font-family:var(--mono)}
+.mp-sep{width:1px;height:26px;background:var(--border);flex-shrink:0}
+.mp-btn{border:none;border-radius:6px;background:var(--surface2);color:var(--text);
   font-size:11px;font-weight:600;padding:5px 8px;cursor:pointer;
-  flex-shrink:0;transition:all .12s;border:1px solid var(--border);}
-.mp-btn:active{background:var(--surface);transform:scale(.95)}
-.mp-btn.active{background:rgba(79,142,247,0.2);color:var(--accent);border-color:rgba(79,142,247,0.5)}
-.mp-btn.dim-input{background:var(--surface2);color:var(--orange);border-color:rgba(245,158,11,0.4);font-size:10px}
+  flex-shrink:0;transition:all .12s;border:1px solid var(--border);font-family:var(--font)}
+.mp-btn:active{background:var(--surface3);transform:scale(.95)}
+.mp-btn.active{background:rgba(0,229,255,.15);color:var(--accent);border-color:rgba(0,229,255,.4)}
+.mp-btn.dim-input{color:var(--orange);border-color:rgba(255,170,0,.3);font-size:10px}
+
 #dim-inputs{display:none;position:fixed;bottom:calc(var(--toolbar-h) + 6px);left:50%;
-  transform:translateX(-50%);background:rgba(15,17,23,0.97);border:1px solid var(--border);
-  border-radius:10px;padding:8px 12px;z-index:495;gap:8px;align-items:center;}
+  transform:translateX(-50%);background:rgba(8,11,20,.97);border:1px solid var(--border);
+  border-radius:9px;padding:8px 12px;z-index:495;gap:8px;align-items:center;}
 #dim-inputs.show{display:flex}
-#dim-inputs label{font-size:10px;color:var(--muted);font-weight:600}
-#dim-inputs input{width:54px;background:var(--surface2);border:1px solid var(--border);
-  border-radius:6px;color:var(--text);font-size:12px;padding:4px 6px;text-align:center;}
-#dim-inputs button{border:none;border-radius:7px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;}
-#dim-apply{background:var(--accent);color:#fff}
+#dim-inputs label{font-size:10px;color:var(--muted);font-weight:700;font-family:var(--mono)}
+#dim-inputs input{width:52px;background:var(--surface2);border:1px solid var(--border);
+  border-radius:6px;color:var(--text);font-size:12px;padding:4px 6px;text-align:center;font-family:var(--mono)}
+#dim-inputs button{border:none;border-radius:6px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font)}
+#dim-apply{background:var(--accent);color:#000}
 #dim-cancel{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
 
 #mode-hint{position:fixed;top:48px;left:50%;transform:translateX(-50%);
-  border-radius:7px;padding:5px 13px;font-size:11px;font-weight:600;
-  z-index:410;pointer-events:none;opacity:0;transition:opacity .25s;white-space:nowrap}
+  border-radius:6px;padding:5px 12px;font-size:11px;font-weight:700;
+  z-index:410;pointer-events:none;opacity:0;transition:opacity .25s;white-space:nowrap;font-family:var(--mono)}
 #mode-hint.show{opacity:1}
-#mode-hint.pan{background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.35);color:#a78bfa}
-#mode-hint.move{background:rgba(79,142,247,.15);border:1px solid rgba(79,142,247,.35);color:var(--accent)}
+#mode-hint.pan{background:rgba(123,94,167,.15);border:1px solid rgba(123,94,167,.35);color:#c4b5fd}
+#mode-hint.move{background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.3);color:var(--accent)}
 
+/* ── GALLERY ── */
 #gallery-modal{display:none;position:fixed;inset:0;z-index:800;
-  background:rgba(8,10,16,0.96);backdrop-filter:blur(16px);flex-direction:column;}
+  background:rgba(5,7,13,0.97);backdrop-filter:blur(20px);flex-direction:column;}
 #gallery-modal.open{display:flex}
 .gallery-header{display:flex;align-items:center;justify-content:space-between;
   padding:12px 16px;border-bottom:1px solid var(--border);flex-shrink:0;}
-.gallery-title{font-size:15px;font-weight:800;
-  background:linear-gradient(135deg,var(--accent),#f59e0b);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.gallery-title{font-size:14px;font-weight:900;color:var(--accent);font-family:var(--mono);letter-spacing:1px}
 .gallery-actions{display:flex;gap:6px}
-.g-btn{border:none;border-radius:9px;padding:7px 12px;font-size:11px;font-weight:700;
-  cursor:pointer;display:flex;align-items:center;gap:5px;transition:opacity .15s;}
+.g-btn{border:none;border-radius:8px;padding:7px 12px;font-size:11px;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;gap:5px;font-family:var(--font)}
 .g-btn:disabled{opacity:.4;cursor:not-allowed}
-.g-btn.save-all{background:linear-gradient(135deg,var(--green),#16a34a);color:#fff}
+.g-btn.save-all{background:var(--green);color:#000}
 .g-btn.close-g{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
-.g-btn.capture-all{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
-#gallery-progress{height:3px;background:var(--surface2);flex-shrink:0;overflow:hidden;display:none;}
+.g-btn.capture-all{background:var(--accent);color:#000}
+#gallery-progress{height:2px;background:var(--surface2);flex-shrink:0;overflow:hidden;display:none;}
 #gallery-progress.show{display:block}
-#gallery-progress-bar{height:100%;background:linear-gradient(90deg,var(--accent),#f59e0b);width:0%;transition:width .3s}
-.gallery-status{font-size:11px;color:var(--muted);padding:7px 16px;flex-shrink:0;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;}
-.gallery-status .dot{width:7px;height:7px;border-radius:50%;background:var(--muted)}
-.gallery-status .dot.saved{background:var(--green)}
+#gallery-progress-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--green));width:0%;transition:width .3s}
+.gallery-status{font-size:11px;color:var(--muted);padding:7px 16px;flex-shrink:0;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;font-family:var(--mono)}
+.gallery-status .dot{width:6px;height:6px;border-radius:50%;background:var(--muted)}
+.gallery-status .dot.saved{background:var(--green);box-shadow:0 0 5px var(--green)}
 .gallery-status .dot.unsaved{background:var(--orange)}
-.gallery-body{flex:1;overflow-y:auto;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;align-content:start;}
-.gallery-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;transition:border-color .2s;}
-.gallery-card.is-current{border-color:var(--accent)}
-.gc-thumb{width:100%;aspect-ratio:4/3;overflow:hidden;background:#111;position:relative;cursor:pointer;}
-.gc-thumb img{width:100%;height:100%;object-fit:contain;background:#111}
-.gc-info{padding:8px 10px;display:flex;flex-direction:column;gap:5px}
+.gallery-body{flex:1;overflow-y:auto;padding:12px;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;align-content:start;}
+.gallery-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;}
+.gallery-card.is-current{border-color:rgba(0,229,255,.4)}
+.gc-thumb{width:100%;aspect-ratio:4/3;overflow:hidden;background:#0a0c14;position:relative;cursor:pointer;}
+.gc-thumb img{width:100%;height:100%;object-fit:contain}
+.gc-info{padding:7px 9px;display:flex;flex-direction:column;gap:4px}
 .gc-label{font-size:11px;font-weight:700;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
-.gc-badge{font-size:8px;padding:2px 5px;border-radius:3px;font-weight:700}
-.gc-badge.current{background:rgba(79,142,247,0.2);color:var(--accent)}
-.gc-badge.saved{background:rgba(34,197,94,0.2);color:var(--green)}
-.gc-badge.unsaved{background:rgba(245,158,11,0.2);color:#f59e0b}
-.gc-actions{display:flex;gap:5px;padding:0 10px 10px}
-.gc-dl{flex:1;border:none;border-radius:7px;padding:6px 7px;font-size:10px;font-weight:700;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:3px;}
+.gc-badge{font-size:8px;padding:2px 5px;border-radius:3px;font-weight:700;font-family:var(--mono)}
+.gc-badge.current{background:rgba(0,229,255,.15);color:var(--accent)}
+.gc-badge.saved{background:rgba(0,255,159,.15);color:var(--green)}
+.gc-badge.unsaved{background:rgba(255,170,0,.15);color:var(--orange)}
+.gc-actions{display:flex;gap:5px;padding:0 9px 9px}
+.gc-dl{flex:1;border:none;border-radius:6px;padding:6px 7px;font-size:10px;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:3px;font-family:var(--font)}
 .gc-dl:disabled{opacity:.35;cursor:not-allowed}
-.gc-dl.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+.gc-dl.primary{background:var(--accent);color:#000}
 .gc-dl.secondary{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
 .gallery-empty{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:48px 20px;text-align:center;}
-.gallery-empty .ge-icon{font-size:48px;opacity:.35}
+.gallery-empty .ge-icon{font-size:44px;opacity:.25}
 .gallery-empty .ge-text{font-size:13px;color:var(--muted);line-height:1.6}
 
-#lightbox{display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,0.92);
+/* ── LIGHTBOX ── */
+#lightbox{display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,0.94);
   align-items:center;justify-content:center;flex-direction:column;gap:10px;}
 #lightbox.open{display:flex}
 #lightbox img{max-width:94vw;max-height:80vh;border-radius:8px}
 .lb-close{position:absolute;top:12px;right:12px;width:36px;height:36px;border-radius:50%;
-  background:rgba(255,255,255,.12);border:none;color:#fff;font-size:18px;cursor:pointer;
+  background:rgba(255,255,255,.1);border:none;color:#fff;font-size:16px;cursor:pointer;
   display:flex;align-items:center;justify-content:center;}
-.lb-label{font-size:12px;color:rgba(255,255,255,.5);font-weight:600}
-.lb-dl{border:none;border-radius:9px;padding:9px 18px;font-size:12px;font-weight:700;
-  background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;cursor:pointer;}
+.lb-label{font-size:11px;color:rgba(255,255,255,.4);font-weight:700;font-family:var(--mono)}
+.lb-dl{border:none;border-radius:8px;padding:9px 18px;font-size:12px;font-weight:700;
+  background:var(--accent);color:#000;cursor:pointer;font-family:var(--font)}
 
+/* ── LOADING ── */
 #loading{display:none;position:fixed;inset:0;z-index:200;
-  background:rgba(15,17,23,.85);backdrop-filter:blur(8px);
+  background:rgba(8,11,20,.88);backdrop-filter:blur(10px);
   align-items:center;justify-content:center;flex-direction:column;gap:16px}
 #loading.show{display:flex}
-.spinner{width:40px;height:40px;border:3px solid rgba(79,142,247,.2);
-  border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+.spinner{width:36px;height:36px;border:2px solid rgba(0,229,255,.15);
+  border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-#loading p{font-size:13px;color:var(--muted)}
+#loading p{font-size:12px;color:var(--muted);font-family:var(--mono)}
 
+/* ── TOAST ── */
 #toast{position:fixed;bottom:calc(var(--toolbar-h) + 10px);left:50%;
-  transform:translateX(-50%) translateY(12px);
-  background:rgba(26,29,39,.97);border:1px solid var(--border);
-  border-radius:9px;padding:8px 18px;font-size:12px;font-weight:600;
-  color:var(--text);opacity:0;transition:all .25s;z-index:600;white-space:nowrap;
-  pointer-events:none;}
+  transform:translateX(-50%) translateY(10px);
+  background:rgba(8,11,20,.97);border:1px solid var(--border);
+  border-radius:8px;padding:8px 16px;font-size:12px;font-weight:700;
+  color:var(--text);opacity:0;transition:all .22s;z-index:600;white-space:nowrap;
+  pointer-events:none;font-family:var(--mono)}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
+/* ── SHARE MODAL ── */
 #share-modal{display:none;position:fixed;inset:0;z-index:850;
-  background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);
+  background:rgba(0,0,0,.75);backdrop-filter:blur(10px);
   align-items:center;justify-content:center;padding:20px;}
 #share-modal.open{display:flex}
-.share-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;
-  padding:24px;width:100%;max-width:380px;display:flex;flex-direction:column;gap:16px;}
-.share-title{font-size:17px;font-weight:800;text-align:center}
-.share-sub{font-size:13px;color:var(--muted);text-align:center;line-height:1.5}
-.share-id{background:var(--surface2);border:1px solid rgba(79,142,247,0.4);
-  border-radius:10px;padding:12px 16px;font-size:18px;font-weight:900;
-  text-align:center;letter-spacing:3px;color:var(--accent);font-family:monospace;}
+.share-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  padding:22px;width:100%;max-width:360px;display:flex;flex-direction:column;gap:14px;}
+.share-title{font-size:16px;font-weight:900;text-align:center;font-family:var(--font)}
+.share-sub{font-size:12px;color:var(--muted);text-align:center;line-height:1.6}
+.share-id{background:var(--surface2);border:1px solid rgba(0,229,255,.3);
+  border-radius:9px;padding:12px 16px;font-size:20px;font-weight:900;
+  text-align:center;letter-spacing:4px;color:var(--accent);font-family:var(--mono)}
 .share-actions{display:flex;gap:8px}
-.share-btn{flex:1;border:none;border-radius:10px;padding:11px;font-size:13px;
-  font-weight:700;cursor:pointer;transition:all .15s}
-.share-btn:active{transform:scale(.96)}
-.share-btn.copy{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+.share-btn{flex:1;border:none;border-radius:9px;padding:11px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font)}
+.share-btn.copy{background:var(--accent);color:#000}
 .share-btn.close{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
 
+/* ── CONFIRM ── */
 #confirm-dialog{display:none;position:fixed;inset:0;z-index:950;
-  background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);
+  background:rgba(0,0,0,.8);backdrop-filter:blur(10px);
   align-items:center;justify-content:center;padding:20px;}
 #confirm-dialog.open{display:flex}
-.confirm-box{background:var(--surface);border:1px solid var(--border);border-radius:18px;
-  padding:22px;width:100%;max-width:340px;display:flex;flex-direction:column;gap:14px;}
-.confirm-icon{font-size:36px;text-align:center}
-.confirm-title{font-size:16px;font-weight:800;text-align:center}
-.confirm-msg{font-size:13px;color:var(--muted);text-align:center;line-height:1.5}
+.confirm-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;
+  padding:20px;width:100%;max-width:320px;display:flex;flex-direction:column;gap:12px;}
+.confirm-icon{font-size:32px;text-align:center}
+.confirm-title{font-size:15px;font-weight:800;text-align:center;font-family:var(--font)}
+.confirm-msg{font-size:12px;color:var(--muted);text-align:center;line-height:1.6;white-space:pre-line}
 .confirm-actions{display:flex;gap:8px}
-.confirm-btn{flex:1;border:none;border-radius:10px;padding:11px;font-size:13px;font-weight:700;cursor:pointer}
-.confirm-btn.ok{background:linear-gradient(135deg,var(--red),#b91c1c);color:#fff}
+.confirm-btn{flex:1;border:none;border-radius:9px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font)}
+.confirm-btn.ok{background:var(--red);color:#fff}
 .confirm-btn.cancel{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+
+/* ── SUPABASE SQL MODAL ── */
+#sql-modal{display:none;position:fixed;inset:0;z-index:1000;
+  background:rgba(0,0,0,.9);backdrop-filter:blur(12px);
+  align-items:center;justify-content:center;padding:16px;}
+#sql-modal.open{display:flex}
+.sql-box{background:var(--surface);border:1px solid rgba(0,229,255,.3);border-radius:16px;
+  padding:20px;width:100%;max-width:480px;display:flex;flex-direction:column;gap:14px;max-height:90vh;overflow-y:auto}
+.sql-title{font-size:15px;font-weight:900;color:var(--accent);font-family:var(--mono);letter-spacing:1px}
+.sql-desc{font-size:12px;color:var(--muted);line-height:1.7}
+.sql-code{background:#050810;border:1px solid rgba(0,229,255,.15);border-radius:8px;
+  padding:12px;font-size:10px;font-family:var(--mono);color:#7dd3fc;line-height:1.6;
+  overflow-x:auto;white-space:pre;max-height:200px;overflow-y:auto}
+.sql-actions{display:flex;gap:8px}
+.sql-btn{flex:1;border:none;border-radius:9px;padding:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);transition:all .15s}
+.sql-btn.copy{background:var(--accent);color:#000}
+.sql-btn.done{background:var(--green);color:#000}
+.sql-btn.skip{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
 </style>
 </head>
 <body>
 
+<!-- ROTATE -->
 <div id="rotate-overlay">
   <div class="ri">📱</div>
   <h2>Xoay ngang màn hình</h2>
   <p>Ứng dụng hoạt động tốt nhất ở chế độ ngang.<br>Vui lòng xoay điện thoại của bạn.</p>
 </div>
 
+<!-- SQL SETUP MODAL -->
+<div id="sql-modal">
+  <div class="sql-box">
+    <div class="sql-title">⚡ SETUP SUPABASE</div>
+    <div class="sql-desc">Lần đầu sử dụng, bạn cần chạy SQL này trong <strong>Supabase Dashboard → SQL Editor</strong> để tạo bảng lưu dữ liệu:</div>
+    <div class="sql-code" id="sql-code-block">-- Chạy trong Supabase SQL Editor
+create table if not exists exam_sessions (
+  id text primary key,
+  mode text,
+  current_page int default 1,
+  pages jsonb default '[]',
+  page_states jsonb default '{}',
+  tool text default 'pen',
+  color text default '#ff4d6d',
+  size int default 3,
+  updated_at timestamptz default now()
+);
+
+create table if not exists exam_bg_images (
+  id bigint generated always as identity primary key,
+  session_id text references exam_sessions(id) on delete cascade,
+  page_num int not null,
+  data_url text not null,
+  saved_at timestamptz default now(),
+  unique(session_id, page_num)
+);
+
+create table if not exists exam_gallery (
+  id bigint generated always as identity primary key,
+  session_id text references exam_sessions(id) on delete cascade,
+  page_num int not null,
+  data_url text not null,
+  label text,
+  saved_at timestamptz default now(),
+  unique(session_id, page_num)
+);
+
+-- Cho phép anon đọc/ghi (hoặc bật RLS tùy ý)
+alter table exam_sessions enable row level security;
+alter table exam_bg_images enable row level security;
+alter table exam_gallery enable row level security;
+
+create policy "allow all" on exam_sessions for all using (true) with check (true);
+create policy "allow all" on exam_bg_images for all using (true) with check (true);
+create policy "allow all" on exam_gallery for all using (true) with check (true);</div>
+    <div class="sql-actions">
+      <button class="sql-btn copy" onclick="copySQL()">📋 Copy SQL</button>
+      <button class="sql-btn done" onclick="closeSQLModal(true)">✅ Đã chạy xong</button>
+      <button class="sql-btn skip" onclick="closeSQLModal(false)">Bỏ qua</button>
+    </div>
+  </div>
+</div>
+
+<!-- UPLOAD SCREEN -->
 <div id="upload-screen">
-  <div class="upload-logo">✏️ ExamDraw</div>
+  <div class="upload-logo">✏ EXAMDRAW</div>
   <div>
     <div class="upload-title">Làm bài thi trực tiếp</div>
-    <div class="upload-sub">Upload đề thi, vẽ và khoanh đáp án ngay<br>☁️ Tự động lưu lên cloud</div>
+    <div class="upload-sub">Upload đề thi, vẽ và khoanh đáp án ngay<br>☁️ Tự động lưu lên Supabase Cloud</div>
   </div>
 
   <div id="cloud-status" class="connecting">
     <div class="cs-dot"></div>
-    <span class="cs-text" id="cs-text">Đang kết nối Firebase...</span>
+    <span class="cs-text" id="cs-text">Đang kết nối Supabase...</span>
     <span class="cs-id" id="cs-session-id" onclick="showShareModal()" style="display:none"></span>
   </div>
 
   <div id="session-panel">
-    <div class="sp-title">☁️ PHIÊN LÀM VIỆC CLOUD</div>
+    <div class="sp-title">// CLOUD SESSION</div>
     <div class="sp-row">
       <input type="text" id="session-input" placeholder="Nhập mã phiên để tiếp tục..." maxlength="8">
-      <button class="sp-btn join" onclick="joinSession()">Tham gia</button>
-      <button class="sp-btn new" onclick="newSession()">Mới</button>
+      <button class="sp-btn join" onclick="joinSession()">JOIN</button>
+      <button class="sp-btn new" onclick="newSession()">NEW</button>
     </div>
     <div class="sp-hint">📌 Mỗi phiên có mã 6 ký tự. Dùng cùng mã để tiếp tục từ thiết bị khác.</div>
   </div>
 
   <div id="history-panel">
     <div class="hp-header">
-      <div class="hp-title">📚 LỊCH SỬ BÀI LÀM</div>
+      <div class="hp-title">// HISTORY</div>
       <div class="hp-count" id="hp-count">0/10</div>
     </div>
     <div class="hp-storage-label">
-      <span>Dung lượng đã dùng</span>
+      <span>LocalStorage</span>
       <span id="hp-size-label">0 KB</span>
     </div>
     <div class="hp-storage-bar"><div class="hp-storage-fill" id="hp-storage-fill" style="width:0%"></div></div>
@@ -413,7 +522,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
     <div class="rb-info" id="resume-info">Đang tải...</div>
     <div class="rb-actions">
       <button class="rb-btn resume" onclick="resumeSession()">▶ Tiếp tục</button>
-      <button class="rb-btn discard" onclick="discardSession()">🗑 Xóa mới</button>
+      <button class="rb-btn discard" onclick="discardSession()">🗑 Tạo mới</button>
     </div>
   </div>
 
@@ -434,13 +543,15 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
   <button class="start-btn" id="start-btn" style="display:none" onclick="startExam()">🚀 Bắt đầu làm bài</button>
 </div>
 
+<!-- LOADING -->
 <div id="loading"><div class="spinner"></div><p id="loading-msg">Đang tải...</p></div>
 
+<!-- APP -->
 <div id="app">
   <button id="home-btn" onclick="goHome()">🏠</button>
   <div id="cloud-indicator" onclick="showShareModal()">
     <div class="dot"></div>
-    <span id="cloud-text">Cloud</span>
+    <span id="cloud-text">CLOUD</span>
   </div>
   <div id="session-badge" onclick="showShareModal()">📌 <span id="badge-id">------</span></div>
 
@@ -461,20 +572,21 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
     </div>
   </div>
 
+  <!-- MATH PANEL -->
   <div id="math-panel">
     <div class="math-panel-inner">
-      <span class="mp-label">HÌNH HỌC</span>
+      <span class="mp-label">SHAPE</span>
       <button class="mp-btn" onclick="setShape('line')" id="mp-line">— Đoạn thẳng</button>
       <button class="mp-btn" onclick="setShape('rect')" id="mp-rect">▭ Hình chữ nhật</button>
       <button class="mp-btn" onclick="setShape('triangle')" id="mp-tri">△ Tam giác</button>
       <button class="mp-btn" onclick="setShape('rightTri')" id="mp-rt">⊿ Vuông góc</button>
       <button class="mp-btn" onclick="setShape('arrow')" id="mp-arrow">→ Mũi tên</button>
       <div class="mp-sep"></div>
-      <span class="mp-label">TỌA ĐỘ</span>
-      <button class="mp-btn" onclick="drawAxes()" id="mp-axes">⊹ Trục tọa độ</button>
-      <button class="mp-btn" onclick="setShape('grid')" id="mp-grid">⊞ Lưới ô vuông</button>
+      <span class="mp-label">COORD</span>
+      <button class="mp-btn" onclick="drawAxes()" id="mp-axes">⊹ Trục Oxy</button>
+      <button class="mp-btn" onclick="setShape('grid')" id="mp-grid">⊞ Lưới ô</button>
       <div class="mp-sep"></div>
-      <span class="mp-label">KÝ HIỆU</span>
+      <span class="mp-label">SYM</span>
       <button class="mp-btn" onclick="insertSymbol('°')">°</button>
       <button class="mp-btn" onclick="insertSymbol('√')">√</button>
       <button class="mp-btn" onclick="insertSymbol('π')">π</button>
@@ -488,42 +600,41 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
       <button class="mp-btn" onclick="insertSymbol('∞')">∞</button>
       <button class="mp-btn" onclick="insertSymbol('²')">x²</button>
       <button class="mp-btn" onclick="insertSymbol('³')">x³</button>
-      <button class="mp-btn" onclick="insertSymbol('½')">½</button>
-      <button class="mp-btn" onclick="insertSymbol('¼')">¼</button>
       <div class="mp-sep"></div>
       <button class="mp-btn dim-input" onclick="showDimInput()">📐 Kích thước</button>
     </div>
   </div>
 
   <div id="dim-inputs">
-    <label>Rộng</label><input type="number" id="dim-w" value="200" min="10" max="2000">
-    <label>Cao</label><input type="number" id="dim-h" value="150" min="10" max="2000">
+    <label>W</label><input type="number" id="dim-w" value="200" min="10" max="2000">
+    <label>H</label><input type="number" id="dim-h" value="150" min="10" max="2000">
     <button id="dim-apply" onclick="applyDimShape()">✓</button>
     <button id="dim-cancel" onclick="hideDimInput()">✕</button>
   </div>
 
+  <!-- TOOLBAR -->
   <div id="toolbar">
     <div class="tb-group">
-      <button class="tb-btn active" id="btn-pen" onclick="setTool('pen')">✏️<span class="lbl">Bút</span></button>
-      <button class="tb-btn" id="btn-circle" onclick="setTool('circle')">⭕<span class="lbl">Tròn</span></button>
-      <button class="tb-btn" id="btn-eraser" onclick="setTool('eraser')">🧹<span class="lbl">Tẩy</span></button>
+      <button class="tb-btn active" id="btn-pen" onclick="setTool('pen')">✏️<span class="lbl">BÚT</span></button>
+      <button class="tb-btn" id="btn-circle" onclick="setTool('circle')">⭕<span class="lbl">TRÒN</span></button>
+      <button class="tb-btn" id="btn-eraser" onclick="setTool('eraser')">🧹<span class="lbl">TẨY</span></button>
     </div>
     <div class="tb-sep"></div>
     <div class="tb-group">
-      <button class="tb-btn" id="btn-pan" onclick="togglePan()">🖐<span class="lbl">Kéo</span></button>
-      <button class="tb-btn" id="btn-move" onclick="setTool('move')">👆<span class="lbl">Chọn</span></button>
+      <button class="tb-btn" id="btn-pan" onclick="togglePan()">🖐<span class="lbl">KÉO</span></button>
+      <button class="tb-btn" id="btn-move" onclick="setTool('move')">👆<span class="lbl">CHỌN</span></button>
     </div>
     <div class="tb-sep"></div>
-    <button class="tb-btn" id="btn-math" onclick="toggleMathPanel()">📐<span class="lbl">Toán</span></button>
+    <button class="tb-btn" id="btn-math" onclick="toggleMathPanel()">📐<span class="lbl">TOÁN</span></button>
     <div class="tb-sep"></div>
-    <button class="tb-btn hidden" id="btn-duplicate" onclick="duplicateSelected()">📋<span class="lbl">Copy</span></button>
-    <button class="tb-btn danger hidden" id="btn-del" onclick="deleteSelected()">✂️<span class="lbl">Xóa</span></button>
+    <button class="tb-btn hidden" id="btn-duplicate" onclick="duplicateSelected()">📋<span class="lbl">COPY</span></button>
+    <button class="tb-btn danger hidden" id="btn-del" onclick="deleteSelected()">✂️<span class="lbl">XÓA</span></button>
     <div class="tb-sep" id="sel-sep" style="display:none"></div>
     <div class="tb-group">
-      <div class="color-btn red active" onclick="setColor('#ef4444',this)"></div>
-      <div class="color-btn blue" onclick="setColor('#3b82f6',this)"></div>
+      <div class="color-btn red active" onclick="setColor('#ff4d6d',this)"></div>
+      <div class="color-btn blue" onclick="setColor('#4d9fff',this)"></div>
       <div class="color-btn black" onclick="setColor('#111',this)"></div>
-      <div class="color-btn green" onclick="setColor('#22c55e',this)"></div>
+      <div class="color-btn green" onclick="setColor('#00ff9f',this)"></div>
     </div>
     <div class="tb-sep"></div>
     <div class="size-wrap">
@@ -535,25 +646,26 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
       <button class="zoom-btn" onclick="zoomStep(-1)">−</button>
       <span id="zoom-label">100%</span>
       <button class="zoom-btn" onclick="zoomStep(1)">+</button>
-      <button class="zoom-btn fit-btn" onclick="fitToArea()">Fit</button>
+      <button class="zoom-btn fit-btn" onclick="fitToArea()">FIT</button>
     </div>
     <div class="tb-sep"></div>
     <div class="tb-group">
-      <button class="tb-btn" id="btn-undo" onclick="undo()">↩️<span class="lbl">Undo</span></button>
-      <button class="tb-btn" id="btn-redo" onclick="redo()">↪️<span class="lbl">Redo</span></button>
+      <button class="tb-btn" id="btn-undo" onclick="undo()">↩️<span class="lbl">UNDO</span></button>
+      <button class="tb-btn" id="btn-redo" onclick="redo()">↪️<span class="lbl">REDO</span></button>
     </div>
     <div class="tb-sep"></div>
     <div class="tb-group">
-      <button class="tb-btn danger" onclick="clearCanvas()">🗑️<span class="lbl">Xóa</span></button>
-      <button class="tb-btn success" onclick="saveImage()">💾<span class="lbl">Lưu</span></button>
-      <button class="tb-btn gallery-btn" onclick="openGallery()">🖼️<span class="lbl">Gallery</span></button>
+      <button class="tb-btn danger" onclick="clearCanvas()">🗑️<span class="lbl">XÓA</span></button>
+      <button class="tb-btn success" onclick="saveImage()">💾<span class="lbl">LƯU</span></button>
+      <button class="tb-btn gallery-btn" onclick="openGallery()">🖼️<span class="lbl">GALLERY</span></button>
     </div>
   </div>
 </div>
 
+<!-- GALLERY MODAL -->
 <div id="gallery-modal">
   <div class="gallery-header">
-    <div class="gallery-title">🖼️ Thư viện bài làm</div>
+    <div class="gallery-title">// GALLERY</div>
     <div class="gallery-actions">
       <button class="g-btn capture-all" id="btn-capture-all" onclick="captureAllPages()">📸 Lưu tất cả</button>
       <button class="g-btn save-all" id="btn-save-all" onclick="downloadAllSaved()">⬇️ Tải xuống</button>
@@ -568,6 +680,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
   <div class="gallery-body" id="gallery-body"></div>
 </div>
 
+<!-- LIGHTBOX -->
 <div id="lightbox">
   <button class="lb-close" onclick="closeLightbox()">✕</button>
   <img id="lb-img" src="" alt="">
@@ -575,18 +688,20 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
   <button class="lb-dl" onclick="lightboxDownload()">⬇️ Tải xuống</button>
 </div>
 
+<!-- SHARE MODAL -->
 <div id="share-modal">
   <div class="share-box">
     <div class="share-title">📌 Mã phiên làm việc</div>
     <div class="share-sub">Dùng mã này để mở bài làm trên thiết bị khác hoặc tiếp tục sau</div>
     <div class="share-id" id="share-id-display">------</div>
     <div class="share-actions">
-      <button class="share-btn copy" onclick="copySessionId()">📋 Sao chép mã</button>
+      <button class="share-btn copy" onclick="copySessionId()">📋 Sao chép</button>
       <button class="share-btn close" onclick="closeShareModal()">Đóng</button>
     </div>
   </div>
 </div>
 
+<!-- CONFIRM -->
 <div id="confirm-dialog">
   <div class="confirm-box">
     <div class="confirm-icon" id="confirm-icon">⚠️</div>
@@ -594,7 +709,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
     <div class="confirm-msg" id="confirm-msg">Bạn có chắc không?</div>
     <div class="confirm-actions">
       <button class="confirm-btn cancel" onclick="closeConfirm()">Hủy</button>
-      <button class="confirm-btn ok" id="confirm-ok">Xóa</button>
+      <button class="confirm-btn ok" id="confirm-ok">OK</button>
     </div>
   </div>
 </div>
@@ -603,269 +718,261 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
-<!-- ═══════════════════════════════════════════════════════
-  FIREBASE MODULE — tất cả Firebase API đều được expose ra window.*
-  ngay trong module này để script thường có thể gọi được.
-  FIX CHÍNH: dùng window.FB_READY promise để script thường
-  biết khi nào Firebase đã sẵn sàng.
-════════════════════════════════════════════════════════ -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, set, get, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
+<script>
 'use strict';
 
-const firebaseConfig = {
-  apiKey: "AIzaSyCr3bpWrrBS0gUL3DnSTpPXdjtspe_eYKY",
-  authDomain: "applamde.firebaseapp.com",
-  databaseURL: "https://applamde-default-rtdb.firebaseio.com",
-  projectId: "applamde",
-  storageBucket: "applamde.firebasestorage.app",
-  messagingSenderId: "993345821361",
-  appId: "1:993345821361:web:dbd5be00b2fac35a146090"
+/* ═══════════════════════════════════════════════════
+   SUPABASE CONFIG
+═══════════════════════════════════════════════════ */
+const SB_URL = 'https://imahywrsvpxpdekgahnz.supabase.co/rest/v1';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImltYWh5d3JzdnB4cGRla2dhaG56Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2MTg2MDYsImV4cCI6MjA5MzE5NDYwNn0.abhY3wptMZiLPJ8zKR-HzHjFtrXlqjBzYc_fSgs-K9I';
+
+const SB_HEADERS = {
+  'Content-Type': 'application/json',
+  'apikey': SB_KEY,
+  'Authorization': `Bearer ${SB_KEY}`,
+  'Prefer': 'return=minimal'
+};
+const SB_HEADERS_RETURN = {
+  'Content-Type': 'application/json',
+  'apikey': SB_KEY,
+  'Authorization': `Bearer ${SB_KEY}`,
+  'Prefer': 'return=representation'
 };
 
-let fbReady_resolve;
-window.FB_READY = new Promise(r => { fbReady_resolve = r; });
-
-try {
-  const fbApp = initializeApp(firebaseConfig);
-  const db = getDatabase(fbApp);
-
-  // ─── Compress helper ────────────────────────────────────
-  // MAX_DIM: giới hạn kích thước tối đa của ảnh trước khi lưu
-  // QUALITY: chất lượng JPEG (0.0-1.0)
-  // Firebase Realtime DB cho phép tối đa ~10MB/node nhưng mỗi write
-  // nên nhỏ hơn 256KB để tránh timeout. Với max 600px + quality 0.4
-  // thì ảnh thường < 80KB — an toàn.
-  async function compress(dataURL, quality, maxDim) {
-    return new Promise(res => {
-      const img = new Image();
-      img.onload = () => {
-        let w = img.width, h = img.height;
-        const M = maxDim || 600;
-        if (w > M || h > M) {
-          const r = Math.min(M / w, M / h);
-          w = Math.round(w * r);
-          h = Math.round(h * r);
-        }
-        const c = document.createElement('canvas');
-        c.width = w; c.height = h;
-        c.getContext('2d').drawImage(img, 0, 0, w, h);
-        res(c.toDataURL('image/jpeg', quality || 0.4));
-      };
-      img.onerror = () => res(dataURL);
-      img.src = dataURL;
-    });
+/* ── Supabase helper ── */
+async function sbFetch(path, options = {}) {
+  const res = await fetch(`${SB_URL}${path}`, {
+    ...options,
+    headers: { ...SB_HEADERS, ...(options.headers || {}) }
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`[Supabase ${res.status}] ${text}`);
   }
-
-  // ─── Lưu ảnh nền theo từng chunk nhỏ ──────────────────
-  // FIX: Tách ảnh lớn thành nhiều dòng chunk để tránh vượt giới hạn Firebase.
-  // Mỗi chunk là 1 strip ngang của ảnh, được nén riêng.
-  // Với ảnh thông thường (< 600px) thì 1 chunk là đủ.
-  window.cloudSaveBgImage = async function(sessionId, pageNum, imgUrl) {
-    try {
-      // Compress mạnh: max 600px, quality 0.4 → ~50-100KB
-      const compressed = await compress(imgUrl, 0.40, 600);
-      const sizeKB = Math.round(compressed.length * 0.75 / 1024);
-      console.log(`[BgSave] trang ${pageNum}: ${sizeKB}KB`);
-
-      // Nếu vẫn > 200KB, nén thêm lần nữa với quality thấp hơn
-      let final = compressed;
-      if (sizeKB > 200) {
-        final = await compress(compressed, 0.25, 400);
-        const s2 = Math.round(final.length * 0.75 / 1024);
-        console.log(`[BgSave] nén thêm: ${s2}KB`);
-      }
-
-      const r = ref(db, `images/${sessionId}/page_${pageNum}`);
-      await set(r, { dataURL: final, pageNum, savedAt: Date.now() });
-      console.log(`[BgSave] ✅ Đã lưu trang ${pageNum}`);
-      return true;
-    } catch(e) {
-      console.error('[BgSave] lỗi:', e);
-      // FIX: Hiển thị lỗi cụ thể thay vì im lặng
-      if (typeof showToast === 'function') showToast('⚠️ Lỗi lưu ảnh bg: ' + e.message);
-      return false;
-    }
-  };
-
-  window.cloudLoadBgImages = async function(sessionId) {
-    try {
-      const snap = await get(ref(db, `images/${sessionId}`));
-      return snap.exists() ? snap.val() : {};
-    } catch(e) {
-      console.error('[BgLoad] lỗi:', e);
-      return {};
-    }
-  };
-
-  // ─── Session save/load ──────────────────────────────────
-  let cloudSaveTimer = null;
-  window.cloudSave = async function(data) {
-    if (!window._currentSessionId) return;
-    setCloudIndicator('saving');
-    clearTimeout(cloudSaveTimer);
-    cloudSaveTimer = setTimeout(async () => {
-      try {
-        // FIX: Chỉ lưu metadata + nét vẽ, KHÔNG lưu imgUrl (đã lưu riêng)
-        const payload = {
-          mode: data.mode,
-          currentPage: data.currentPage,
-          pages: (data.pages || []).map(pg => ({
-            type: pg.type,
-            imgW: pg.imgW || null,
-            imgH: pg.imgH || null,
-            pdfPage: pg.pdfPage || null
-            // KHÔNG có imgUrl ở đây
-          })),
-          pageStates: data.pageStates || {},
-          tool: data.tool,
-          color: data.color,
-          size: data.size,
-          updatedAt: Date.now()
-        };
-
-        // Kiểm tra kích thước payload trước khi lưu
-        const payloadStr = JSON.stringify(payload);
-        const payloadKB = Math.round(payloadStr.length / 1024);
-        console.log(`[CloudSave] payload: ${payloadKB}KB`);
-        if (payloadKB > 8000) {
-          // Nếu quá lớn, xóa bớt penDataURL trong pageStates
-          for (const k of Object.keys(payload.pageStates || {})) {
-            if (payload.pageStates[k]) {
-              payload.pageStates[k].penDataURL = null;
-            }
-          }
-          console.warn('[CloudSave] payload quá lớn, đã xóa penDataURL');
-        }
-
-        await set(ref(db, `sessions/${window._currentSessionId}`), payload);
-        setCloudIndicator('saved');
-        if (typeof updateHistoryMeta === 'function') updateHistoryMeta(window._currentSessionId, data);
-      } catch(e) {
-        console.error('[CloudSave] lỗi:', e);
-        setCloudIndicator('error');
-        if (typeof showToast === 'function') showToast('⚠️ Lỗi lưu cloud: ' + e.message);
-      }
-    }, 1500);
-  };
-
-  window.cloudLoad = async function(sessionId) {
-    try {
-      const snap = await get(ref(db, `sessions/${sessionId}`));
-      return snap.exists() ? snap.val() : null;
-    } catch(e) {
-      console.error('[CloudLoad] lỗi:', e);
-      return null;
-    }
-  };
-
-  window.cloudDeleteSession = async function(sessionId) {
-    try {
-      await Promise.all([
-        remove(ref(db, `sessions/${sessionId}`)),
-        remove(ref(db, `galleries/${sessionId}`)),
-        remove(ref(db, `images/${sessionId}`))
-      ]);
-    } catch(e) { console.error('[CloudDelete]', e); }
-  };
-
-  window.cloudSaveGallery = async function(pageNum, dataURL, label) {
-    if (!window._currentSessionId) return;
-    try {
-      const compressed = await compress(dataURL, 0.65, 1200);
-      await set(ref(db, `galleries/${window._currentSessionId}/page_${pageNum}`), {
-        dataURL: compressed, pageNum, label, savedAt: Date.now()
-      });
-    } catch(e) {
-      console.error('[GalSave]', e);
-      if (typeof showToast === 'function') showToast('⚠️ Lỗi lưu gallery: ' + e.message);
-    }
-  };
-
-  window.cloudLoadGallery = async function(sessionId) {
-    try {
-      const snap = await get(ref(db, `galleries/${sessionId}`));
-      return snap.exists() ? snap.val() : {};
-    } catch(e) { return {}; }
-  };
-
-  // Signal ready
-  fbReady_resolve(true);
-  updateCloudStatus('connected', '✅ Firebase kết nối thành công');
-
-} catch(e) {
-  console.error('[Firebase init]', e);
-  fbReady_resolve(false);
-  updateCloudStatus('error', '❌ Lỗi Firebase: ' + e.message);
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
 }
 
-// ─── Local History (cần gọi từ module vì dùng firebase) ──
+/* ── Compress helper ── */
+async function compress(dataURL, quality = 0.4, maxDim = 600) {
+  return new Promise(res => {
+    const img = new Image();
+    img.onload = () => {
+      let w = img.width, h = img.height;
+      if (w > maxDim || h > maxDim) {
+        const r = Math.min(maxDim / w, maxDim / h);
+        w = Math.round(w * r); h = Math.round(h * r);
+      }
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      res(c.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = () => res(dataURL);
+    img.src = dataURL;
+  });
+}
+
+/* ═══════════════════════════════════════════════════
+   SUPABASE API FUNCTIONS
+═══════════════════════════════════════════════════ */
+
+// --- Sessions ---
+async function cloudLoad(sessionId) {
+  try {
+    const data = await sbFetch(`/exam_sessions?id=eq.${sessionId}&select=*`, { headers: SB_HEADERS_RETURN });
+    return data && data.length > 0 ? data[0] : null;
+  } catch(e) { console.error('[cloudLoad]', e); return null; }
+}
+
+async function cloudSaveSession(sessionId, payload) {
+  try {
+    // Upsert session
+    const body = {
+      id: sessionId,
+      mode: payload.mode,
+      current_page: payload.currentPage,
+      pages: payload.pages,
+      page_states: payload.pageStates,
+      tool: payload.tool,
+      color: payload.color,
+      size: payload.size,
+      updated_at: new Date().toISOString()
+    };
+    await sbFetch('/exam_sessions', {
+      method: 'POST',
+      headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates' },
+      body: JSON.stringify(body)
+    });
+    return true;
+  } catch(e) {
+    console.error('[cloudSaveSession]', e);
+    return false;
+  }
+}
+
+async function cloudDeleteSession(sessionId) {
+  try {
+    await Promise.all([
+      sbFetch(`/exam_sessions?id=eq.${sessionId}`, { method: 'DELETE' }),
+      sbFetch(`/exam_bg_images?session_id=eq.${sessionId}`, { method: 'DELETE' }),
+      sbFetch(`/exam_gallery?session_id=eq.${sessionId}`, { method: 'DELETE' }),
+    ]);
+  } catch(e) { console.error('[cloudDelete]', e); }
+}
+
+// --- Background Images ---
+async function cloudSaveBgImage(sessionId, pageNum, imgUrl) {
+  try {
+    let compressed = await compress(imgUrl, 0.40, 600);
+    const sizeKB = Math.round(compressed.length * 0.75 / 1024);
+    if (sizeKB > 200) compressed = await compress(compressed, 0.25, 400);
+
+    await sbFetch('/exam_bg_images', {
+      method: 'POST',
+      headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates' },
+      body: JSON.stringify({
+        session_id: sessionId,
+        page_num: pageNum,
+        data_url: compressed,
+        saved_at: new Date().toISOString()
+      })
+    });
+    return true;
+  } catch(e) {
+    console.error('[cloudSaveBgImage]', e);
+    showToast('⚠️ Lỗi lưu ảnh: ' + e.message);
+    return false;
+  }
+}
+
+async function cloudLoadBgImages(sessionId) {
+  try {
+    const data = await sbFetch(`/exam_bg_images?session_id=eq.${sessionId}&select=page_num,data_url`, {
+      headers: { ...SB_HEADERS_RETURN }
+    });
+    const result = {};
+    if (data) data.forEach(r => { result[`page_${r.page_num}`] = { dataURL: r.data_url, pageNum: r.page_num }; });
+    return result;
+  } catch(e) { console.error('[cloudLoadBgImages]', e); return {}; }
+}
+
+// --- Gallery ---
+async function cloudSaveGallery(sessionId, pageNum, dataURL, label) {
+  try {
+    const compressed = await compress(dataURL, 0.65, 1200);
+    await sbFetch('/exam_gallery', {
+      method: 'POST',
+      headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates' },
+      body: JSON.stringify({
+        session_id: sessionId,
+        page_num: pageNum,
+        data_url: compressed,
+        label,
+        saved_at: new Date().toISOString()
+      })
+    });
+  } catch(e) { console.error('[cloudSaveGallery]', e); }
+}
+
+async function cloudLoadGallery(sessionId) {
+  try {
+    const data = await sbFetch(`/exam_gallery?session_id=eq.${sessionId}&select=page_num,data_url,label`, {
+      headers: { ...SB_HEADERS_RETURN }
+    });
+    const result = {};
+    if (data) data.forEach(r => { result[r.page_num] = { dataURL: r.data_url, pageNum: r.page_num, label: r.label }; });
+    return result;
+  } catch(e) { return {}; }
+}
+
+/* ── Test connection ── */
+async function testConnection() {
+  updateCloudStatus('connecting', 'Đang kết nối Supabase...');
+  try {
+    // Quick test — just check if we can reach
+    const res = await fetch(`${SB_URL}/exam_sessions?limit=0`, {
+      headers: SB_HEADERS
+    });
+    if (res.status === 401 || res.status === 403) {
+      updateCloudStatus('error', '❌ Lỗi xác thực API key');
+      return false;
+    }
+    if (res.status === 404 || res.status === 406) {
+      // Table doesn't exist yet
+      updateCloudStatus('error', '⚠️ Chưa tạo bảng → Xem SQL Setup');
+      showSQLModal();
+      return false;
+    }
+    updateCloudStatus('connected', '✅ Supabase kết nối thành công');
+    return true;
+  } catch(e) {
+    updateCloudStatus('error', '❌ Không kết nối được: ' + e.message);
+    return false;
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   SQL MODAL
+═══════════════════════════════════════════════════ */
+function showSQLModal() { document.getElementById('sql-modal').classList.add('open'); }
+function closeSQLModal(ran) {
+  document.getElementById('sql-modal').classList.remove('open');
+  if (ran) { localStorage.setItem('examdraw_sql_done', '1'); testConnection(); }
+}
+function copySQL() {
+  const txt = document.getElementById('sql-code-block').textContent;
+  navigator.clipboard?.writeText(txt).then(() => showToast('📋 Đã copy SQL!')).catch(() => showToast('⚠️ Không copy được'));
+}
+
+/* ═══════════════════════════════════════════════════
+   LOCAL HISTORY
+═══════════════════════════════════════════════════ */
 const HISTORY_KEY = 'examdraw_history';
 const MAX_HISTORY = 10;
 
 function getLocalHistory() {
   try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch(e) { return []; }
 }
-function saveLocalHistory(arr) {
-  localStorage.setItem(HISTORY_KEY, JSON.stringify(arr));
-}
+function saveLocalHistory(arr) { localStorage.setItem(HISTORY_KEY, JSON.stringify(arr)); }
 
-// FIX: Expose ra window để script thường có thể gọi
-window.getLocalHistory = getLocalHistory;
-
-window.updateHistoryMeta = function updateHistoryMeta(sessionId, data) {
+function updateHistoryMeta(sessionId, data) {
   let hist = getLocalHistory();
   const idx = hist.findIndex(h => h.id === sessionId);
   const entry = {
-    id: sessionId,
-    updatedAt: Date.now(),
+    id: sessionId, updatedAt: Date.now(),
     pages: data.pages ? data.pages.length : 0,
-    label: data.pages && data.pages.length > 0 ? (data.mode === 'pdf' ? 'PDF' : `${data.pages.length} ảnh`) : '—'
+    label: data.pages?.length > 0 ? (data.mode === 'pdf' ? 'PDF' : `${data.pages.length} ảnh`) : '—'
   };
-  if (idx >= 0) { hist[idx] = entry; }
-  else {
-    hist.unshift(entry);
-    if (hist.length > MAX_HISTORY) hist = hist.slice(0, MAX_HISTORY);
-  }
+  if (idx >= 0) hist[idx] = entry;
+  else { hist.unshift(entry); if (hist.length > MAX_HISTORY) hist = hist.slice(0, MAX_HISTORY); }
   saveLocalHistory(hist);
-  if (typeof loadHistoryList === 'function') loadHistoryList();
-};
+  loadHistoryList();
+}
 
-window.loadHistoryList = function loadHistoryList() {
+function loadHistoryList() {
   const hist = getLocalHistory();
   const list = document.getElementById('hp-list');
   const count = document.getElementById('hp-count');
   if (!list) return;
   count.textContent = `${hist.length}/${MAX_HISTORY}`;
-
   let totalSize = 0;
-  try {
-    for(const k in localStorage) {
-      if(localStorage.hasOwnProperty(k)) totalSize += (localStorage.getItem(k) || '').length * 2;
-    }
-  } catch(e){}
-  const sizeKB = Math.round(totalSize / 1024);
-  const sizeMB = (sizeKB / 1024).toFixed(1);
+  try { for(const k in localStorage) { if(localStorage.hasOwnProperty(k)) totalSize += (localStorage.getItem(k)||'').length*2; } } catch(e){}
+  const sizeKB = Math.round(totalSize/1024);
   const sizeEl = document.getElementById('hp-size-label');
-  if(sizeEl) sizeEl.textContent = sizeKB > 1024 ? `${sizeMB} MB` : `${sizeKB} KB`;
+  if(sizeEl) sizeEl.textContent = sizeKB > 1024 ? `${(sizeKB/1024).toFixed(1)} MB` : `${sizeKB} KB`;
   const fillEl = document.getElementById('hp-storage-fill');
-  if(fillEl) fillEl.style.width = Math.min(100, (sizeKB / (5 * 1024)) * 100) + '%';
-
-  if (!hist.length) {
-    list.innerHTML = '<div class="hp-empty">Chưa có bài làm nào được lưu</div>';
-    return;
-  }
+  if(fillEl) fillEl.style.width = Math.min(100,(sizeKB/(5*1024))*100)+'%';
+  if (!hist.length) { list.innerHTML = '<div class="hp-empty">Chưa có bài làm nào được lưu</div>'; return; }
   list.innerHTML = '';
   hist.forEach(h => {
     const ago = formatTimeAgo(new Date(h.updatedAt));
     const isCur = h.id === window._currentSessionId;
-    const div = document.createElement('div');
-    div.className = 'hp-item';
+    const div = document.createElement('div'); div.className = 'hp-item';
     div.innerHTML = `
       <div class="hp-item-info">
-        <div class="hp-item-id">${h.id}${isCur ? ' <span style="color:var(--green);font-size:9px">●</span>' : ''}</div>
+        <div class="hp-item-id">${h.id}${isCur?' <span style="color:var(--green)">●</span>':''}</div>
         <div class="hp-item-meta">${h.label} • ${ago}</div>
       </div>
       <div class="hp-item-actions">
@@ -874,36 +981,33 @@ window.loadHistoryList = function loadHistoryList() {
       </div>`;
     list.appendChild(div);
   });
-};
+}
 
-window.openHistorySession = async function(sid) {
+async function openHistorySession(sid) {
   if (sid === window._currentSessionId) { showToast('📌 Đây là phiên hiện tại'); return; }
   showLoading('Đang tải phiên ' + sid + '...');
-  const data = await window.cloudLoad(sid);
+  const data = await cloudLoad(sid);
   hideLoading();
-  if (!data) { showToast('❌ Không tìm thấy phiên: ' + sid); return; }
+  if (!data) { showToast('❌ Không tìm thấy: ' + sid); return; }
   window._currentSessionId = sid;
   localStorage.setItem('examdraw_session_id', sid);
   updateSessionBadge(sid);
-  const ago = formatTimeAgo(new Date(data.updatedAt || Date.now()));
-  document.getElementById('resume-info').textContent = `Phiên ${sid} • ${data.pages?.length || 0} trang • ${ago}`;
+  const ago = formatTimeAgo(new Date(data.updated_at || Date.now()));
+  document.getElementById('resume-info').textContent = `Phiên ${sid} • ${data.pages?.length||0} trang • ${ago}`;
   document.getElementById('resume-banner').classList.add('show');
   loadHistoryList();
   showToast('☁️ Tìm thấy phiên ' + sid);
-};
+}
 
-window.confirmDeleteSession = function(sid) {
-  showConfirm({
-    icon: '🗑️', title: 'Xóa bài làm?',
-    msg: `Xóa phiên "${sid}" khỏi cloud và lịch sử?\nHành động này không thể hoàn tác.`,
-    okLabel: 'Xóa',
-    onOk: () => _deleteSession(sid)
-  });
-};
+function confirmDeleteSession(sid) {
+  showConfirm({ icon:'🗑️', title:'Xóa bài làm?',
+    msg: `Xóa phiên "${sid}" khỏi cloud?\nHành động này không thể hoàn tác.`,
+    okLabel:'Xóa', onOk: () => _deleteSession(sid) });
+}
 
 async function _deleteSession(sid) {
   showLoading('Đang xóa phiên ' + sid + '...');
-  await window.cloudDeleteSession(sid);
+  await cloudDeleteSession(sid);
   let hist = getLocalHistory().filter(h => h.id !== sid);
   saveLocalHistory(hist);
   if (window._currentSessionId === sid) {
@@ -911,28 +1015,14 @@ async function _deleteSession(sid) {
     localStorage.removeItem('examdraw_session_id');
     updateSessionBadge(null);
     document.getElementById('resume-banner').classList.remove('show');
-    window.newSession();
+    newSession();
   }
-  hideLoading();
-  loadHistoryList();
-  showToast('✅ Đã xóa phiên ' + sid);
+  hideLoading(); loadHistoryList(); showToast('✅ Đã xóa phiên ' + sid);
 }
 
-// Khởi động sau khi firebase ready
-window.FB_READY.then(() => {
-  checkLocalSession();
-  loadHistoryList();
-});
-
-</script>
-
-<!-- ═══════════════════════════════════════════════════════
-  MAIN SCRIPT — logic chính của ứng dụng
-  FIX: Chờ window.FB_READY trước khi gọi bất kỳ API firebase nào
-════════════════════════════════════════════════════════ -->
-<script>
-'use strict';
-
+/* ═══════════════════════════════════════════════════
+   SESSION MANAGEMENT
+═══════════════════════════════════════════════════ */
 window._currentSessionId = localStorage.getItem('examdraw_session_id') || null;
 
 function generateSessionId() {
@@ -945,41 +1035,21 @@ function generateSessionId() {
 function updateCloudStatus(state, msg) {
   const el = document.getElementById('cloud-status');
   const txt = document.getElementById('cs-text');
-  if (!el || !txt) return;
-  el.className = state;
-  txt.textContent = msg;
+  if (!el||!txt) return;
+  el.className = state; txt.textContent = msg;
   if (window._currentSessionId) {
     const sid = document.getElementById('cs-session-id');
-    if (sid) { sid.textContent = '📌 ' + window._currentSessionId; sid.style.display = ''; }
+    if (sid) { sid.textContent = '📌 '+window._currentSessionId; sid.style.display = ''; }
   }
 }
 
 function setCloudIndicator(state) {
   const el = document.getElementById('cloud-indicator');
   const txt = document.getElementById('cloud-text');
-  if (!el || !txt) return;
+  if (!el||!txt) return;
   el.className = state;
-  const labels = { saving:'☁️ Lưu...', saved:'☁️ Đã lưu', error:'⚠️ Lỗi!' };
-  txt.textContent = labels[state] || 'Cloud';
-}
-
-function checkLocalSession() {
-  const sid = localStorage.getItem('examdraw_session_id');
-  if (!sid) return;
-  window._currentSessionId = sid;
-  updateSessionBadge(sid);
-  // FIX: Chờ Firebase sẵn sàng rồi mới load
-  (window.FB_READY || Promise.resolve()).then(async () => {
-    if (!window.cloudLoad) return;
-    const data = await window.cloudLoad(sid);
-    if (data && data.pages && data.pages.length > 0) {
-      const ago = formatTimeAgo(new Date(data.updatedAt || Date.now()));
-      const infoEl = document.getElementById('resume-info');
-      if (infoEl) infoEl.textContent = `Phiên ${sid} • ${data.pages.length} trang • ${ago}`;
-      const banner = document.getElementById('resume-banner');
-      if (banner) banner.classList.add('show');
-    }
-  });
+  const labels = { saving:'SAVING', saved:'SAVED', error:'ERROR' };
+  txt.textContent = labels[state] || 'CLOUD';
 }
 
 function updateSessionBadge(id) {
@@ -988,52 +1058,63 @@ function updateSessionBadge(id) {
   const csid = document.getElementById('cs-session-id');
   if (badge) badge.textContent = id || '------';
   if (shareDisp) shareDisp.textContent = id || '------';
-  if (csid) { csid.textContent = id ? '📌 ' + id : ''; csid.style.display = id ? '' : 'none'; }
+  if (csid) { csid.textContent = id?'📌 '+id:''; csid.style.display = id?'':'none'; }
 }
 
-window.newSession = function() {
+async function checkLocalSession() {
+  const sid = localStorage.getItem('examdraw_session_id');
+  if (!sid) return;
+  window._currentSessionId = sid;
+  updateSessionBadge(sid);
+  const data = await cloudLoad(sid);
+  if (data && data.pages && data.pages.length > 0) {
+    const ago = formatTimeAgo(new Date(data.updated_at || Date.now()));
+    const infoEl = document.getElementById('resume-info');
+    if (infoEl) infoEl.textContent = `Phiên ${sid} • ${data.pages.length} trang • ${ago}`;
+    const banner = document.getElementById('resume-banner');
+    if (banner) banner.classList.add('show');
+  }
+}
+
+function newSession() {
   const id = generateSessionId();
   window._currentSessionId = id;
   localStorage.setItem('examdraw_session_id', id);
   updateSessionBadge(id);
   updateCloudStatus('connected', '✅ Phiên mới: ' + id);
-  if (typeof loadHistoryList === 'function') loadHistoryList();
+  loadHistoryList();
   showToast('🆕 Phiên mới: ' + id);
-};
+}
 
-window.joinSession = async function() {
+async function joinSession() {
   const input = document.getElementById('session-input').value.trim().toUpperCase();
   if (input.length < 4) { showToast('⚠️ Nhập mã phiên (6 ký tự)'); return; }
   showLoading('Đang tải phiên ' + input + '...');
-  await (window.FB_READY || Promise.resolve());
-  const data = await window.cloudLoad(input);
+  const data = await cloudLoad(input);
   hideLoading();
-  if (!data) { showToast('❌ Không tìm thấy phiên: ' + input); return; }
+  if (!data) { showToast('❌ Không tìm thấy: ' + input); return; }
   window._currentSessionId = input;
   localStorage.setItem('examdraw_session_id', input);
   updateSessionBadge(input);
-  const ago = formatTimeAgo(new Date(data.updatedAt || Date.now()));
-  const infoEl = document.getElementById('resume-info');
-  if (infoEl) infoEl.textContent = `Phiên ${input} • ${(data.pages||[]).length} trang • ${ago}`;
-  const banner = document.getElementById('resume-banner');
-  if (banner) banner.classList.add('show');
+  const ago = formatTimeAgo(new Date(data.updated_at || Date.now()));
+  document.getElementById('resume-info').textContent = `Phiên ${input} • ${(data.pages||[]).length} trang • ${ago}`;
+  document.getElementById('resume-banner').classList.add('show');
   showToast('☁️ Tìm thấy phiên ' + input);
-};
+}
 
-window.showShareModal = function() {
+function showShareModal() {
   if (!window._currentSessionId) { showToast('⚠️ Chưa có phiên nào'); return; }
-  const disp = document.getElementById('share-id-display');
-  if (disp) disp.textContent = window._currentSessionId;
+  document.getElementById('share-id-display').textContent = window._currentSessionId;
   document.getElementById('share-modal').classList.add('open');
-};
-window.closeShareModal = function() { document.getElementById('share-modal').classList.remove('open'); };
-window.copySessionId = function() {
+}
+function closeShareModal() { document.getElementById('share-modal').classList.remove('open'); }
+function copySessionId() {
   const id = window._currentSessionId; if (!id) return;
-  navigator.clipboard?.writeText(id).then(() => showToast('📋 Đã sao chép: ' + id)).catch(() => showToast('📌 Mã phiên: ' + id));
+  navigator.clipboard?.writeText(id).then(() => showToast('📋 Đã sao chép: ' + id)).catch(() => showToast('📌 Mã: ' + id));
   closeShareModal();
-};
+}
 
-// ─── Confirm Dialog ──────────────────────────────────
+/* ── Confirm Dialog ── */
 let _confirmCb = null;
 function showConfirm({ icon, title, msg, okLabel, onOk }) {
   document.getElementById('confirm-icon').textContent = icon || '⚠️';
@@ -1046,7 +1127,9 @@ function showConfirm({ icon, title, msg, okLabel, onOk }) {
 function closeConfirm() { document.getElementById('confirm-dialog').classList.remove('open'); _confirmCb = null; }
 document.getElementById('confirm-ok').onclick = () => { closeConfirm(); if (_confirmCb) _confirmCb(); };
 
-// ─── RAF / Autosave ──────────────────────────────────
+/* ═══════════════════════════════════════════════════
+   AUTOSAVE
+═══════════════════════════════════════════════════ */
 let rafPending = false, shapeDirty = false;
 function requestRender() {
   if (rafPending) return; rafPending = true;
@@ -1059,28 +1142,10 @@ function scheduleAutosave() {
   autosaveTimer = setTimeout(() => saveToCloud(), 2000);
 }
 
-// ─── Save to Cloud ────────────────────────────────────
-// FIX: Tách biệt rõ ràng — penDataURL lưu vào pageStates, imgUrl KHÔNG lưu
 async function saveToCloud() {
-  if (!window.cloudSave) return; // Firebase chưa sẵn sàng
-  if (!window._currentSessionId) window.newSession();
+  if (!window._currentSessionId) newSession();
   savePageState(S.currentPage);
-  const data = {
-    mode: S.mode,
-    currentPage: S.currentPage,
-    pages: S.pages.map(pg => ({
-      type: pg.type,
-      imgW: pg.imgW || null,
-      imgH: pg.imgH || null,
-      pdfPage: pg.pdfPage || null
-      // imgUrl KHÔNG được lưu ở đây — đã lưu riêng tại /images/
-    })),
-    pageStates: {},
-    tool: S.tool,
-    color: S.color,
-    size: S.size,
-  };
-  // Lưu nét vẽ (penDataURL) cho mỗi trang
+  const pageStates = {};
   for (const [n, st] of Object.entries(S.pageStates)) {
     if (!st) continue;
     let penDataURL = st.penDataURL || null;
@@ -1090,26 +1155,42 @@ async function saveToCloud() {
       tc.getContext('2d').putImageData(st.penSnap, 0, 0);
       penDataURL = tc.toDataURL('image/jpeg', 0.65);
     }
-    data.pageStates[n] = { penDataURL, shapes: st.shapes, nextId: st.nextId };
+    pageStates[n] = { penDataURL, shapes: st.shapes, nextId: st.nextId };
   }
-  await window.cloudSave(data);
+  const data = {
+    mode: S.mode,
+    currentPage: S.currentPage,
+    pages: S.pages.map(pg => ({ type: pg.type, imgW: pg.imgW||null, imgH: pg.imgH||null, pdfPage: pg.pdfPage||null })),
+    pageStates,
+    tool: S.tool, color: S.color, size: S.size,
+  };
+  const ok = await cloudSaveSession(window._currentSessionId, data);
+  if (ok) {
+    setCloudIndicator('saved');
+    updateHistoryMeta(window._currentSessionId, data);
+  } else {
+    setCloudIndicator('error');
+    showToast('⚠️ Lỗi lưu cloud');
+  }
 }
 
-// ─── State ───────────────────────────────────────────
+/* ═══════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════ */
 const S = {
-  tool: 'pen', color: '#ef4444', size: 3,
-  isDrawing: false, lastX: 0, lastY: 0,
-  circleStart: null, shapeStart: null,
-  shapes: [], nextId: 1, selectedId: null,
-  draggingId: null, dragOffsetX: 0, dragOffsetY: 0,
-  resizingId: null, resizeHandle: null, resizeStartX: 0, resizeStartY: 0, resizeOrig: null,
-  isPanning: false, panStartX: 0, panStartY: 0, panStartPX: 0, panStartPY: 0,
-  scale: 1, panX: 0, panY: 0,
-  lastTouchDist: 0, lastTouchMid: null, isPinching: false,
-  history: [], histIdx: -1,
-  canvasW: 0, canvasH: 0,
-  pdfDoc: null, pages: [], currentPage: 1, pageStates: {}, mode: 'none',
-  activeMathShape: null,
+  tool:'pen', color:'#ff4d6d', size:3,
+  isDrawing:false, lastX:0, lastY:0,
+  circleStart:null, shapeStart:null,
+  shapes:[], nextId:1, selectedId:null,
+  draggingId:null, dragOffsetX:0, dragOffsetY:0,
+  resizingId:null, resizeHandle:null, resizeStartX:0, resizeStartY:0, resizeOrig:null,
+  isPanning:false, panStartX:0, panStartY:0, panStartPX:0, panStartPY:0,
+  scale:1, panX:0, panY:0,
+  lastTouchDist:0, lastTouchMid:null, isPinching:false,
+  history:[], histIdx:-1,
+  canvasW:0, canvasH:0,
+  pdfDoc:null, pages:[], currentPage:1, pageStates:{}, mode:'none',
+  activeMathShape:null,
 };
 const galleryData = {};
 
@@ -1127,208 +1208,171 @@ const uploadScreen= document.getElementById('upload-screen');
 const pageNav     = document.getElementById('page-nav');
 const modeHint    = document.getElementById('mode-hint');
 
-// ─── Resume Session ───────────────────────────────────
-// FIX CHÍNH: Chờ FB_READY, tải ảnh nền từ /images/, khôi phục đúng thứ tự
-window.resumeSession = async function() {
+/* ═══════════════════════════════════════════════════
+   RESUME SESSION
+═══════════════════════════════════════════════════ */
+async function resumeSession() {
   const sid = window._currentSessionId;
   if (!sid) return;
   document.getElementById('resume-banner').classList.remove('show');
   showLoading('Đang khôi phục từ cloud...');
   try {
-    // Đảm bảo Firebase đã sẵn sàng
-    await (window.FB_READY || Promise.resolve());
-    if (!window.cloudLoad) throw new Error('Firebase chưa kết nối');
-
-    const data = await window.cloudLoad(sid);
+    const data = await cloudLoad(sid);
     if (!data || !data.pages || !data.pages.length) throw new Error('Không có dữ liệu trang');
 
     if (data.mode === 'images') {
       S.mode = 'images'; S.pages = []; S.pageStates = {}; S.pdfDoc = null;
-
-      showLoading('Đang tải ảnh nền từ cloud...');
-      if (!window.cloudLoadBgImages) throw new Error('Hàm tải ảnh chưa sẵn sàng');
-
-      const bgImages = await window.cloudLoadBgImages(sid);
-      console.log('[Resume] bgImages keys:', Object.keys(bgImages));
-
-      if (!Object.keys(bgImages).length) {
-        throw new Error('Không tìm thấy ảnh đề thi.\nVui lòng upload lại file ảnh.');
-      }
-
+      showLoading('Đang tải ảnh nền từ Supabase...');
+      const bgImages = await cloudLoadBgImages(sid);
+      if (!Object.keys(bgImages).length) throw new Error('Không tìm thấy ảnh đề thi. Upload lại file ảnh.');
       let loadedCount = 0;
       for (let i = 0; i < data.pages.length; i++) {
         const pg = data.pages[i];
-        const bgKey = `page_${i + 1}`;
-        const bgEntry = bgImages[bgKey];
-        if (!bgEntry || !bgEntry.dataURL) {
-          console.warn(`[Resume] Thiếu ảnh trang ${i+1}, bỏ qua`);
-          continue;
-        }
-        const imgUrl = bgEntry.dataURL;
+        const bgEntry = bgImages[`page_${i+1}`];
+        if (!bgEntry?.dataURL) { console.warn(`Thiếu ảnh trang ${i+1}`); continue; }
         let imgW = pg.imgW, imgH = pg.imgH;
-        if (!imgW || !imgH) {
-          const dim = await getImageDimensions(imgUrl);
-          imgW = dim.w; imgH = dim.h;
-        }
-        S.pages.push({ type: 'image', imgUrl, imgW, imgH });
+        if (!imgW||!imgH) { const dim = await getImageDimensions(bgEntry.dataURL); imgW=dim.w; imgH=dim.h; }
+        S.pages.push({ type:'image', imgUrl:bgEntry.dataURL, imgW, imgH });
         loadedCount++;
         showLoading(`Đang tải ảnh ${loadedCount}/${data.pages.length}...`);
       }
-
       if (!S.pages.length) throw new Error('Không khôi phục được ảnh đề thi');
-
-      S.currentPage = Math.min(data.currentPage || 1, S.pages.length);
-
-      // Khôi phục nét vẽ
-      for (const [n, st] of Object.entries(data.pageStates || {})) {
+      S.currentPage = Math.min(data.current_page || 1, S.pages.length);
+      // Restore page states
+      const ps = data.page_states || {};
+      for (const [n, st] of Object.entries(ps)) {
         if (!st) continue;
-        S.pageStates[n] = {
-          penDataURL: st.penDataURL || null,
-          penSnap: null,
-          shapes: st.shapes || [],
-          nextId: st.nextId || 1
-        };
+        S.pageStates[n] = { penDataURL:st.penDataURL||null, penSnap:null, shapes:st.shapes||[], nextId:st.nextId||1 };
       }
-
       showLoading('Đang vẽ lại trang...');
       await renderImagePage(S.currentPage);
       await restorePageDrawing(S.currentPage);
       updatePageNav();
-
       if (data.tool) S.tool = data.tool;
       if (data.color) S.color = data.color;
       if (data.size) S.size = data.size;
       document.getElementById('sizeSlider').value = S.size;
-
       // Load gallery
-      const galData = await window.cloudLoadGallery(sid);
-      for (const [k, v] of Object.entries(galData)) if (v) galleryData[k] = v;
-
+      const galData = await cloudLoadGallery(sid);
+      for (const [k,v] of Object.entries(galData)) if (v) galleryData[k] = v;
       uploadScreen.style.display = 'none';
       app.classList.add('active');
       tryLockLandscape(); requestFullscreen(); checkOrientation();
       updateSessionBadge(sid);
-      showToast(`✅ Đã khôi phục ${S.pages.length} trang từ cloud!`);
+      showToast(`✅ Đã khôi phục ${S.pages.length} trang!`);
       setCloudIndicator('saved');
-
     } else if (data.mode === 'pdf') {
-      showToast('⚠️ PDF cần upload lại file. Không thể lưu PDF lên cloud.');
-      discardSession();
-    } else {
-      throw new Error('Dữ liệu không hợp lệ');
-    }
+      showToast('⚠️ PDF cần upload lại file'); discardSession();
+    } else { throw new Error('Dữ liệu không hợp lệ'); }
   } catch(err) {
-    console.error('[Resume] lỗi:', err);
-    showToast('❌ Lỗi khôi phục: ' + err.message);
+    console.error('[Resume]', err);
+    showToast('❌ Lỗi: ' + err.message);
     setCloudIndicator('error');
   }
-  hideLoading();
-  updateSelectionUI();
-  updateHistoryBtns();
-};
+  hideLoading(); updateSelectionUI(); updateHistoryBtns();
+}
 
-window.discardSession = function() {
+function discardSession() {
   document.getElementById('resume-banner').classList.remove('show');
-  window.newSession();
-  showToast('🆕 Tạo phiên mới');
-};
+  newSession(); showToast('🆕 Tạo phiên mới');
+}
 
 async function restorePageDrawing(n) {
   const st = S.pageStates[n];
   if (!st) { initPageState(n); return; }
-  S.shapes = JSON.parse(JSON.stringify(st.shapes || []));
-  S.nextId = st.nextId || 1;
+  S.shapes = JSON.parse(JSON.stringify(st.shapes||[]));
+  S.nextId = st.nextId||1;
   if (st.penDataURL) {
     await new Promise(res => {
       const img = new Image();
       img.onload = () => {
-        drawCtx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
-        drawCtx.drawImage(img, 0, 0);
-        S.pageStates[n].penSnap = drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height);
+        drawCtx.clearRect(0,0,drawCanvas.width,drawCanvas.height);
+        drawCtx.drawImage(img,0,0);
+        S.pageStates[n].penSnap = drawCtx.getImageData(0,0,drawCanvas.width,drawCanvas.height);
         res();
       };
-      img.onerror = res;
-      img.src = st.penDataURL;
+      img.onerror = res; img.src = st.penDataURL;
     });
   } else {
     if (!S.pageStates[n]) S.pageStates[n] = {};
-    S.pageStates[n].penSnap = drawCtx.getImageData(0, 0, drawCanvas.width, drawCanvas.height);
+    S.pageStates[n].penSnap = drawCtx.getImageData(0,0,drawCanvas.width,drawCanvas.height);
   }
-  shapeDirty = true; requestRender();
-  S.history = []; S.histIdx = -1; saveHistory();
+  shapeDirty=true; requestRender(); S.history=[]; S.histIdx=-1; saveHistory();
 }
 
-// ─── Math Tools ──────────────────────────────────────
+/* ═══════════════════════════════════════════════════
+   MATH TOOLS
+═══════════════════════════════════════════════════ */
 function toggleMathPanel() {
-  const panel = document.getElementById('math-panel'), btn = document.getElementById('btn-math');
-  if (panel.classList.contains('open')) {
-    panel.classList.remove('open'); btn.classList.remove('active');
-    if (['line','rect','triangle','rightTri','arrow','grid'].includes(S.tool)) setTool('pen');
-    S.activeMathShape = null; updateMathBtns();
-  } else { panel.classList.add('open'); btn.classList.add('active'); }
+  const panel=document.getElementById('math-panel'),btn=document.getElementById('btn-math');
+  if(panel.classList.contains('open')){
+    panel.classList.remove('open');btn.classList.remove('active');
+    if(['line','rect','triangle','rightTri','arrow','grid'].includes(S.tool))setTool('pen');
+    S.activeMathShape=null;updateMathBtns();
+  }else{panel.classList.add('open');btn.classList.add('active');}
 }
-function setShape(shape) { S.activeMathShape = shape; S.tool = shape; updateMathBtns(); document.querySelectorAll('.tb-btn[id^="btn-"]').forEach(b => b.classList.remove('active', 'pan-mode')); hitCanvas.style.cursor = 'crosshair'; }
-function updateMathBtns() {
-  ['line','rect','triangle','rightTri','arrow','grid'].forEach(s => {
-    const idMap = { line:'mp-line', rect:'mp-rect', triangle:'mp-tri', rightTri:'mp-rt', arrow:'mp-arrow', grid:'mp-grid' };
-    document.getElementById(idMap[s])?.classList.toggle('active', S.tool === s);
+function setShape(shape){S.activeMathShape=shape;S.tool=shape;updateMathBtns();document.querySelectorAll('.tb-btn[id^="btn-"]').forEach(b=>b.classList.remove('active','pan-mode'));hitCanvas.style.cursor='crosshair';}
+function updateMathBtns(){
+  ['line','rect','triangle','rightTri','arrow','grid'].forEach(s=>{
+    const idMap={line:'mp-line',rect:'mp-rect',triangle:'mp-tri',rightTri:'mp-rt',arrow:'mp-arrow',grid:'mp-grid'};
+    document.getElementById(idMap[s])?.classList.toggle('active',S.tool===s);
   });
 }
-function insertSymbol(sym) { showToast(`${sym} — Dùng bút để viết ký hiệu này`); }
-function drawAxes() {
-  const cx = S.canvasW/2, cy = S.canvasH/2, len = Math.min(S.canvasW,S.canvasH)*0.38;
-  drawCtx.save(); drawCtx.strokeStyle=S.color; drawCtx.lineWidth=S.size; drawCtx.lineCap='round'; drawCtx.lineJoin='round';
+function insertSymbol(sym){showToast(`${sym} — Dùng bút để viết ký hiệu này`);}
+function drawAxes(){
+  const cx=S.canvasW/2,cy=S.canvasH/2,len=Math.min(S.canvasW,S.canvasH)*0.38;
+  drawCtx.save();drawCtx.strokeStyle=S.color;drawCtx.lineWidth=S.size;drawCtx.lineCap='round';drawCtx.lineJoin='round';
   drawCtx.beginPath();
-  drawCtx.moveTo(cx-len,cy); drawCtx.lineTo(cx+len,cy);
-  drawCtx.moveTo(cx+len,cy); drawCtx.lineTo(cx+len-12,cy-6); drawCtx.moveTo(cx+len,cy); drawCtx.lineTo(cx+len-12,cy+6);
-  drawCtx.moveTo(cx,cy+len); drawCtx.lineTo(cx,cy-len);
-  drawCtx.moveTo(cx,cy-len); drawCtx.lineTo(cx-6,cy-len+12); drawCtx.moveTo(cx,cy-len); drawCtx.lineTo(cx+6,cy-len+12);
+  drawCtx.moveTo(cx-len,cy);drawCtx.lineTo(cx+len,cy);
+  drawCtx.moveTo(cx+len,cy);drawCtx.lineTo(cx+len-12,cy-6);drawCtx.moveTo(cx+len,cy);drawCtx.lineTo(cx+len-12,cy+6);
+  drawCtx.moveTo(cx,cy+len);drawCtx.lineTo(cx,cy-len);
+  drawCtx.moveTo(cx,cy-len);drawCtx.lineTo(cx-6,cy-len+12);drawCtx.moveTo(cx,cy-len);drawCtx.lineTo(cx+6,cy-len+12);
   drawCtx.stroke();
-  drawCtx.fillStyle=S.color; drawCtx.font=`bold ${Math.max(14,S.size*3)}px sans-serif`;
-  drawCtx.fillText('x',cx+len+8,cy+5); drawCtx.fillText('y',cx+5,cy-len-8); drawCtx.fillText('O',cx-18,cy+18);
-  drawCtx.restore(); saveHistory(); scheduleAutosave(); showToast('⊹ Đã vẽ trục tọa độ Oxy');
+  drawCtx.fillStyle=S.color;drawCtx.font=`bold ${Math.max(14,S.size*3)}px sans-serif`;
+  drawCtx.fillText('x',cx+len+8,cy+5);drawCtx.fillText('y',cx+5,cy-len-8);drawCtx.fillText('O',cx-18,cy+18);
+  drawCtx.restore();saveHistory();scheduleAutosave();showToast('⊹ Đã vẽ trục tọa độ Oxy');
 }
-function showDimInput() { document.getElementById('dim-inputs').classList.add('show'); }
-function hideDimInput() { document.getElementById('dim-inputs').classList.remove('show'); }
-function applyDimShape() {
-  const w=parseInt(document.getElementById('dim-w').value)||200, h=parseInt(document.getElementById('dim-h').value)||150;
+function showDimInput(){document.getElementById('dim-inputs').classList.add('show');}
+function hideDimInput(){document.getElementById('dim-inputs').classList.remove('show');}
+function applyDimShape(){
+  const w=parseInt(document.getElementById('dim-w').value)||200,h=parseInt(document.getElementById('dim-h').value)||150;
   drawShapeToCanvas(S.tool||'rect',S.canvasW/2-w/2,S.canvasH/2-h/2,S.canvasW/2+w/2,S.canvasH/2+h/2);
-  hideDimInput(); saveHistory(); scheduleAutosave(); showToast(`📐 ${w}×${h}`);
+  hideDimInput();saveHistory();scheduleAutosave();showToast(`📐 ${w}×${h}`);
 }
-function drawShapeToCanvas(shape,x1,y1,x2,y2) {
-  drawCtx.save(); drawCtx.strokeStyle=S.color; drawCtx.lineWidth=S.size; drawCtx.lineCap='round'; drawCtx.lineJoin='round'; drawCtx.globalCompositeOperation='source-over';
+function drawShapeToCanvas(shape,x1,y1,x2,y2){
+  drawCtx.save();drawCtx.strokeStyle=S.color;drawCtx.lineWidth=S.size;drawCtx.lineCap='round';drawCtx.lineJoin='round';drawCtx.globalCompositeOperation='source-over';
   const cx=(x1+x2)/2,cy=(y1+y2)/2;
   switch(shape){
-    case 'line': drawCtx.beginPath(); drawCtx.moveTo(x1,y1); drawCtx.lineTo(x2,y2); drawCtx.stroke(); break;
-    case 'rect': drawCtx.strokeRect(x1,y1,x2-x1,y2-y1); break;
-    case 'triangle': drawCtx.beginPath(); drawCtx.moveTo(cx,y1); drawCtx.lineTo(x2,y2); drawCtx.lineTo(x1,y2); drawCtx.closePath(); drawCtx.stroke(); break;
+    case 'line':drawCtx.beginPath();drawCtx.moveTo(x1,y1);drawCtx.lineTo(x2,y2);drawCtx.stroke();break;
+    case 'rect':drawCtx.strokeRect(x1,y1,x2-x1,y2-y1);break;
+    case 'triangle':drawCtx.beginPath();drawCtx.moveTo(cx,y1);drawCtx.lineTo(x2,y2);drawCtx.lineTo(x1,y2);drawCtx.closePath();drawCtx.stroke();break;
     case 'rightTri':
-      drawCtx.beginPath(); drawCtx.moveTo(x1,y1); drawCtx.lineTo(x1,y2); drawCtx.lineTo(x2,y2); drawCtx.closePath(); drawCtx.stroke();
+      drawCtx.beginPath();drawCtx.moveTo(x1,y1);drawCtx.lineTo(x1,y2);drawCtx.lineTo(x2,y2);drawCtx.closePath();drawCtx.stroke();
       const mark=Math.min(Math.abs(x2-x1),Math.abs(y2-y1))*0.12;
-      drawCtx.beginPath(); drawCtx.moveTo(x1,y2-mark); drawCtx.lineTo(x1+mark,y2-mark); drawCtx.lineTo(x1+mark,y2); drawCtx.stroke(); break;
+      drawCtx.beginPath();drawCtx.moveTo(x1,y2-mark);drawCtx.lineTo(x1+mark,y2-mark);drawCtx.lineTo(x1+mark,y2);drawCtx.stroke();break;
     case 'arrow':
       const dx=x2-x1,dy=y2-y1,ang=Math.atan2(dy,dx),aLen=Math.min(20,Math.sqrt(dx*dx+dy*dy)*0.25);
-      drawCtx.beginPath(); drawCtx.moveTo(x1,y1); drawCtx.lineTo(x2,y2);
+      drawCtx.beginPath();drawCtx.moveTo(x1,y1);drawCtx.lineTo(x2,y2);
       drawCtx.lineTo(x2-aLen*Math.cos(ang-0.4),y2-aLen*Math.sin(ang-0.4));
-      drawCtx.moveTo(x2,y2); drawCtx.lineTo(x2-aLen*Math.cos(ang+0.4),y2-aLen*Math.sin(ang+0.4));
-      drawCtx.stroke(); break;
+      drawCtx.moveTo(x2,y2);drawCtx.lineTo(x2-aLen*Math.cos(ang+0.4),y2-aLen*Math.sin(ang+0.4));
+      drawCtx.stroke();break;
     case 'grid':
       const gW=Math.abs(x2-x1),gH=Math.abs(y2-y1),step=Math.min(gW,gH)/5;
       drawCtx.globalAlpha=0.7;
       for(let gx=x1;gx<=x2+0.5;gx+=step){drawCtx.beginPath();drawCtx.moveTo(gx,y1);drawCtx.lineTo(gx,y2);drawCtx.stroke();}
       for(let gy=y1;gy<=y2+0.5;gy+=step){drawCtx.beginPath();drawCtx.moveTo(x1,gy);drawCtx.lineTo(x2,gy);drawCtx.stroke();}
-      drawCtx.globalAlpha=1; break;
+      drawCtx.globalAlpha=1;break;
   }
   drawCtx.restore();
 }
-function previewShape(x1,y1,x2,y2) {
+function previewShape(x1,y1,x2,y2){
   shapeCtx.clearRect(0,0,shapeCanvas.width,shapeCanvas.height);
-  shapeCtx.save(); shapeCtx.strokeStyle=S.color; shapeCtx.lineWidth=S.size; shapeCtx.lineCap='round'; shapeCtx.lineJoin='round'; shapeCtx.globalAlpha=0.85;
+  shapeCtx.save();shapeCtx.strokeStyle=S.color;shapeCtx.lineWidth=S.size;shapeCtx.lineCap='round';shapeCtx.lineJoin='round';shapeCtx.globalAlpha=0.85;
   const shape=S.tool,cx=(x1+x2)/2,cy=(y1+y2)/2;
   switch(shape){
-    case 'line': shapeCtx.beginPath();shapeCtx.moveTo(x1,y1);shapeCtx.lineTo(x2,y2);shapeCtx.stroke();break;
-    case 'rect': shapeCtx.strokeRect(x1,y1,x2-x1,y2-y1);break;
-    case 'triangle': shapeCtx.beginPath();shapeCtx.moveTo(cx,y1);shapeCtx.lineTo(x2,y2);shapeCtx.lineTo(x1,y2);shapeCtx.closePath();shapeCtx.stroke();break;
+    case 'line':shapeCtx.beginPath();shapeCtx.moveTo(x1,y1);shapeCtx.lineTo(x2,y2);shapeCtx.stroke();break;
+    case 'rect':shapeCtx.strokeRect(x1,y1,x2-x1,y2-y1);break;
+    case 'triangle':shapeCtx.beginPath();shapeCtx.moveTo(cx,y1);shapeCtx.lineTo(x2,y2);shapeCtx.lineTo(x1,y2);shapeCtx.closePath();shapeCtx.stroke();break;
     case 'rightTri':
       shapeCtx.beginPath();shapeCtx.moveTo(x1,y1);shapeCtx.lineTo(x1,y2);shapeCtx.lineTo(x2,y2);shapeCtx.closePath();shapeCtx.stroke();
       const m=Math.min(Math.abs(x2-x1),Math.abs(y2-y1))*0.12;
@@ -1340,10 +1384,10 @@ function previewShape(x1,y1,x2,y2) {
       shapeCtx.moveTo(x2,y2);shapeCtx.lineTo(x2-al*Math.cos(ang+0.4),y2-al*Math.sin(ang+0.4));
       shapeCtx.stroke();break;
     case 'grid':
-      const gW=Math.abs(x2-x1),gH=Math.abs(y2-y1),step=Math.min(gW,gH)/5;
+      const gW2=Math.abs(x2-x1),gH2=Math.abs(y2-y1),step2=Math.min(gW2,gH2)/5;
       shapeCtx.globalAlpha=0.5;
-      for(let gx=x1;gx<=x2+0.5;gx+=step){shapeCtx.beginPath();shapeCtx.moveTo(gx,y1);shapeCtx.lineTo(gx,y2);shapeCtx.stroke();}
-      for(let gy=y1;gy<=y2+0.5;gy+=step){shapeCtx.beginPath();shapeCtx.moveTo(x1,gy);shapeCtx.lineTo(x2,gy);shapeCtx.stroke();}break;
+      for(let gx=x1;gx<=x2+0.5;gx+=step2){shapeCtx.beginPath();shapeCtx.moveTo(gx,y1);shapeCtx.lineTo(gx,y2);shapeCtx.stroke();}
+      for(let gy=y1;gy<=y2+0.5;gy+=step2){shapeCtx.beginPath();shapeCtx.moveTo(x1,gy);shapeCtx.lineTo(x2,gy);shapeCtx.stroke();}break;
     case 'circle':
       const rx=Math.abs(x2-x1)/2,ry=Math.abs(y2-y1)/2;
       if(rx>1||ry>1){shapeCtx.beginPath();shapeCtx.ellipse(cx,cy,Math.max(1,rx),Math.max(1,ry),0,0,Math.PI*2);shapeCtx.stroke();}break;
@@ -1351,48 +1395,50 @@ function previewShape(x1,y1,x2,y2) {
   shapeCtx.restore();
 }
 
-// ─── Gallery ─────────────────────────────────────────
-function compositeCurrentPage() {
-  const prevSel=S.selectedId; S.selectedId=null; shapeDirty=true; _renderShapes();
-  const out=document.createElement('canvas'); out.width=S.canvasW; out.height=S.canvasH;
+/* ═══════════════════════════════════════════════════
+   GALLERY
+═══════════════════════════════════════════════════ */
+function compositeCurrentPage(){
+  const prevSel=S.selectedId;S.selectedId=null;shapeDirty=true;_renderShapes();
+  const out=document.createElement('canvas');out.width=S.canvasW;out.height=S.canvasH;
   const ctx=out.getContext('2d');
-  ctx.drawImage(bgCanvas,0,0); ctx.drawImage(drawCanvas,0,0); ctx.drawImage(shapeCanvas,0,0);
+  ctx.drawImage(bgCanvas,0,0);ctx.drawImage(drawCanvas,0,0);ctx.drawImage(shapeCanvas,0,0);
   const url=out.toDataURL('image/png');
-  S.selectedId=prevSel; shapeDirty=true; _renderShapes(); return url;
+  S.selectedId=prevSel;shapeDirty=true;_renderShapes();return url;
 }
-function captureCurrentPage() {
-  const dataURL=compositeCurrentPage(), n=S.currentPage;
+function captureCurrentPage(){
+  const dataURL=compositeCurrentPage(),n=S.currentPage;
   const lbl=S.pages.length>1?(S.mode==='pdf'?`Trang PDF ${n}`:`Ảnh ${n}`):'Bài làm';
   galleryData[n]={dataURL,pageNum:n,label:lbl,savedAt:new Date()};
-  if(window.cloudSaveGallery) window.cloudSaveGallery(n,dataURL,lbl);
+  if(window._currentSessionId) cloudSaveGallery(window._currentSessionId,n,dataURL,lbl);
   return dataURL;
 }
-function saveImage() {
+function saveImage(){
   const dataURL=captureCurrentPage();
-  const a=document.createElement('a'); a.download=`exam_p${S.currentPage}_${Date.now()}.png`; a.href=dataURL; a.click();
+  const a=document.createElement('a');a.download=`exam_p${S.currentPage}_${Date.now()}.png`;a.href=dataURL;a.click();
   showToast('💾 Đã tải trang '+S.currentPage);
-  if(document.getElementById('gallery-modal').classList.contains('open')) renderGallery();
+  if(document.getElementById('gallery-modal').classList.contains('open'))renderGallery();
   scheduleAutosave();
 }
-function openGallery() { captureCurrentPage(); renderGallery(); document.getElementById('gallery-modal').classList.add('open'); }
-function closeGallery() { document.getElementById('gallery-modal').classList.remove('open'); }
-function renderGallery() {
-  const body=document.getElementById('gallery-body'), total=S.pages.length;
+function openGallery(){captureCurrentPage();renderGallery();document.getElementById('gallery-modal').classList.add('open');}
+function closeGallery(){document.getElementById('gallery-modal').classList.remove('open');}
+function renderGallery(){
+  const body=document.getElementById('gallery-body'),total=S.pages.length;
   updateGalleryStatus();
   if(!total){body.innerHTML=`<div class="gallery-empty"><div class="ge-icon">🖼️</div><div class="ge-text">Chưa có bài làm nào.<br>Upload đề thi để bắt đầu!</div></div>`;return;}
   body.innerHTML='';
   for(let p=1;p<=total;p++){
     const saved=galleryData[p],isCur=p===S.currentPage;
     const lbl=S.mode==='pdf'?`Trang ${p}`:(total>1?`Ảnh ${p}`:'Bài làm');
-    const card=document.createElement('div'); card.className='gallery-card'+(isCur?' is-current':'');
-    const thumb=saved?`<div class="gc-thumb" onclick="openLightbox(${p})"><img src="${saved.dataURL}" alt="${lbl}"></div>`:`<div class="gc-thumb" onclick="captureSinglePage(${p})" style="background:#111;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;cursor:pointer"><span style="font-size:28px;opacity:.4">📄</span><span style="font-size:10px;color:var(--muted)">Nhấn để chụp</span></div>`;
-    const badge=isCur?`<span class="gc-badge current">Hiện tại</span>`:(saved?`<span class="gc-badge saved">✓ Đã lưu</span>`:`<span class="gc-badge unsaved">Chưa chụp</span>`);
-    const dl=saved?`<button class="gc-dl primary" onclick="downloadPage(${p})">⬇️ Tải</button>`:`<button class="gc-dl primary" onclick="captureSinglePage(${p})" style="background:linear-gradient(135deg,var(--orange),#d97706)">📸 Chụp</button>`;
+    const card=document.createElement('div');card.className='gallery-card'+(isCur?' is-current':'');
+    const thumb=saved?`<div class="gc-thumb" onclick="openLightbox(${p})"><img src="${saved.dataURL}" alt="${lbl}"></div>`:`<div class="gc-thumb" onclick="captureSinglePage(${p})" style="background:#0a0c14;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;cursor:pointer"><span style="font-size:26px;opacity:.3">📄</span><span style="font-size:10px;color:var(--muted)">Nhấn để chụp</span></div>`;
+    const badge=isCur?`<span class="gc-badge current">CURRENT</span>`:(saved?`<span class="gc-badge saved">✓ SAVED</span>`:`<span class="gc-badge unsaved">PENDING</span>`);
+    const dl=saved?`<button class="gc-dl primary" onclick="downloadPage(${p})">⬇️ Tải</button>`:`<button class="gc-dl primary" onclick="captureSinglePage(${p})" style="background:var(--orange);color:#000">📸 Chụp</button>`;
     card.innerHTML=`${thumb}<div class="gc-info"><div class="gc-label">${lbl} ${badge}</div></div><div class="gc-actions">${dl}</div>`;
     body.appendChild(card);
   }
 }
-function updateGalleryStatus() {
+function updateGalleryStatus(){
   const total=S.pages.length,saved=Object.values(galleryData).filter(Boolean).length;
   const dot=document.getElementById('status-dot'),txt=document.getElementById('status-text');
   if(!saved){dot.className='dot';txt.textContent='Chưa có trang nào được lưu';}
@@ -1400,100 +1446,103 @@ function updateGalleryStatus() {
   else{dot.className='dot saved';txt.textContent=`✓ Tất cả ${total} trang đã lưu`;}
   document.getElementById('btn-save-all').disabled=!saved;
 }
-async function captureSinglePage(n) {
+async function captureSinglePage(n){
   if(n===S.currentPage){captureCurrentPage();renderGallery();showToast(`📸 Đã lưu trang ${n}`);return;}
   showToast(`⏳ Đang chụp trang ${n}...`);
   savePageState(S.currentPage);
-  const ret=S.currentPage; S.currentPage=n; S.selectedId=null; S.shapes=[];
+  const ret=S.currentPage;S.currentPage=n;S.selectedId=null;S.shapes=[];
   const pg=S.pages[n-1];
-  if(pg.type==='pdf') await renderPDFPage(n); else await renderImagePage(n);
-  if(S.pageStates[n]) await _restoreQuick(n);
+  if(pg.type==='pdf')await renderPDFPage(n);else await renderImagePage(n);
+  if(S.pageStates[n])await _restoreQuick(n);
   captureCurrentPage();
-  S.currentPage=ret; S.selectedId=null; S.shapes=[];
+  S.currentPage=ret;S.selectedId=null;S.shapes=[];
   const rpg=S.pages[ret-1];
-  if(rpg.type==='pdf') await renderPDFPage(ret); else await renderImagePage(ret);
-  if(S.pageStates[ret]) await _restoreQuick(ret);
-  updatePageNav(); renderGallery(); showToast(`✅ Đã lưu trang ${n}`);
+  if(rpg.type==='pdf')await renderPDFPage(ret);else await renderImagePage(ret);
+  if(S.pageStates[ret])await _restoreQuick(ret);
+  updatePageNav();renderGallery();showToast(`✅ Đã lưu trang ${n}`);
 }
-async function _restoreQuick(n) {
-  const st=S.pageStates[n]; if(!st) return;
-  if(st.penDataURL) await new Promise(r=>{const i=new Image();i.onload=()=>{drawCtx.clearRect(0,0,drawCanvas.width,drawCanvas.height);drawCtx.drawImage(i,0,0);r();};i.onerror=r;i.src=st.penDataURL;});
-  else if(st.penSnap) try{drawCtx.putImageData(st.penSnap,0,0);}catch(e){}
-  S.shapes=JSON.parse(JSON.stringify(st.shapes||[])); S.nextId=st.nextId||1; shapeDirty=true; _renderShapes();
+async function _restoreQuick(n){
+  const st=S.pageStates[n];if(!st)return;
+  if(st.penDataURL)await new Promise(r=>{const i=new Image();i.onload=()=>{drawCtx.clearRect(0,0,drawCanvas.width,drawCanvas.height);drawCtx.drawImage(i,0,0);r();};i.onerror=r;i.src=st.penDataURL;});
+  else if(st.penSnap)try{drawCtx.putImageData(st.penSnap,0,0);}catch(e){}
+  S.shapes=JSON.parse(JSON.stringify(st.shapes||[]));S.nextId=st.nextId||1;shapeDirty=true;_renderShapes();
 }
-async function captureAllPages() {
+async function captureAllPages(){
   const total=S.pages.length,btn=document.getElementById('btn-capture-all');
-  btn.disabled=true; btn.textContent='⏳ Đang chụp...';
+  btn.disabled=true;btn.textContent='⏳ Đang chụp...';
   const prog=document.getElementById('gallery-progress'),bar=document.getElementById('gallery-progress-bar');
-  prog.classList.add('show'); bar.style.width='0%';
-  savePageState(S.currentPage);
-  const ret=S.currentPage;
+  prog.classList.add('show');bar.style.width='0%';
+  savePageState(S.currentPage);const ret=S.currentPage;
   for(let p=1;p<=total;p++){
     bar.style.width=((p-1)/total*100)+'%';
     if(p!==ret){
-      S.currentPage=p; S.selectedId=null; S.shapes=[];
+      S.currentPage=p;S.selectedId=null;S.shapes=[];
       const pg=S.pages[p-1];
-      if(pg.type==='pdf') await renderPDFPage(p); else await renderImagePage(p);
-      if(S.pageStates[p]) await _restoreQuick(p);
+      if(pg.type==='pdf')await renderPDFPage(p);else await renderImagePage(p);
+      if(S.pageStates[p])await _restoreQuick(p);
     }
-    captureCurrentPage(); bar.style.width=(p/total*100)+'%';
+    captureCurrentPage();bar.style.width=(p/total*100)+'%';
     await new Promise(r=>setTimeout(r,30));
   }
   if(S.currentPage!==ret){
-    S.currentPage=ret; S.selectedId=null; S.shapes=[];
+    S.currentPage=ret;S.selectedId=null;S.shapes=[];
     const rpg=S.pages[ret-1];
-    if(rpg.type==='pdf') await renderPDFPage(ret); else await renderImagePage(ret);
-    if(S.pageStates[ret]) await _restoreQuick(ret);
+    if(rpg.type==='pdf')await renderPDFPage(ret);else await renderImagePage(ret);
+    if(S.pageStates[ret])await _restoreQuick(ret);
     updatePageNav();
   }
   setTimeout(()=>{prog.classList.remove('show');bar.style.width='0%';},600);
-  btn.disabled=false; btn.textContent='📸 Lưu tất cả';
-  renderGallery(); showToast(`✅ Đã lưu ${total} trang!`);
+  btn.disabled=false;btn.textContent='📸 Lưu tất cả';
+  renderGallery();showToast(`✅ Đã lưu ${total} trang!`);
 }
-function downloadPage(n) {
-  const e=galleryData[n]; if(!e) return showToast('⚠️ Chưa có ảnh');
-  const a=document.createElement('a'); a.download=`exam_p${n}_${Date.now()}.png`; a.href=e.dataURL; a.click();
+function downloadPage(n){
+  const e=galleryData[n];if(!e)return showToast('⚠️ Chưa có ảnh');
+  const a=document.createElement('a');a.download=`exam_p${n}_${Date.now()}.png`;a.href=e.dataURL;a.click();
   showToast(`⬇️ Đã tải trang ${n}`);
 }
-async function downloadAllSaved() {
-  const arr=Object.values(galleryData).filter(Boolean); if(!arr.length) return showToast('⚠️ Chưa có trang nào');
+async function downloadAllSaved(){
+  const arr=Object.values(galleryData).filter(Boolean);if(!arr.length)return showToast('⚠️ Chưa có trang nào');
   document.getElementById('btn-save-all').disabled=true;
   showToast(`⬇️ Đang tải ${arr.length} ảnh...`);
   for(let i=0;i<arr.length;i++){
     await new Promise(r=>setTimeout(r,100*i));
-    const a=document.createElement('a'); a.download=`exam_p${arr[i].pageNum}_${Date.now()}.png`; a.href=arr[i].dataURL; a.click();
+    const a=document.createElement('a');a.download=`exam_p${arr[i].pageNum}_${Date.now()}.png`;a.href=arr[i].dataURL;a.click();
   }
-  document.getElementById('btn-save-all').disabled=false; showToast(`✅ Đã tải ${arr.length} ảnh!`);
+  document.getElementById('btn-save-all').disabled=false;showToast(`✅ Đã tải ${arr.length} ảnh!`);
 }
 let lightboxPage=null;
 function openLightbox(n){const e=galleryData[n];if(!e)return;lightboxPage=n;document.getElementById('lb-img').src=e.dataURL;document.getElementById('lb-label').textContent=e.label;document.getElementById('lightbox').classList.add('open');}
 function closeLightbox(){document.getElementById('lightbox').classList.remove('open');lightboxPage=null;}
 function lightboxDownload(){if(lightboxPage)downloadPage(lightboxPage);}
 
-// ─── Selection ────────────────────────────────────────
-function updateSelectionUI() {
+/* ═══════════════════════════════════════════════════
+   SELECTION
+═══════════════════════════════════════════════════ */
+function updateSelectionUI(){
   const hasSel=S.tool==='move'&&S.selectedId!==null;
   document.getElementById('btn-duplicate').classList.toggle('hidden',!hasSel);
   document.getElementById('btn-del').classList.toggle('hidden',!hasSel);
   document.getElementById('sel-sep').style.display=hasSel?'':'none';
 }
-function duplicateSelected() {
+function duplicateSelected(){
   if(S.selectedId===null)return;
   const src=S.shapes.find(c=>c.id===S.selectedId);if(!src)return;
   const off=Math.max(src.rx,src.ry)*0.4+20;
   const n={...src,id:S.nextId++,cx:src.cx+off,cy:src.cy+off};
-  S.shapes.push(n); S.selectedId=n.id; shapeDirty=true; requestRender(); saveHistory(); updateSelectionUI(); scheduleAutosave();
+  S.shapes.push(n);S.selectedId=n.id;shapeDirty=true;requestRender();saveHistory();updateSelectionUI();scheduleAutosave();
   showToast('📋 Đã copy!');
 }
-function deleteSelected() {
+function deleteSelected(){
   if(S.selectedId===null)return;
-  S.shapes=S.shapes.filter(c=>c.id!==S.selectedId); S.selectedId=null;
-  shapeDirty=true; requestRender(); saveHistory(); updateSelectionUI(); scheduleAutosave();
+  S.shapes=S.shapes.filter(c=>c.id!==S.selectedId);S.selectedId=null;
+  shapeDirty=true;requestRender();saveHistory();updateSelectionUI();scheduleAutosave();
   showToast('✂️ Đã xóa');
 }
 
-// ─── Orientation / Fullscreen ─────────────────────────
-function checkOrientation() {
+/* ═══════════════════════════════════════════════════
+   ORIENTATION / FULLSCREEN
+═══════════════════════════════════════════════════ */
+function checkOrientation(){
   const o=document.getElementById('rotate-overlay'),m=/Android|iPhone|iPad/i.test(navigator.userAgent);
   if(!m){o.style.display='none';return;}
   o.style.display=window.innerWidth>window.innerHeight?'none':'flex';
@@ -1505,145 +1554,125 @@ window.addEventListener('resize',()=>setTimeout(()=>{checkOrientation();fitToAre
 window.addEventListener('beforeunload',()=>{if(S.pages.length>0)saveToCloud();});
 window.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&S.pages.length>0)saveToCloud();});
 
-// ─── File Upload ──────────────────────────────────────
-const fileInput=document.getElementById('file-input'),uploadZone=document.getElementById('upload-zone');
+/* ═══════════════════════════════════════════════════
+   FILE UPLOAD
+═══════════════════════════════════════════════════ */
+const fileInput=document.getElementById('file-input');
+const uploadZone=document.getElementById('upload-zone');
 let stagedFiles=[];
 uploadZone.addEventListener('dragover',e=>{e.preventDefault();uploadZone.classList.add('drag-over');});
 uploadZone.addEventListener('dragleave',()=>uploadZone.classList.remove('drag-over'));
 uploadZone.addEventListener('drop',e=>{e.preventDefault();uploadZone.classList.remove('drag-over');if(e.dataTransfer.files.length)handleFileSelect(Array.from(e.dataTransfer.files));});
 fileInput.addEventListener('change',e=>{if(e.target.files.length)handleFileSelect(Array.from(e.target.files));});
 
-function handleFileSelect(files) {
+function handleFileSelect(files){
   const pdfs=files.filter(f=>f.type==='application/pdf'||f.name.toLowerCase().endsWith('.pdf'));
   const imgs=files.filter(f=>f.type.startsWith('image/'));
   if(pdfs.length>0){stagedFiles=[];loadAndStartPDF(pdfs[0]);return;}
   if(imgs.length>0){stagedFiles=[...stagedFiles,...imgs].slice(0,20);renderPreviewStrip();}
 }
-function renderPreviewStrip() {
+function renderPreviewStrip(){
   const strip=document.getElementById('preview-strip'),list=document.getElementById('preview-list'),
     count=document.getElementById('preview-count'),startB=document.getElementById('start-btn');
   if(!stagedFiles.length){strip.classList.remove('has-files');startB.style.display='none';return;}
-  strip.classList.add('has-files'); count.textContent=`${stagedFiles.length} ảnh`; startB.style.display='';
+  strip.classList.add('has-files');count.textContent=`${stagedFiles.length} ảnh`;startB.style.display='';
   list.innerHTML='';
   stagedFiles.forEach((f,i)=>{
-    const url=URL.createObjectURL(f),div=document.createElement('div'); div.className='preview-thumb';
+    const url=URL.createObjectURL(f),div=document.createElement('div');div.className='preview-thumb';
     div.innerHTML=`<img src="${url}"><span class="pn">${i+1}</span><button class="px-btn" onclick="removeStagedFile(${i})">×</button>`;
     list.appendChild(div);
   });
 }
 function removeStagedFile(i){stagedFiles.splice(i,1);renderPreviewStrip();}
 
-// FIX LUỒNG CHÍNH: startExam đảm bảo thứ tự đúng
-// 1. Load ảnh → 2. Hiện app → 3. Lưu ảnh nền lên Firebase → 4. Lưu session metadata
-async function startExam() {
-  if(!stagedFiles.length) return;
-  if(!window._currentSessionId) window.newSession();
-  if(window.getLocalHistory){
-    const hist=window.getLocalHistory();
-    const isExisting = hist.find(h=>h.id===window._currentSessionId);
-    if(hist.length>=10 && !isExisting){
-      showToast('⚠️ Đã đủ 10 bài! Xóa bài cũ trong Lịch sử trước khi tạo mới.');
-      return;
-    }
-  }
-
-  // Bước 1: Load ảnh vào bộ nhớ
+async function startExam(){
+  if(!stagedFiles.length)return;
+  if(!window._currentSessionId)newSession();
+  const hist=getLocalHistory();
+  const isExisting=hist.find(h=>h.id===window._currentSessionId);
+  if(hist.length>=10&&!isExisting){showToast('⚠️ Đã đủ 10 bài! Xóa bài cũ trước.');return;}
   showLoading('Đang đọc ảnh...');
-  try {
-    await loadMultiImages(stagedFiles);
-  } catch(e) {
-    hideLoading();
-    showToast('❌ Lỗi đọc ảnh: ' + e.message);
-    return;
-  }
-
-  // Bước 2: Hiện app
+  try{await loadMultiImages(stagedFiles);}
+  catch(e){hideLoading();showToast('❌ Lỗi đọc ảnh: '+e.message);return;}
   showApp();
-
-  // Bước 3: Đảm bảo Firebase sẵn sàng rồi lưu ảnh nền
-  showLoading('Đang kết nối Firebase...');
-  try {
-    await (window.FB_READY || Promise.resolve());
-    if (!window.cloudSaveBgImage) throw new Error('Firebase chưa sẵn sàng');
-
-    const total = S.pages.length;
-    for (let i = 0; i < total; i++) {
-      const pg = S.pages[i];
-      if (pg.type === 'image' && pg.imgUrl) {
-        showLoading(`☁️ Đang lưu ảnh ${i+1}/${total} lên cloud...`);
-        const ok = await window.cloudSaveBgImage(window._currentSessionId, i + 1, pg.imgUrl);
-        if (ok) {
-          showToast(`☁️ Đã lưu ảnh ${i+1}/${total}`);
-        } else {
-          showToast(`⚠️ Không lưu được ảnh ${i+1}`);
-        }
+  showLoading('☁️ Đang lưu lên Supabase...');
+  try{
+    const total=S.pages.length;
+    for(let i=0;i<total;i++){
+      const pg=S.pages[i];
+      if(pg.type==='image'&&pg.imgUrl){
+        showLoading(`☁️ Lưu ảnh ${i+1}/${total}...`);
+        const ok=await cloudSaveBgImage(window._currentSessionId,i+1,pg.imgUrl);
+        if(ok)showToast(`☁️ Ảnh ${i+1}/${total} ✓`);
       }
     }
-
-    // Bước 4: Lưu metadata session
-    showLoading('☁️ Đang lưu session...');
+    showLoading('☁️ Lưu session...');
     await saveToCloud();
-    showToast('✅ Đã lưu lên cloud!');
+    showToast('✅ Đã lưu lên Supabase!');
     setCloudIndicator('saved');
-
-  } catch(e) {
-    console.error('[startExam] lỗi cloud:', e);
-    showToast('⚠️ Lỗi lưu cloud: ' + e.message + '\nBài làm vẫn hoạt động offline.');
+  }catch(e){
+    console.error('[startExam]',e);
+    showToast('⚠️ Lỗi cloud: '+e.message);
     setCloudIndicator('error');
   }
-
   hideLoading();
 }
 
-async function loadAndStartPDF(file) {
-  if(!window._currentSessionId) window.newSession();
+async function loadAndStartPDF(file){
+  if(!window._currentSessionId)newSession();
   showLoading('Đang tải PDF...');
   try{await loadPDF(file);showApp();}catch(e){showToast('❌ '+e.message);}
   hideLoading();
 }
 function showApp(){
-  uploadScreen.style.display='none'; app.classList.add('active');
-  tryLockLandscape(); requestFullscreen(); checkOrientation();
+  uploadScreen.style.display='none';app.classList.add('active');
+  tryLockLandscape();requestFullscreen();checkOrientation();
   updateSessionBadge(window._currentSessionId);
 }
 
-// ─── Multi-Image ──────────────────────────────────────
-async function loadMultiImages(files) {
-  S.mode='images'; S.pages=[]; S.pageStates={}; S.pdfDoc=null;
+/* ═══════════════════════════════════════════════════
+   MULTI-IMAGE
+═══════════════════════════════════════════════════ */
+async function loadMultiImages(files){
+  S.mode='images';S.pages=[];S.pageStates={};S.pdfDoc=null;
   for(const f of files){
     const url=await fileToDataURL(f);
     const dim=await getImageDimensions(url);
     S.pages.push({type:'image',imgUrl:url,imgW:dim.w,imgH:dim.h});
   }
-  S.currentPage=1; updatePageNav(); await renderImagePage(1); initPageState(1);
+  S.currentPage=1;updatePageNav();await renderImagePage(1);initPageState(1);
 }
 function fileToDataURL(f){return new Promise((r,j)=>{const rd=new FileReader();rd.onload=()=>r(rd.result);rd.onerror=j;rd.readAsDataURL(f);});}
-function getImageDimensions(url){return new Promise((r,j)=>{const i=new Image();i.onload=()=>r({w:i.width,h:i.height});i.onerror=()=>r({w:800,h:600});i.src=url;});}
-async function renderImagePage(n) {
+function getImageDimensions(url){return new Promise((r)=>{const i=new Image();i.onload=()=>r({w:i.width,h:i.height});i.onerror=()=>r({w:800,h:600});i.src=url;});}
+async function renderImagePage(n){
   const pg=S.pages[n-1];
   return new Promise((r,j)=>{
     const img=new Image();
     img.onload=()=>{setupCanvases(img.width,img.height);bgCtx.drawImage(img,0,0);clearPenCanvas();clearShapeCanvas();fitToArea();r();};
-    img.onerror=j; img.src=pg.imgUrl;
+    img.onerror=j;img.src=pg.imgUrl;
   });
 }
 
-// ─── PDF ──────────────────────────────────────────────
-async function loadPDF(file) {
+/* ═══════════════════════════════════════════════════
+   PDF
+═══════════════════════════════════════════════════ */
+async function loadPDF(file){
   pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-  const ab=await file.arrayBuffer(); S.pdfDoc=await pdfjsLib.getDocument({data:ab}).promise;
-  S.mode='pdf'; S.pages=[]; S.pageStates={};
-  for(let i=1;i<=S.pdfDoc.numPages;i++) S.pages.push({type:'pdf',pdfPage:i});
-  S.currentPage=1; updatePageNav(); await renderPDFPage(1); initPageState(1);
+  const ab=await file.arrayBuffer();S.pdfDoc=await pdfjsLib.getDocument({data:ab}).promise;
+  S.mode='pdf';S.pages=[];S.pageStates={};
+  for(let i=1;i<=S.pdfDoc.numPages;i++)S.pages.push({type:'pdf',pdfPage:i});
+  S.currentPage=1;updatePageNav();await renderPDFPage(1);initPageState(1);
 }
-async function renderPDFPage(n) {
+async function renderPDFPage(n){
   const pg=S.pages[n-1],page=await S.pdfDoc.getPage(pg.pdfPage),vp=page.getViewport({scale:2.0});
-  setupCanvases(vp.width,vp.height); clearPenCanvas(); clearShapeCanvas();
-  await page.render({canvasContext:bgCtx,viewport:vp}).promise; fitToArea();
+  setupCanvases(vp.width,vp.height);clearPenCanvas();clearShapeCanvas();
+  await page.render({canvasContext:bgCtx,viewport:vp}).promise;fitToArea();
 }
 
-// ─── Page Nav ─────────────────────────────────────────
-function updatePageNav() {
+/* ═══════════════════════════════════════════════════
+   PAGE NAV
+═══════════════════════════════════════════════════ */
+function updatePageNav(){
   const total=S.pages.length;
   if(total<=1){pageNav.classList.remove('visible');return;}
   pageNav.classList.add('visible');
@@ -1651,73 +1680,77 @@ function updatePageNav() {
   document.getElementById('page-prev').disabled=S.currentPage<=1;
   document.getElementById('page-next').disabled=S.currentPage>=total;
 }
-function savePageState(n) {
+function savePageState(n){
   const penSnap=drawCtx.getImageData(0,0,drawCanvas.width,drawCanvas.height);
   const tc=document.createElement('canvas');tc.width=drawCanvas.width;tc.height=drawCanvas.height;
   tc.getContext('2d').putImageData(penSnap,0,0);
   S.pageStates[n]={penSnap,penDataURL:tc.toDataURL('image/jpeg',0.65),shapes:JSON.parse(JSON.stringify(S.shapes)),nextId:S.nextId};
 }
-function initPageState(n) {
-  if(!S.pageStates[n]) S.pageStates[n]={penSnap:drawCtx.getImageData(0,0,drawCanvas.width,drawCanvas.height),penDataURL:null,shapes:[],nextId:1};
-  S.shapes=JSON.parse(JSON.stringify(S.pageStates[n].shapes)); S.nextId=S.pageStates[n].nextId;
-  S.history=[]; S.histIdx=-1; saveHistory();
+function initPageState(n){
+  if(!S.pageStates[n])S.pageStates[n]={penSnap:drawCtx.getImageData(0,0,drawCanvas.width,drawCanvas.height),penDataURL:null,shapes:[],nextId:1};
+  S.shapes=JSON.parse(JSON.stringify(S.pageStates[n].shapes));S.nextId=S.pageStates[n].nextId;
+  S.history=[];S.histIdx=-1;saveHistory();
 }
-async function changePage(delta) {
+async function changePage(delta){
   const np=S.currentPage+delta;
-  if(np<1||np>S.pages.length) return;
-  savePageState(S.currentPage); scheduleAutosave();
+  if(np<1||np>S.pages.length)return;
+  savePageState(S.currentPage);scheduleAutosave();
   showLoading('Đang chuyển trang...');
-  S.currentPage=np; S.selectedId=null; S.shapes=[];
+  S.currentPage=np;S.selectedId=null;S.shapes=[];
   const pg=S.pages[np-1];
-  if(pg.type==='pdf') await renderPDFPage(np); else await renderImagePage(np);
-  if(S.pageStates[np]) await _restoreQuick(np); else initPageState(np);
-  updatePageNav(); updateSelectionUI(); updateHistoryBtns(); hideLoading();
+  if(pg.type==='pdf')await renderPDFPage(np);else await renderImagePage(np);
+  if(S.pageStates[np])await _restoreQuick(np);else initPageState(np);
+  updatePageNav();updateSelectionUI();updateHistoryBtns();hideLoading();
 }
 
-// ─── Canvas Setup ─────────────────────────────────────
-function setupCanvases(w,h) {
-  S.canvasW=w; S.canvasH=h;
+/* ═══════════════════════════════════════════════════
+   CANVAS SETUP
+═══════════════════════════════════════════════════ */
+function setupCanvases(w,h){
+  S.canvasW=w;S.canvasH=h;
   [bgCanvas,drawCanvas,shapeCanvas,hitCanvas].forEach(c=>{c.width=w;c.height=h;});
-  wrapper.style.width=w+'px'; wrapper.style.height=h+'px';
+  wrapper.style.width=w+'px';wrapper.style.height=h+'px';
 }
-function fitToArea() {
-  if(!S.canvasW||!S.canvasH) return;
+function fitToArea(){
+  if(!S.canvasW||!S.canvasH)return;
   const aw=canvasArea.clientWidth,ah=canvasArea.clientHeight;
   S.scale=Math.min(aw/S.canvasW,ah/S.canvasH);
-  S.panX=(aw-S.canvasW*S.scale)/2; S.panY=(ah-S.canvasH*S.scale)/2;
+  S.panX=(aw-S.canvasW*S.scale)/2;S.panY=(ah-S.canvasH*S.scale)/2;
   applyTransform();
 }
-function applyTransform() {
+function applyTransform(){
   wrapper.style.transform=`translate(${S.panX}px,${S.panY}px) scale(${S.scale})`;
   document.getElementById('zoom-label').textContent=Math.round(S.scale*100)+'%';
 }
-function zoomStep(dir) {
+function zoomStep(dir){
   const aw=canvasArea.clientWidth,ah=canvasArea.clientHeight;
   const cx=aw/2,cy=ah/2,ns=Math.max(0.1,Math.min(8,S.scale+dir*0.2));
-  S.panX=cx-(cx-S.panX)*(ns/S.scale); S.panY=cy-(cy-S.panY)*(ns/S.scale); S.scale=ns; applyTransform();
+  S.panX=cx-(cx-S.panX)*(ns/S.scale);S.panY=cy-(cy-S.panY)*(ns/S.scale);S.scale=ns;applyTransform();
 }
 
-// ─── Tools ───────────────────────────────────────────
-function setTool(tool) {
-  S.tool=tool; S.selectedId=null; S.resizingId=null;
+/* ═══════════════════════════════════════════════════
+   TOOLS
+═══════════════════════════════════════════════════ */
+function setTool(tool){
+  S.tool=tool;S.selectedId=null;S.resizingId=null;
   document.querySelectorAll('.tb-btn[id^="btn-"]').forEach(b=>b.classList.remove('active','pan-mode'));
-  const btn=document.getElementById('btn-'+tool); if(btn) btn.classList.add('active');
-  shapeDirty=true; requestRender(); updateSelectionUI();
-  if(tool==='move'){hitCanvas.style.cursor='pointer';showHint('move','👆 Nhấn vòng để chọn → kéo/resize/copy');setTimeout(hideHint,3000);}
-  else if(['line','rect','triangle','rightTri','arrow','grid','circle'].includes(tool)) hitCanvas.style.cursor='crosshair';
+  const btn=document.getElementById('btn-'+tool);if(btn)btn.classList.add('active');
+  shapeDirty=true;requestRender();updateSelectionUI();
+  if(tool==='move'){hitCanvas.style.cursor='pointer';showHint('move','👆 Nhấn vòng để chọn → kéo/resize');setTimeout(hideHint,3000);}
+  else if(['line','rect','triangle','rightTri','arrow','grid','circle'].includes(tool))hitCanvas.style.cursor='crosshair';
   else if(tool==='eraser'){hitCanvas.style.cursor='cell';hideHint();}
   else{hitCanvas.style.cursor='crosshair';hideHint();}
   updateMathBtns();
 }
-function togglePan() {
+function togglePan(){
   const btn=document.getElementById('btn-pan');
   if(S.tool==='pan'){setTool('pen');btn.classList.remove('pan-mode');}
   else{
-    S.tool='pan'; S.selectedId=null;
+    S.tool='pan';S.selectedId=null;
     document.querySelectorAll('.tb-btn[id^="btn-"]').forEach(b=>b.classList.remove('active','pan-mode'));
-    btn.classList.add('pan-mode'); hitCanvas.style.cursor='grab';
-    shapeDirty=true; requestRender(); updateSelectionUI();
-    showHint('pan','🖐 Kéo để di chuyển • Pinch để zoom'); setTimeout(hideHint,2500);
+    btn.classList.add('pan-mode');hitCanvas.style.cursor='grab';
+    shapeDirty=true;requestRender();updateSelectionUI();
+    showHint('pan','🖐 Kéo để di chuyển • Pinch zoom');setTimeout(hideHint,2500);
   }
 }
 function showHint(type,msg){modeHint.textContent=msg;modeHint.className='';modeHint.classList.add('show',type);}
@@ -1725,30 +1758,34 @@ function hideHint(){modeHint.classList.remove('show');}
 function setColor(hex,el){S.color=hex;document.querySelectorAll('.color-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');}
 function setSize(v){S.size=parseInt(v);}
 
-// ─── Coordinates / Hit Tests ─────────────────────────
+/* ═══════════════════════════════════════════════════
+   COORDINATES / HIT TESTS
+═══════════════════════════════════════════════════ */
 function toCanvas(sx,sy){const r=canvasArea.getBoundingClientRect();return{x:(sx-r.left-S.panX)/S.scale,y:(sy-r.top-S.panY)/S.scale};}
-function hitShape(x,y) {
+function hitShape(x,y){
   const hp=Math.max(14/S.scale,8);
   for(let i=S.shapes.length-1;i>=0;i--){
-    const c=S.shapes[i]; if(c.rx<1||c.ry<1) continue;
+    const c=S.shapes[i];if(c.rx<1||c.ry<1)continue;
     const nx=(x-c.cx)/c.rx,ny=(y-c.cy)/c.ry,d=Math.sqrt(nx*nx+ny*ny);
     const tol=hp/Math.min(c.rx,c.ry);
-    if(Math.abs(d-1)<tol) return c;
-    if(c.rx<40&&c.ry<40&&d<1.1+tol) return c;
+    if(Math.abs(d-1)<tol)return c;
+    if(c.rx<40&&c.ry<40&&d<1.1+tol)return c;
   }
   return null;
 }
 function hitResizeHandle(x,y,c){if(!c)return null;const hr=Math.max(12/S.scale,6);for(const[n,hx,hy]of getHandles(c)){const dx=x-hx,dy=y-hy;if(Math.sqrt(dx*dx+dy*dy)<hr)return n;}return null;}
 function getHandles(c){return[['tl',c.cx-c.rx,c.cy-c.ry],['t',c.cx,c.cy-c.ry],['tr',c.cx+c.rx,c.cy-c.ry],['r',c.cx+c.rx,c.cy],['br',c.cx+c.rx,c.cy+c.ry],['b',c.cx,c.cy+c.ry],['bl',c.cx-c.rx,c.cy+c.ry],['l',c.cx-c.rx,c.cy]];}
 
-// ─── Render Shapes ───────────────────────────────────
-function _renderShapes() {
+/* ═══════════════════════════════════════════════════
+   RENDER SHAPES
+═══════════════════════════════════════════════════ */
+function _renderShapes(){
   shapeCtx.clearRect(0,0,shapeCanvas.width,shapeCanvas.height);
   for(const c of S.shapes){
     const sel=c.id===S.selectedId,rx=Math.max(1,c.rx),ry=Math.max(1,c.ry);
     if(sel){
       shapeCtx.beginPath();shapeCtx.ellipse(c.cx,c.cy,rx+6/S.scale,ry+6/S.scale,0,0,Math.PI*2);
-      shapeCtx.strokeStyle='rgba(255,255,255,0.35)';shapeCtx.lineWidth=1.5/S.scale;
+      shapeCtx.strokeStyle='rgba(255,255,255,0.3)';shapeCtx.lineWidth=1.5/S.scale;
       shapeCtx.setLineDash([6/S.scale,3/S.scale]);shapeCtx.stroke();shapeCtx.setLineDash([]);
     }
     shapeCtx.beginPath();shapeCtx.ellipse(c.cx,c.cy,rx,ry,0,0,Math.PI*2);
@@ -1757,23 +1794,25 @@ function _renderShapes() {
       const handles=getHandles(c),hr=Math.max(7/S.scale,4);
       for(const[n,hx,hy]of handles){
         shapeCtx.beginPath();shapeCtx.arc(hx,hy,hr,0,Math.PI*2);
-        shapeCtx.fillStyle='#4f8ef7';shapeCtx.fill();
+        shapeCtx.fillStyle='#00e5ff';shapeCtx.fill();
         shapeCtx.strokeStyle='#fff';shapeCtx.lineWidth=1.5/S.scale;shapeCtx.stroke();
         const icons={tl:'↖',tr:'↗',bl:'↙',br:'↘',t:'↕',b:'↕',l:'↔',r:'↔'};
-        shapeCtx.fillStyle='#fff';shapeCtx.font=`bold ${Math.max(6/S.scale,5)}px sans-serif`;
+        shapeCtx.fillStyle='#000';shapeCtx.font=`bold ${Math.max(6/S.scale,5)}px sans-serif`;
         shapeCtx.textAlign='center';shapeCtx.textBaseline='middle';shapeCtx.fillText(icons[n]||'·',hx,hy);
       }
       const mr=Math.max(9/S.scale,5);
       shapeCtx.beginPath();shapeCtx.arc(c.cx,c.cy,mr,0,Math.PI*2);
-      shapeCtx.fillStyle='rgba(79,142,247,0.85)';shapeCtx.fill();
+      shapeCtx.fillStyle='rgba(0,229,255,0.85)';shapeCtx.fill();
       shapeCtx.strokeStyle='#fff';shapeCtx.lineWidth=1.5/S.scale;shapeCtx.stroke();
-      shapeCtx.fillStyle='#fff';shapeCtx.font=`bold ${Math.max(8/S.scale,6)}px sans-serif`;
+      shapeCtx.fillStyle='#000';shapeCtx.font=`bold ${Math.max(8/S.scale,6)}px sans-serif`;
       shapeCtx.textAlign='center';shapeCtx.textBaseline='middle';shapeCtx.fillText('✥',c.cx,c.cy);
     }
   }
 }
 
-// ─── Pointer Events ───────────────────────────────────
+/* ═══════════════════════════════════════════════════
+   POINTER EVENTS
+═══════════════════════════════════════════════════ */
 hitCanvas.addEventListener('mousedown',e=>{if(e.button!==0)return;e.preventDefault();const p=toCanvas(e.clientX,e.clientY);onDown(p.x,p.y,e.clientX,e.clientY);});
 hitCanvas.addEventListener('mousemove',e=>{e.preventDefault();const p=toCanvas(e.clientX,e.clientY);onMove(p.x,p.y,e.clientX,e.clientY);});
 hitCanvas.addEventListener('mouseup',()=>onUp());
@@ -1813,7 +1852,7 @@ function getTouchMid(ts){return{x:(ts[0].clientX+ts[1].clientX)/2,y:(ts[0].clien
 let _penBuf=[];
 const PEN_BUF_SIZE=3;
 
-function onDown(x,y,sx,sy) {
+function onDown(x,y,sx,sy){
   S.lastX=x;S.lastY=y;_penBuf=[];
   if(S.tool==='pan'){S.isPanning=true;S.panStartX=sx;S.panStartY=sy;S.panStartPX=S.panX;S.panStartPY=S.panY;hitCanvas.style.cursor='grabbing';return;}
   if(S.tool==='move'){
@@ -1835,17 +1874,15 @@ function onDown(x,y,sx,sy) {
   applyPenStyle();
   drawCtx.beginPath();drawCtx.arc(x,y,S.size/2,0,Math.PI*2);drawCtx.fill();
 }
-function onMove(x,y,sx,sy) {
+function onMove(x,y,sx,sy){
   if(S.tool==='pan'){if(!S.isPanning)return;S.panX=S.panStartPX+(sx-S.panStartX);S.panY=S.panStartPY+(sy-S.panStartY);applyTransform();return;}
   if(S.tool==='move'){
     if(S.resizingId!==null){
       const c=S.shapes.find(c=>c.id===S.resizingId),orig=S.resizeOrig;if(!c||!orig)return;
       const dx=x-S.resizeStartX,dy=y-S.resizeStartY,h=S.resizeHandle;
       let l=orig.cx-orig.rx,r=orig.cx+orig.rx,t=orig.cy-orig.ry,b=orig.cy+orig.ry;
-      if(h.includes('l'))l=Math.min(l+dx,r-4);
-      if(h.includes('r'))r=Math.max(r+dx,l+4);
-      if(h.includes('t'))t=Math.min(t+dy,b-4);
-      if(h.includes('b'))b=Math.max(b+dy,t+4);
+      if(h.includes('l'))l=Math.min(l+dx,r-4);if(h.includes('r'))r=Math.max(r+dx,l+4);
+      if(h.includes('t'))t=Math.min(t+dy,b-4);if(h.includes('b'))b=Math.max(b+dy,t+4);
       c.cx=(l+r)/2;c.cy=(t+b)/2;c.rx=(r-l)/2;c.ry=(b-t)/2;
       shapeDirty=true;requestRender();return;
     }
@@ -1864,7 +1901,7 @@ function onMove(x,y,sx,sy) {
   drawCtx.beginPath();drawCtx.moveTo(S.lastX,S.lastY);drawCtx.lineTo(avgX,avgY);drawCtx.stroke();
   S.lastX=avgX;S.lastY=avgY;
 }
-function onUp() {
+function onUp(){
   if(S.tool==='pan'){S.isPanning=false;hitCanvas.style.cursor='grab';return;}
   if(S.tool==='move'){
     if(S.resizingId!==null){S.resizingId=null;S.resizeHandle=null;S.resizeOrig=null;hitCanvas.style.cursor='pointer';saveHistory();scheduleAutosave();return;}
@@ -1880,20 +1917,22 @@ function onUp() {
     shapeCtx.clearRect(0,0,shapeCanvas.width,shapeCanvas.height);
     if(S.tool==='circle'){
       const rx=Math.abs(x2-x1)/2,ry=Math.abs(y2-y1)/2;
-      if(rx>3||ry>3) S.shapes.push({id:S.nextId++,cx:(x1+x2)/2,cy:(y1+y2)/2,rx,ry,color:S.color,size:S.size});
+      if(rx>3||ry>3)S.shapes.push({id:S.nextId++,cx:(x1+x2)/2,cy:(y1+y2)/2,rx,ry,color:S.color,size:S.size});
       shapeDirty=true;requestRender();
     }else{drawShapeToCanvas(S.tool,x1,y1,x2,y2);}
     S.shapeStart=null;saveHistory();scheduleAutosave();
   }else if(!isMathShape&&S.tool!=='circle'){saveHistory();scheduleAutosave();}
 }
-function applyPenStyle() {
+function applyPenStyle(){
   drawCtx.lineWidth=S.size;drawCtx.lineCap='round';drawCtx.lineJoin='round';
   if(S.tool==='eraser'){drawCtx.globalCompositeOperation='destination-out';drawCtx.strokeStyle='rgba(0,0,0,1)';drawCtx.fillStyle='rgba(0,0,0,1)';}
   else{drawCtx.globalCompositeOperation='source-over';drawCtx.strokeStyle=S.color;drawCtx.fillStyle=S.color;}
 }
 
-// ─── History ─────────────────────────────────────────
-function saveHistory() {
+/* ═══════════════════════════════════════════════════
+   HISTORY
+═══════════════════════════════════════════════════ */
+function saveHistory(){
   S.history=S.history.slice(0,S.histIdx+1);
   S.history.push({penSnap:drawCtx.getImageData(0,0,drawCanvas.width,drawCanvas.height),shapes:JSON.parse(JSON.stringify(S.shapes))});
   if(S.history.length>30)S.history.shift();else S.histIdx=S.history.length-1;
@@ -1904,15 +1943,17 @@ function redo(){if(S.histIdx>=S.history.length-1){showToast('⚠️ Không còn 
 function restoreHistory(h){drawCtx.putImageData(h.penSnap,0,0);S.shapes=JSON.parse(JSON.stringify(h.shapes));S.selectedId=null;shapeDirty=true;requestRender();updateHistoryBtns();updateSelectionUI();}
 function updateHistoryBtns(){document.getElementById('btn-undo').style.opacity=S.histIdx>0?'1':'0.35';document.getElementById('btn-redo').style.opacity=S.histIdx<S.history.length-1?'1':'0.35';}
 
-// ─── Clear / Home ─────────────────────────────────────
-function clearCanvas() {
+/* ═══════════════════════════════════════════════════
+   CLEAR / HOME
+═══════════════════════════════════════════════════ */
+function clearCanvas(){
   if(!confirm('Xóa toàn bộ nét vẽ trang này?'))return;
   clearPenCanvas();clearShapeCanvas();S.shapes=[];S.selectedId=null;
   saveHistory();updateSelectionUI();scheduleAutosave();showToast('🗑️ Đã xóa');
 }
 function clearPenCanvas(){drawCtx.clearRect(0,0,drawCanvas.width,drawCanvas.height);}
 function clearShapeCanvas(){shapeCtx.clearRect(0,0,shapeCanvas.width,shapeCanvas.height);}
-function goHome() {
+function goHome(){
   if(!confirm('Về trang chủ? Bài làm sẽ được lưu lên cloud.'))return;
   saveToCloud();
   S.pdfDoc=null;S.pages=[];S.pageStates=[];clearPenCanvas();clearShapeCanvas();
@@ -1927,22 +1968,25 @@ function goHome() {
   closeGallery();updateSelectionUI();
   document.getElementById('math-panel').classList.remove('open');
   document.getElementById('btn-math').classList.remove('active');
-  checkLocalSession();
-  if(typeof loadHistoryList==='function') loadHistoryList();
+  checkLocalSession();loadHistoryList();
 }
 
-// ─── Loading / Toast ──────────────────────────────────
+/* ═══════════════════════════════════════════════════
+   LOADING / TOAST
+═══════════════════════════════════════════════════ */
 function showLoading(msg){document.getElementById('loading').classList.add('show');document.getElementById('loading-msg').textContent=msg||'Đang tải...';}
 function hideLoading(){document.getElementById('loading').classList.remove('show');}
-function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(window._tt);window._tt=setTimeout(()=>t.classList.remove('show'),2200);}
-function formatTimeAgo(date) {
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(window._tt);window._tt=setTimeout(()=>t.classList.remove('show'),2500);}
+function formatTimeAgo(date){
   const m=Math.floor((Date.now()-date.getTime())/60000);
   if(m<1)return'Vừa xong';if(m<60)return m+'ph trước';
   const h=Math.floor(m/60);if(h<24)return h+'h trước';
   return Math.floor(h/24)+' ngày trước';
 }
 
-// ─── Init ─────────────────────────────────────────────
+/* ═══════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════ */
 checkOrientation();
 updateHistoryBtns();
 updateSelectionUI();
@@ -1953,8 +1997,23 @@ document.addEventListener('keydown',e=>{
   if((e.ctrlKey||e.metaKey)&&e.key==='z'){e.preventDefault();e.shiftKey?redo():undo();}
 });
 
-if(!window._currentSessionId) window.newSession();
+if(!window._currentSessionId)newSession();
+
+// Check SQL done flag, test connection
+if(localStorage.getItem('examdraw_sql_done')){
+  testConnection().then(ok=>{
+    if(ok) checkLocalSession().then(()=>loadHistoryList());
+    else loadHistoryList();
+  });
+} else {
+  // First visit — show SQL modal
+  testConnection().then(ok=>{
+    if(!ok && !localStorage.getItem('examdraw_sql_done')){
+      showSQLModal();
+    }
+    loadHistoryList();
+  });
+}
 </script>
 </body>
 </html>
-
