@@ -975,9 +975,10 @@ async function openHistorySession(sid) {
 }
 
 function confirmDeleteSession(sid) {
-  showConfirm({ icon:'🗑️', title:'Xóa bài làm?',
-    msg: `Xóa phiên "${sid}" khỏi cloud?\nHành động này không thể hoàn tác.`,
-    okLabel:'Xóa', onOk: () => _deleteSession(sid) });
+  // Dùng confirm() native để tránh lỗi event binding
+  if (confirm(`Xóa phiên "${sid}" khỏi cloud?\nHành động này không thể hoàn tác.`)) {
+    _deleteSession(sid);
+  }
 }
 
 async function _deleteSession(sid) {
@@ -1094,12 +1095,14 @@ function showConfirm({ icon, title, msg, okLabel, onOk }) {
   document.getElementById('confirm-icon').textContent = icon || '⚠️';
   document.getElementById('confirm-title').textContent = title || 'Xác nhận';
   document.getElementById('confirm-msg').textContent = msg || '';
-  document.getElementById('confirm-ok').textContent = okLabel || 'OK';
+  const okBtn = document.getElementById('confirm-ok');
+  okBtn.textContent = okLabel || 'OK';
   _confirmCb = onOk;
+  // Gán lại onclick mỗi lần để tránh stale closure
+  okBtn.onclick = () => { closeConfirm(); if (_confirmCb) _confirmCb(); };
   document.getElementById('confirm-dialog').classList.add('open');
 }
 function closeConfirm() { document.getElementById('confirm-dialog').classList.remove('open'); _confirmCb = null; }
-document.getElementById('confirm-ok').onclick = () => { closeConfirm(); if (_confirmCb) _confirmCb(); };
 
 /* ══════════════════════════════════════════════════
    AUTOSAVE
@@ -1482,15 +1485,28 @@ function captureCurrentPage(){
   const dataURL=compositeCurrentPage(),n=S.currentPage;
   const lbl=S.pages.length>1?(S.mode==='pdf'?`Trang PDF ${n}`:`Ảnh ${n}`):'Bài làm';
   galleryData[n]={dataURL,pageNum:n,label:lbl,savedAt:new Date()};
-  if(window._currentSessionId) cloudSaveGallery(window._currentSessionId,n,dataURL,lbl);
+  // KHÔNG push lên cloud gallery ở đây — chỉ lưu local
+  // Cloud gallery chỉ được đẩy khi user bấm nút Download trong gallery
   return dataURL;
 }
 function saveImage(){
-  const dataURL=captureCurrentPage();
-  const a=document.createElement('a');a.download=`exam_p${S.currentPage}_${Date.now()}.png`;a.href=dataURL;a.click();
-  showToast('💾 Đã tải trang '+S.currentPage);
-  if(document.getElementById('gallery-modal').classList.contains('open'))renderGallery();
+  // 1. Tải ảnh xuống máy ngay (composite: bg + nét bút + hình)
+  const dataURL=compositeCurrentPage();
+  const a=document.createElement('a');
+  a.download=`exam_trang${S.currentPage}_${Date.now()}.png`;
+  a.href=dataURL;
+  a.click();
+  showToast('💾 Đã lưu trang '+S.currentPage+' xuống máy');
+
+  // 2. Lưu vào galleryData local (để xem trong gallery)
+  const n=S.currentPage;
+  const lbl=S.pages.length>1?(S.mode==='pdf'?`Trang PDF ${n}`:`Ảnh ${n}`):'Bài làm';
+  galleryData[n]={dataURL,pageNum:n,label:lbl,savedAt:new Date()};
+
+  // 3. Đẩy nét bút lên cloud (autosave) — KHÔNG lưu gallery lên cloud từ đây
   scheduleAutosave();
+
+  if(document.getElementById('gallery-modal').classList.contains('open'))renderGallery();
 }
 function openGallery(){captureCurrentPage();renderGallery();document.getElementById('gallery-modal').classList.add('open');}
 function closeGallery(){document.getElementById('gallery-modal').classList.remove('open');}
@@ -1576,18 +1592,23 @@ async function captureAllPages(){
 }
 function downloadPage(n){
   const e=galleryData[n];if(!e)return showToast('⚠️ Chưa có ảnh');
-  const a=document.createElement('a');a.download=`exam_p${n}_${Date.now()}.png`;a.href=e.dataURL;a.click();
-  showToast(`⬇️ Đã tải trang ${n}`);
+  // Tải xuống máy
+  const a=document.createElement('a');a.download=`exam_trang${n}_${Date.now()}.png`;a.href=e.dataURL;a.click();
+  // Đẩy lên cloud gallery
+  if(window._currentSessionId) cloudSaveGallery(window._currentSessionId,n,e.dataURL,e.label);
+  showToast(`⬇️ Đã tải trang ${n} xuống máy`);
 }
 async function downloadAllSaved(){
   const arr=Object.values(galleryData).filter(Boolean);if(!arr.length)return showToast('⚠️ Chưa có trang nào');
   document.getElementById('btn-save-all').disabled=true;
   showToast(`⬇️ Đang tải ${arr.length} ảnh...`);
   for(let i=0;i<arr.length;i++){
-    await new Promise(r=>setTimeout(r,100*i));
-    const a=document.createElement('a');a.download=`exam_p${arr[i].pageNum}_${Date.now()}.png`;a.href=arr[i].dataURL;a.click();
+    await new Promise(r=>setTimeout(r,150*i));
+    const a=document.createElement('a');a.download=`exam_trang${arr[i].pageNum}_${Date.now()}.png`;a.href=arr[i].dataURL;a.click();
+    // Đẩy lên cloud gallery
+    if(window._currentSessionId) cloudSaveGallery(window._currentSessionId,arr[i].pageNum,arr[i].dataURL,arr[i].label);
   }
-  document.getElementById('btn-save-all').disabled=false;showToast(`✅ Đã tải ${arr.length} ảnh!`);
+  document.getElementById('btn-save-all').disabled=false;showToast(`✅ Đã tải ${arr.length} ảnh xuống máy!`);
 }
 let lightboxPage=null;
 function openLightbox(n){const e=galleryData[n];if(!e)return;lightboxPage=n;document.getElementById('lb-img').src=e.dataURL;document.getElementById('lb-label').textContent=e.label;document.getElementById('lightbox').classList.add('open');}
